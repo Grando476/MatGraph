@@ -82,10 +82,16 @@ KRYTYCZNE ZASADY FORMATOWANIA (JSON I LATEX):
 3. Zadbaj o estetykę i poprawne łamanie linii (BARDZO WAŻNE):
    - ABSOLUTNY ZAKAZ wprowadzania wielu definicji (np. dwóch równań lub zbiorów) ciągiem w jednej linii tekstu. Dłuższe wyrażenia pisane językiem matematyki bezwzględnie przenoś do nowej linii, aby uniknąć brzydkiego ucinania!
    - Wymień je pod sobą w JEDNYM wieloliniowym bloku matematycznym $$...$$.
-   - Wnętrze bloku matematycznego $$...$$ przełamuj podwójnym ukośnikiem LaTeX, który w JSON musisz zapisać jako CZTERY ukośniki: "\\\\\\\\".
+   - Wnętrze bloku matematycznego $$...$$ przełamuj podwójnym ukośnikiem LaTeX. Jeśli obok siebie masz "niskie" linijki (zwykłe zmienne, teksty), użyj zwykłego nowej linii, co w JSON zapisujesz jako CZTERY ukośniki: "\\\\\\\\".
+   - JEDNAKŻE, jeśli w bloku $$...$$ łamiesz linię, a w PIONIE występują "wysokie", piętrowe struktury (ułamki \\\\frac, granice \\\\lim, sumy \\\\sum, całki, macierze, czy potęgi piętrowe), BEZWZGLĘDNIE dodaj odstęp pionowy (np. 15pt). W JSON zapisz to DOKŁADNIE TAK: "\\\\\\\\[15pt]". 
+   - ABSOLUTNY ZAKAZ zapisu typu "\\\\\\\[15pt]" (trzy ukośniki widoczne po sparsowaniu to błąd syntaxu). Wymagane są dokładnie CZTERY ukośniki i od razu nawias kwadratowy: "\\\\\\\\[15pt]".
    - W zwykłym tekście (poza $$) zabrania się używania "\\\\\\\\" do nowej linii - tam używaj standardowego "\\n".
-   - ZŁY ZAPIS (ucięty w połowie): "Dane są zbiory $A = \\{{x : x...\\}}$ oraz $B = \\{{...\\}}$. Elementami są:"
-   - WZORCOWY ZAPIS: "Dane są zbiory:\\n$$ A = \\{{x : x...\\}} \\\\\\\\ B = \\{{...\\}} $$\\nElementami są:"
+   - BARDZO WAŻNE: Pojedyncze liczby, pojedyncze ułamki i wyrażenia będące CZEŚCIĄ ZDANIA (wplecione w tekst) ZAWSZE umieszczaj w pojedynczych dolarach $...$ (inline math), np. "Liczba $x$ to $5$". 
+   - KARYGODNY BŁĄD (ABSOLUTNY ZAKAZ): Nigdy nie obejmuj całych zdań lub słów znacznikami matematycznymi (dolarami)! Zapis typu "$Liczba \\\\ z \\\\ jest \\\\ równa \\\\ 1.$" jest surowo zabroniony, ponieważ wymusza pochyły styl matematyczny na zwykłym tekście polskim. Zwykły tekst ma być CAŁKOWICIE POZA dolarami! Wzorowy zapis to: "Liczba $z$ jest równa $1$."
+   - ABSOLUTNY ZAKAZ używania podwójnych dolarów $$...$$ wewnątrz zdań. Podwójne dolary służą TYLKO i WYŁĄCZNIE do wydzielonych, wieloliniowych, wyśrodkowanych bloków równań pod tekstem.
+   - ZŁY ZAPIS (w zdaniu): "Wynik to $$ \\\\frac{{1}}{{2}} $$." (to rozbije zdanie na 3 linie!)
+   - WZORCOWY ZAPIS (w zdaniu): "Wynik to $ \\\\frac{{1}}{{2}} $."
+   - WZORCOWY ZAPIS (blokowy, z wysokimi równaniami): "Zatem wynik to:\n$$ \\\\frac{{1}}{{2}} \\\\\\\\[15pt] \\\\frac{{3}}{{4}} $$"
 
 Zwróć TYLKO czystą listę JSON z przepisanymi zadaniami:
 [
