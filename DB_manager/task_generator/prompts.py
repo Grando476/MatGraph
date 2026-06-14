@@ -99,6 +99,7 @@ KRYTYCZNE ZASADY FORMATOWANIA (JSON I LATEX):
    - ZŁY ZAPIS (w zdaniu): "Wynik to $$ \\\\frac{{1}}{{2}} $$." (to rozbije zdanie na 3 linie!)
    - WZORCOWY ZAPIS (w zdaniu): "Wynik to $ \\\\frac{{1}}{{2}} $."
    - WZORCOWY ZAPIS (blokowy, z wysokimi równaniami): "Zatem wynik to:\n$$ \\\\frac{{1}}{{2}} \\\\\\\\[15pt] \\\\frac{{3}}{{4}} $$"
+4. OZNACZENIA ODPOWIEDZI (KRYTYCZNE): W tekście rozwiązania (w "exemplary_solution") ABSOLUTNIE NIE PISZ o "indeksach" odpowiedzi (np. "odpowiada indeksowi 1", "opcja o indeksie 2"). Jeśli podsumowujesz wynik i chcesz wskazać prawidłową opcję, używaj ZAWSZE liter A, B, C, D (gdzie indeks 0 to A, 1 to B, 2 to C, 3 to D). Np. pisz "Poprawna odpowiedź to B", a nie "Poprawna odpowiedź to indeks 1".
 
 Zwróć TYLKO czystą listę JSON z przepisanymi zadaniami:
 [

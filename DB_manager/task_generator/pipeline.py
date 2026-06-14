@@ -16,11 +16,19 @@ def invoke_with_retry(chain, params, max_retries=5, delay=10):
 def run_generation_pipeline(llm, context, counts):
     parser = JsonOutputParser()
 
+    BATCH_SIZES = {
+        "Easy": 8,
+        "Medium": 5,
+        "Hard": 3,
+        "Very Hard": 1
+    }
+
     for diff, total_count in counts.items():
         total_count = int(total_count)
         if total_count <= 0: continue
         
-        batches = [5] * (total_count // 5) + ([total_count % 5] if total_count % 5 != 0 else [])
+        batch_size = BATCH_SIZES.get(diff, 5)
+        batches = [batch_size] * (total_count // batch_size) + ([total_count % batch_size] if total_count % batch_size != 0 else [])
         
         for batch_count in batches:
             # FAZA I: KREATYWNY GENERATOR (Surowe zadania)
