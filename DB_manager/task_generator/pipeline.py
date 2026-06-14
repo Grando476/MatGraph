@@ -1,7 +1,7 @@
 import json
 import time
 from langchain_core.output_parsers import JsonOutputParser
-from prompts import GENERATOR_PROMPT, SOLVER_PROMPT, FORMATTER_PROMPT, FINAL_VALIDATOR_PROMPT
+from prompts import PLANNER_PROMPT, GENERATOR_PROMPT, SOLVER_PROMPT, FORMATTER_PROMPT, FINAL_VALIDATOR_PROMPT
 from inspirations import get_generation_params
 
 def invoke_with_retry(chain, params, max_retries=5, delay=10):
@@ -31,10 +31,28 @@ def run_generation_pipeline(llm, context, counts):
         batches = [batch_size] * (total_count // batch_size) + ([total_count % batch_size] if total_count % batch_size != 0 else [])
         
         for batch_count in batches:
-            # FAZA I: KREATYWNY GENERATOR (Surowe zadania)
             gen_params = get_generation_params()
+            
+            # FAZA 0: PLANER (Wymyślanie szkiców zadań dla całego batcha)
+            plan_chain = PLANNER_PROMPT | llm | parser
+            blueprints = invoke_with_retry(plan_chain, {
+                "count": batch_count, 
+                "difficulty": diff, 
+                **gen_params, 
+                **context
+            })
+            
+            if not blueprints: continue
+            if isinstance(blueprints, dict): blueprints = [blueprints]
+
+            # FAZA I: KREATYWNY GENERATOR (Tworzenie surowych zadań na bazie całej listy szkiców)
             gen_chain = GENERATOR_PROMPT | llm | parser
-            raw_batch = invoke_with_retry(gen_chain, {"count": batch_count, "difficulty": diff, **gen_params, **context})
+            raw_batch = invoke_with_retry(gen_chain, {
+                "blueprints_json": json.dumps(blueprints, ensure_ascii=False), 
+                "difficulty": diff, 
+                **context
+            })
+            
             if not raw_batch: continue
             if isinstance(raw_batch, dict): raw_batch = [raw_batch]
 
@@ -49,6 +67,7 @@ def run_generation_pipeline(llm, context, counts):
 
             # ŁĄCZENIE ZADAŃ POPRAWNYCH LOGICZNIE
             merged_for_formatter = []
+            debug_info_list = []
             for i, task in enumerate(raw_batch):
                 s_res = next((r for r in solver_results if r.get("task_index") == i), None)
                 if s_res and s_res.get("is_valid"):
@@ -56,6 +75,11 @@ def run_generation_pipeline(llm, context, counts):
                         "raw_task": task,
                         "raw_solution": s_res.get("raw_solution", ""),
                         "solved_index": s_res.get("solved_index", 0)
+                    })
+                    debug_info_list.append({
+                        "blueprint": blueprints[i] if i < len(blueprints) else None,
+                        "raw_task": task,
+                        "raw_solution": s_res.get("raw_solution", "")
                     })
 
             if not merged_for_formatter: continue
@@ -70,20 +94,30 @@ def run_generation_pipeline(llm, context, counts):
             if isinstance(formatted_batch, dict): formatted_batch = [formatted_batch]
 
             # FAZA IV: BEZWZGLĘDNY WALIDATOR (Sprawdzanie każdego sformatowanego zadania z osobna)
-            for formatted_task in formatted_batch:
+            for i, formatted_task in enumerate(formatted_batch):
                 # Twarde wymuszenie żądanego poziomu trudności (zapobiega halucynacjom modelu)
                 formatted_task["difficulty_level"] = diff
                 
                 # Przekazanie użytej inspiracji do panelu (tylko do podglądu UI)
                 formatted_task["inspiration"] = gen_params.get("inspiration")
 
+                # Dołączenie informacji debugowych do podglądu w UI
+                if i < len(debug_info_list):
+                    formatted_task["debug_info"] = debug_info_list[i]
+
+                # Ukrywamy debug_info przed walidatorem, żeby go nie rozpraszać surowymi notatkami i złym LaTeXem
+                task_for_validation = formatted_task.copy()
+                task_for_validation.pop("debug_info", None)
+
                 val_chain = FINAL_VALIDATOR_PROMPT | llm | parser
                 val_res = invoke_with_retry(val_chain, {
-                    "final_task_json": json.dumps(formatted_task, ensure_ascii=False)
+                    "final_task_json": json.dumps(task_for_validation, ensure_ascii=False)
                 })
                 
                 if val_res:
                     formatted_task["validation"] = {"is_perfect": val_res.get("is_perfect", False), "feedback": val_res.get("feedback")}
+                    if "debug_info" in formatted_task:
+                        formatted_task["debug_info"]["validator_reasoning"] = val_res.get("reasoning", "")
                 else:
                     # Błąd spowodowany wyczerpanymi limitami (Rate limit) lub zepsutym parsowaniem JSON przez LLM
                     formatted_task["validation"] = {"is_perfect": False, "feedback": "Błąd API (Nie powiodła się finalna weryfikacja - sprawdź logi w terminalu)"}

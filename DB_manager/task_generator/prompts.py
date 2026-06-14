@@ -1,41 +1,68 @@
 from langchain_core.prompts import ChatPromptTemplate
 
-GENERATOR_PROMPT = ChatPromptTemplate.from_template("""
-Jesteś wybitnym dydaktykiem matematyki. Tworzysz zadania TYLKO i WYŁĄCZNIE na poziomie podstawowym dla szkoły średniej (liceum/technikum) w Polsce (podstawa programowa do matury). Wygeneruj dokładnie {count} zadań wielokrotnego wyboru (MCQ) o poziomie trudności: {difficulty}.
-Twoim absolutnym priorytetem jest JAKOŚĆ MATEMATYCZNA. Nie przejmuj się zaawansowanym formatowaniem LaTeX czy ucieczkowaniem znaków w JSON - to zadanie dla innego agenta. Skup się na genialnej treści.
+PLANNER_PROMPT = ChatPromptTemplate.from_template("""
+Jesteś głównym metodykiem i twórcą koncepcji dydaktycznych. Twoim zadaniem jest zaplanowanie SZKICÓW (konceptów) do {count} zadań matematycznych wielokrotnego wyboru na poziomie: {difficulty}.
+Tworzysz materiały WYŁĄCZNIE na poziomie podstawowym dla szkoły średniej w Polsce (matura podstawowa).
+Ty nie rozwiązujesz zadań, ani nie tworzysz dokładnych odpowiedzi (tym zajmie się Generator w kolejnym kroku). Twoim celem jest wymyślenie zróżnicowanych, merytorycznie spójnych i ciekawych pomysłów ("szkieletów" zadań), które rygorystycznie przestrzegają obostrzeń wiedzy ucznia.
 
 KONTEKST ZADANIA (GŁÓWNY CEL):
 Ścieżka: {chapter} > {topic} > {subtopic} > {group}
 Teoria bieżąca: {topic_theory}, {subtopic_theory}
 Inne (sąsiednie) grupy zadań w tym podtemacie: {sibling_task_groups}
 
-WIEDZA UPRZEDNIA UCZNIA (MOŻESZ Z NIEJ KORZYSTAĆ DO UTRUDNIANIA ZADAŃ):
+WIEDZA UPRZEDNIA UCZNIA (MOŻESZ Z NIEJ KORZYSTAĆ):
 Poprzednie tematy ucznia: {known_topics_names}
 Poprzednie podtematy z tego działu: {known_subtopics_theories}
 
-ZAKAZANY MATERIAŁ (PRZYSZŁE TEMATY - ABSOLUTNY ZAKAZ UŻYWANIA):
-Nieznane tematy (nie używaj pojęć z tych działów): {unknown_topics_names}
+ZAKAZANY MATERIAŁ (ABSOLUTNY ZAKAZ UŻYWANIA):
+Nieznane tematy: {unknown_topics_names}
 
-KRYTYCZNE ZASADY PEDAGOGICZNE I OGRANICZENIA MATERIAŁU:
-1. Poziom trudności i podstawa: Wszystkie zadania muszą być w 100% zgodne z podstawą programową do matury podstawowej z matematyki w Polsce. Absolutnie nie używaj zagadnień rozszerzonych ani akademickich.
-2. Ograniczenie wiedzy (STRICT): Masz BEZWZGLĘDNY ZAKAZ używania operacji, funkcji, pojęć i symboli, które nie zostały wprost wymienione w "Kontekście zadania" lub w "Wiedzy uprzedniej ucznia". 
-   - Zwróć szczególną uwagę na listę "Nieznane tematy". Pod żadnym pozorem nie wprowadzaj w zadaniach zagadnień, które się na niej znajdują.
-   - Utrudnianie zadania (Hard/Very Hard) ma polegać na łączeniu TYLKO JUŻ ZNANYCH pojęć (np. tworzenie bardziej złożonych wyrażeń z tym co uczeń już zna, zagnieżdżanie znanych działań, wymagające dłuższego liczenia lub sprytu), a absolutnie NIE na dodawaniu materiału z przyszłości.
-3. Opcje: Dokładnie 4 opcje (0, 1, 2, 3). Tylko JEDNA w 100% poprawna. Pozostałe niepoprawne odpowiedzi oparte na typowych błędach.
-4. Separacja grup zadań: Zwróć uwagę na "Inne (sąsiednie) grupy zadań w tym podtemacie". Twoje zadania muszą być ściśle dopasowane TYLKO do bieżącej grupy ({group}) i absolutnie nie mogą polegać na umiejętnościach lub problemach zarezerwowanych dla sąsiednich grup.
-5. Zróżnicowanie poziomów trudności (KRYTYCZNE): Zadanie musi idealnie odzwierciedlać zadany poziom trudności: "{difficulty}". Musisz drastycznie różnicować strukturę zadań w zależności od poziomu:
-   - Easy: Bardzo proste, jednokrokowe zadanie. Wymaga jedynie bezpośredniego podstawienia do wzoru z bieżącego tematu lub znajomości jednej definicji. Oczywiste i krótkie obliczenia.
-   - Medium: Typowe zadanie maturalne na poziomie podstawowym. Wymaga 2-3 kroków obliczeniowych i standardowego zastosowania teorii.
-   - Hard: Zadanie wymagające sprytu. Uczeń musi połączyć 2-3 różne koncepcje z bieżącego tematu lub ułożyć własne równanie. Obliczenia są nieco dłuższe i łatwo w nich o błąd. Zadanie "Hard" NIE MOŻE wyglądać jak "Easy".
-   - Very Hard: Najtrudniejsze zadania, ale nadal na poziomie podstawowym. Wymagają niestandardowego pomysłu, rozpatrywania przypadków, głębokiego zrozumienia zależności lub skomplikowanych (jak na podstawę) przekształceń algebraicznych. Często są to zadania z "haczykiem".
+ZASADY:
+1. Poziom trudności ({difficulty}):
+   - Easy: Banale podstawienie do wzoru, sprawdzenie definicji.
+   - Medium: Typowe zadanie 2-krokowe (np. wyznacz a, potem oblicz b).
+   - Hard: Wymaga sprytu, połączenia 2-3 znanych koncepcji lub zagnieżdżenia działań.
+   - Very Hard: Przypadki szczególne, zawiłe przekształcenia algebraiczne w ramach podstawy, zadania z ukrytym haczykiem.
+2. Ograniczenie wiedzy (STRICT): W swoich szkicach absolutnie nie planuj używania pojęć, operacji, ani funkcji z "Zakazanego materiału". Oprzyj się TYLKO na bieżącym temacie i wiedzy uprzedniej.
+3. Separacja: Upewnij się, że szkic celuje dokładnie w grupę "{group}" i nie wchodzi w kompetencje sąsiednich grup.
+4. Różnorodność: Każdy z {count} szkiców musi mieć INNY pomysł na ułożenie treści (inne podejście, inny typ danych wejściowych, np. raz podana figura, raz treść opisowa, raz parametry).
+5. Inspiracja wizjonerska: {inspiration}
+   (Spróbuj przemycić ten klimat/ideę w szkicach, o ile ma to sens i nie psuje matematyki).
+6. Random Seed: {random_seed} (dla unikalności).
 
-WYTYCZNA RÓŻNORODNOŚCI (INSPIRACJA):
-Unikalny identyfikator paczki (SEED): {random_seed}
-W celu uniknięcia powtarzalności zadań, BARDZO ZALECAMY wdrożenie poniższego podejścia przy ich tworzeniu:
-> "{inspiration}"
-> Postaraj się realnie wpleść ten pomysł w zadania (nie wspominając o nim wprost). Odrzuć tę inspirację TYLKO w sytuacji, gdy jej użycie w kontekście bieżącej grupy zadań ({group}) siłą rzeczy tworzyłoby problemy nielogiczne, absurdalne lub błędne matematycznie. Zależy nam na dużej kreatywności – o ile to możliwe, dopasuj zadania do tej wizji, ściśle trzymając się przy tym poprawności merytorycznej.
+Zwróć TYLKO czysty JSON jako listę dokładnie {count} obiektów:
+[
+  {{
+    "task_concept": "Szczegółowy opis o co pytamy (np. Oblicz pole trójkąta znając boki 3,4,5). Wskaż jakie liczby/wzory mają być użyte.",
+    "trap_or_trick": "Opisz czy jest tu jakiś haczyk lub na co uczeń ma uważać (np. uwaga na jednostki, uwaga na wartość bezwzględną z definicji pierwiastka).",
+    "math_tools_required": "Z jakiej wiedzy (związanej z bieżącym tematem) uczeń musi skorzystać"
+  }}
+]
+""")
 
-Zwróć TYLKO czysty JSON (lista obiektów):
+GENERATOR_PROMPT = ChatPromptTemplate.from_template("""
+Jesteś precyzyjnym konstruktorem zadań matematycznych (Realizatorem). Tworzysz wybitne zadania wielokrotnego wyboru na poziomie podstawowym dla polskiej szkoły średniej.
+Twoim celem jest przekucie otrzymanej listy SZKICÓW (Planów) na konkretne treści zadań, dokładne liczby i poprawnie skonstruowane warianty odpowiedzi (A, B, C, D).
+
+POZIOM TRUDNOŚCI ZADAŃ: {difficulty}
+
+LISTA SZKICÓW ZADAŃ DO ZREALIZOWANIA (ZAPLANOWANE PRZEZ METODYKA W FORMACIE JSON):
+{blueprints_json}
+
+KONTEKST EDUKACYJNY (DO ZACHOWANIA ZGODNOŚCI):
+Ścieżka: {chapter} > {topic} > {subtopic} > {group}
+Teoria bieżąca: {topic_theory}, {subtopic_theory}
+Wiedza uprzednia ucznia: {known_topics_names} | {known_subtopics_theories}
+ZAKAZANY MATERIAŁ (Absolutny zakaz pojęć z tych działów): {unknown_topics_names}
+
+TWOJE WYTYCZNE DLA KAŻDEGO SZKICU:
+1. Realizacja: Wypełnij szkic konkretnymi, sensownymi liczbami. Przeprowadź w głowie obliczenia, aby mieć pewność, że wynik końcowy wychodzi "ładny" (lub zgodnie z planem w szkicu).
+2. Jakość merytoryczna: Treść zadania musi być jasna, jednoznaczna i nie budzić wątpliwości egzaminacyjnych.
+3. Opcje: Wygeneruj dokładnie 4 opcje (0, 1, 2, 3). TYLKO JEDNA opcja musi być w 100% poprawna. Pozostałe 3 niepoprawne odpowiedzi muszą być dystraktorami (wynikać z typowych błędów, pomyłek w znakach, niezrozumienia 'haczyka' ze szkicu itp.).
+4. Ograniczenie wiedzy: Nawet realizując szkic, BEZWZGLĘDNIE trzymaj się zasady, by nie używać pojęć i symboli nieznanych uczniowi (Zakazany materiał).
+5. Formatowanie: Używaj czystego tekstu z prostym ujęciem LaTeX dla matematyki (bez ucieczkowania JSON - tym zajmie się formater w innym kroku).
+
+Zwróć TYLKO czysty JSON jako LISTĘ obiektów (w takiej samej kolejności i liczbie jak przekazane szkice):
 [
   {{
     "question": "Treść zadania (surowy tekst z prostym texem, bez ukośników)",

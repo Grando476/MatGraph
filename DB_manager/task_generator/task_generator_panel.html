@@ -157,12 +157,47 @@
             <div class="task-card ${safeClass}" id="task-${index}" style="${validationStyle}">
                 <div class="card-header">
                     <span>Zadanie ${index + 1} - ${task.difficulty_level} (${feedbackStr})</span>
-                    <button class="btn btn-delete" onclick="removeTask(${index})">X Usuń</button>
+                    <div>
+                        ${task.inspiration || task.debug_info ? `<button class="btn" style="background: #34495e; padding: 5px 10px; margin-right: 10px;" onclick="toggleDebug(${index})">🔍 Info / Debug</button>` : ''}
+                        <button class="btn btn-delete" onclick="removeTask(${index})">X Usuń</button>
+                    </div>
                 </div>
                 
-                ${task.inspiration ? `
-                <div style="margin-bottom: 15px; padding: 10px; background: #fff3cd; border-left: 4px solid #ffc107; border-radius: 4px; font-size: 13px; color: #856404;">
-                    <strong>Użyta inspiracja:</strong> <span>${task.inspiration}</span>
+                ${task.inspiration || task.debug_info ? `
+                <div id="debug-panel-${index}" style="display: none; margin-bottom: 15px;">
+                    ${task.inspiration ? `
+                    <div style="margin-bottom: 10px; padding: 10px; background: #fff3cd; border-left: 4px solid #ffc107; border-radius: 4px; font-size: 13px; color: #856404;">
+                        <strong>Użyta inspiracja:</strong> <span>${task.inspiration}</span>
+                    </div>
+                    ` : ''}
+                    
+                    ${task.debug_info ? `
+                    <div style="padding: 15px; background: #eef2f5; border-left: 4px solid #7f8c8d; border-radius: 4px; font-size: 13px; font-family: monospace;">
+                        <strong style="color: #2c3e50; font-size: 14px; display:block; margin-bottom: 5px;">🛠 Debug Info (Tok myślenia LLM):</strong>
+                        
+                        <details style="margin-bottom: 5px; cursor: pointer;">
+                            <summary><b>1. Planer (Szkic zadania)</b></summary>
+                            <div style="padding: 10px; background: #fff; margin-top: 5px; border: 1px dashed #ccc; white-space: pre-wrap; overflow-x: auto;">${JSON.stringify(task.debug_info.blueprint, null, 2)}</div>
+                        </details>
+
+                        <details style="margin-bottom: 5px; cursor: pointer;">
+                            <summary><b>2. Generator (Surowe zadanie)</b></summary>
+                            <div style="padding: 10px; background: #fff; margin-top: 5px; border: 1px dashed #ccc; white-space: pre-wrap; overflow-x: auto;">${JSON.stringify(task.debug_info.raw_task, null, 2)}</div>
+                        </details>
+
+                        <details style="margin-bottom: 5px; cursor: pointer;">
+                            <summary><b>3. Solver (Surowe rozwiązanie)</b></summary>
+                            <div style="padding: 10px; background: #fff; margin-top: 5px; border: 1px dashed #ccc; white-space: pre-wrap; overflow-x: auto;">${task.debug_info.raw_solution}</div>
+                        </details>
+
+                        ${task.debug_info.validator_reasoning ? `
+                        <details style="cursor: pointer;">
+                            <summary><b>4. Walidator (Rozumowanie błędu/sukcesu)</b></summary>
+                            <div style="padding: 10px; background: #fff; margin-top: 5px; border: 1px dashed #ccc; white-space: pre-wrap; overflow-x: auto;">${task.debug_info.validator_reasoning}</div>
+                        </details>
+                        ` : ''}
+                    </div>
+                    ` : ''}
                 </div>
                 ` : ''}
                 
@@ -338,6 +373,13 @@
         generatedTasks = [];
         renderTasks();
         document.getElementById('save-btn').style.display = 'none';
+    }
+
+    function toggleDebug(index) {
+        const panel = document.getElementById(`debug-panel-${index}`);
+        if (panel) {
+            panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+        }
     }
 
     init();
