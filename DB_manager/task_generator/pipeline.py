@@ -16,11 +16,19 @@ def invoke_with_retry(chain, params, max_retries=5, delay=10):
 def run_generation_pipeline(llm, context, counts):
     parser = JsonOutputParser()
 
+    BATCH_SIZES = {
+        "Easy": 8,
+        "Medium": 5,
+        "Hard": 3,
+        "Very Hard": 1
+    }
+
     for diff, total_count in counts.items():
         total_count = int(total_count)
         if total_count <= 0: continue
         
-        batches = [5] * (total_count // 5) + ([total_count % 5] if total_count % 5 != 0 else [])
+        batch_size = BATCH_SIZES.get(diff, 5)
+        batches = [batch_size] * (total_count // batch_size) + ([total_count % batch_size] if total_count % batch_size != 0 else [])
         
         for batch_count in batches:
             # FAZA I: KREATYWNY GENERATOR (Surowe zadania)
@@ -32,7 +40,10 @@ def run_generation_pipeline(llm, context, counts):
 
             # FAZA II: SUROWY SOLVER (Liczenie zadań)
             solv_chain = SOLVER_PROMPT | llm | parser
-            solver_results = invoke_with_retry(solv_chain, {"tasks_batch_json": json.dumps(raw_batch, ensure_ascii=False)})
+            solver_results = invoke_with_retry(solv_chain, {
+                "tasks_batch_json": json.dumps(raw_batch, ensure_ascii=False),
+                **context
+            })
             if not solver_results: continue
             if isinstance(solver_results, dict): solver_results = [solver_results]
 
@@ -62,6 +73,9 @@ def run_generation_pipeline(llm, context, counts):
             for formatted_task in formatted_batch:
                 # Twarde wymuszenie żądanego poziomu trudności (zapobiega halucynacjom modelu)
                 formatted_task["difficulty_level"] = diff
+                
+                # Przekazanie użytej inspiracji do panelu (tylko do podglądu UI)
+                formatted_task["inspiration"] = gen_params.get("inspiration")
 
                 val_chain = FINAL_VALIDATOR_PROMPT | llm | parser
                 val_res = invoke_with_retry(val_chain, {

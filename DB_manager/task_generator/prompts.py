@@ -48,13 +48,20 @@ Zwróć TYLKO czysty JSON (lista obiektów):
 SOLVER_PROMPT = ChatPromptTemplate.from_template("""
 Jesteś rygorystycznym matematykiem i egzaminatorem. Otrzymujesz surową paczkę zadań od innego nauczyciela.
 
+KONTEKST EDUKACYJNY UCZNIA:
+Ścieżka: {chapter} > {topic} > {subtopic} > {group}
+Teoria bieżąca: {topic_theory}, {subtopic_theory}
+Wiedza uprzednia ucznia (Z tego możesz korzystać): {known_topics_names} | {known_subtopics_theories}
+Nieznane tematy (ABSOLUTNY ZAKAZ UŻYWANIA): {unknown_topics_names}
+
 SUROWA PACZKA ZADAŃ (JSON):
 {tasks_batch_json}
 
 ZADANIE DLA KAŻDEGO ELEMENTU Z PACZKI:
 1. Rozwiąż zadanie od zera krok po kroku, nie patrząc na "correct_index" sugerowany przez AI.
 2. Pisz BARDZO PROSTYM i zrozumiałym językiem. Tłumacz rozwiązanie tak, jakbyś mówił do ucznia szkoły średniej. Unikaj sztywnego, akademickiego żargonu.
-3. Sprawdź, czy dokładnie JEDNA opcja jest poprawna.
+3. OGRANICZENIA WIEDZY (KRYTYCZNE): Uczeń zna TYLKO zagadnienia z bieżącej teorii i wiedzy uprzedniej. Absolutnie nie wolno Ci w rozwiązaniu używać pojęć, twierdzeń, ani notacji z tematów nieznanych (np. nie używaj wartości bezwzględnej / modułu przy obliczaniu odległości, jeśli uczeń nie poznał wprost tego pojęcia). Rozwiązanie musi być oparte na najprostszych, aktualnie dostępnych dla ucznia metodach krok po kroku!
+4. Sprawdź, czy dokładnie JEDNA opcja jest poprawna.
 
 Zwróć TYLKO czysty JSON jako listę wyników w tej samej kolejności. Nie przejmuj się formatowaniem LaTeX, używaj surowego tekstu z prostym ujęciem wzorów, bo kto inny to ładnie sformatuje. Najważniejsze to poprawność!
 [
@@ -82,10 +89,17 @@ KRYTYCZNE ZASADY FORMATOWANIA (JSON I LATEX):
 3. Zadbaj o estetykę i poprawne łamanie linii (BARDZO WAŻNE):
    - ABSOLUTNY ZAKAZ wprowadzania wielu definicji (np. dwóch równań lub zbiorów) ciągiem w jednej linii tekstu. Dłuższe wyrażenia pisane językiem matematyki bezwzględnie przenoś do nowej linii, aby uniknąć brzydkiego ucinania!
    - Wymień je pod sobą w JEDNYM wieloliniowym bloku matematycznym $$...$$.
-   - Wnętrze bloku matematycznego $$...$$ przełamuj podwójnym ukośnikiem LaTeX, który w JSON musisz zapisać jako CZTERY ukośniki: "\\\\\\\\".
+   - Wnętrze bloku matematycznego $$...$$ przełamuj podwójnym ukośnikiem LaTeX. Jeśli obok siebie masz "niskie" linijki (zwykłe zmienne, teksty), użyj zwykłego nowej linii, co w JSON zapisujesz jako CZTERY ukośniki: "\\\\\\\\".
+   - JEDNAKŻE, jeśli w bloku $$...$$ łamiesz linię, a w PIONIE występują "wysokie", piętrowe struktury (ułamki \\\\frac, granice \\\\lim, sumy \\\\sum, całki, macierze, czy potęgi piętrowe), BEZWZGLĘDNIE dodaj odstęp pionowy (np. 15pt). W JSON zapisz to DOKŁADNIE TAK: "\\\\\\\\[15pt]". 
+   - ABSOLUTNY ZAKAZ zapisu typu "\\\\\\\[15pt]" (trzy ukośniki widoczne po sparsowaniu to błąd syntaxu). Wymagane są dokładnie CZTERY ukośniki i od razu nawias kwadratowy: "\\\\\\\\[15pt]".
    - W zwykłym tekście (poza $$) zabrania się używania "\\\\\\\\" do nowej linii - tam używaj standardowego "\\n".
-   - ZŁY ZAPIS (ucięty w połowie): "Dane są zbiory $A = \\{{x : x...\\}}$ oraz $B = \\{{...\\}}$. Elementami są:"
-   - WZORCOWY ZAPIS: "Dane są zbiory:\\n$$ A = \\{{x : x...\\}} \\\\\\\\ B = \\{{...\\}} $$\\nElementami są:"
+   - BARDZO WAŻNE: Pojedyncze liczby, pojedyncze ułamki i wyrażenia będące CZEŚCIĄ ZDANIA (wplecione w tekst) ZAWSZE umieszczaj w pojedynczych dolarach $...$ (inline math), np. "Liczba $x$ to $5$". 
+   - KARYGODNY BŁĄD (ABSOLUTNY ZAKAZ): Nigdy nie obejmuj całych zdań lub słów znacznikami matematycznymi (dolarami)! Zapis typu "$Liczba \\\\ z \\\\ jest \\\\ równa \\\\ 1.$" jest surowo zabroniony, ponieważ wymusza pochyły styl matematyczny na zwykłym tekście polskim. Zwykły tekst ma być CAŁKOWICIE POZA dolarami! Wzorowy zapis to: "Liczba $z$ jest równa $1$."
+   - ABSOLUTNY ZAKAZ używania podwójnych dolarów $$...$$ wewnątrz zdań. Podwójne dolary służą TYLKO i WYŁĄCZNIE do wydzielonych, wieloliniowych, wyśrodkowanych bloków równań pod tekstem.
+   - ZŁY ZAPIS (w zdaniu): "Wynik to $$ \\\\frac{{1}}{{2}} $$." (to rozbije zdanie na 3 linie!)
+   - WZORCOWY ZAPIS (w zdaniu): "Wynik to $ \\\\frac{{1}}{{2}} $."
+   - WZORCOWY ZAPIS (blokowy, z wysokimi równaniami): "Zatem wynik to:\n$$ \\\\frac{{1}}{{2}} \\\\\\\\[15pt] \\\\frac{{3}}{{4}} $$"
+4. OZNACZENIA ODPOWIEDZI (KRYTYCZNE): W tekście rozwiązania (w "exemplary_solution") ABSOLUTNIE NIE PISZ o "indeksach" odpowiedzi (np. "odpowiada indeksowi 1", "opcja o indeksie 2"). Jeśli podsumowujesz wynik i chcesz wskazać prawidłową opcję, używaj ZAWSZE liter A, B, C, D (gdzie indeks 0 to A, 1 to B, 2 to C, 3 to D). Np. pisz "Poprawna odpowiedź to B", a nie "Poprawna odpowiedź to indeks 1".
 
 Zwróć TYLKO czystą listę JSON z przepisanymi zadaniami:
 [
@@ -109,7 +123,8 @@ ZADANIE DO OCENY:
 
 KRYTERIA:
 1. MATEMATYKA: Czy wskazany "correct_index" na pewno pasuje do rozwiązania "exemplary_solution" i pytania "question"? Zrób rygorystyczny przegląd rachunków.
-2. FORMAT: Czy WSZYSTKIE liczby i zmienne są w znacznikach $...$ lub $$...$$? Czy bloki równań i układów są poprawne?
+2. ROZWIĄZANIE: Czy zadanie posiada "exemplary_solution" i nie jest to wartość pusta? (Brak rozwiązania oznacza natychmiastowy brak walidacji).
+3. FORMAT: Czy WSZYSTKIE liczby i zmienne są w znacznikach $...$ lub $$...$$? Czy bloki równań i układów są poprawne?
 
 Zwróć TYLKO czysty JSON. BARDZO WAŻNE: Pamiętaj o ucieczkowaniu ukośników w polu "reasoning" zgodnie ze standardem JSON (np. komendy zapisuj jako "\\\\alpha", "\\\\frac", a nową linię w LaTeX jako "\\\\\\\\"), aby nie zepsuć struktury pliku:
 {{
