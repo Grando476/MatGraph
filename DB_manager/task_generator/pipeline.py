@@ -32,7 +32,10 @@ def run_generation_pipeline(llm, context, counts):
 
             # FAZA II: SUROWY SOLVER (Liczenie zadań)
             solv_chain = SOLVER_PROMPT | llm | parser
-            solver_results = invoke_with_retry(solv_chain, {"tasks_batch_json": json.dumps(raw_batch, ensure_ascii=False)})
+            solver_results = invoke_with_retry(solv_chain, {
+                "tasks_batch_json": json.dumps(raw_batch, ensure_ascii=False),
+                **context
+            })
             if not solver_results: continue
             if isinstance(solver_results, dict): solver_results = [solver_results]
 
@@ -62,6 +65,9 @@ def run_generation_pipeline(llm, context, counts):
             for formatted_task in formatted_batch:
                 # Twarde wymuszenie żądanego poziomu trudności (zapobiega halucynacjom modelu)
                 formatted_task["difficulty_level"] = diff
+                
+                # Przekazanie użytej inspiracji do panelu (tylko do podglądu UI)
+                formatted_task["inspiration"] = gen_params.get("inspiration")
 
                 val_chain = FINAL_VALIDATOR_PROMPT | llm | parser
                 val_res = invoke_with_retry(val_chain, {

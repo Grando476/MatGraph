@@ -48,13 +48,20 @@ Zwróć TYLKO czysty JSON (lista obiektów):
 SOLVER_PROMPT = ChatPromptTemplate.from_template("""
 Jesteś rygorystycznym matematykiem i egzaminatorem. Otrzymujesz surową paczkę zadań od innego nauczyciela.
 
+KONTEKST EDUKACYJNY UCZNIA:
+Ścieżka: {chapter} > {topic} > {subtopic} > {group}
+Teoria bieżąca: {topic_theory}, {subtopic_theory}
+Wiedza uprzednia ucznia (Z tego możesz korzystać): {known_topics_names} | {known_subtopics_theories}
+Nieznane tematy (ABSOLUTNY ZAKAZ UŻYWANIA): {unknown_topics_names}
+
 SUROWA PACZKA ZADAŃ (JSON):
 {tasks_batch_json}
 
 ZADANIE DLA KAŻDEGO ELEMENTU Z PACZKI:
 1. Rozwiąż zadanie od zera krok po kroku, nie patrząc na "correct_index" sugerowany przez AI.
 2. Pisz BARDZO PROSTYM i zrozumiałym językiem. Tłumacz rozwiązanie tak, jakbyś mówił do ucznia szkoły średniej. Unikaj sztywnego, akademickiego żargonu.
-3. Sprawdź, czy dokładnie JEDNA opcja jest poprawna.
+3. OGRANICZENIA WIEDZY (KRYTYCZNE): Uczeń zna TYLKO zagadnienia z bieżącej teorii i wiedzy uprzedniej. Absolutnie nie wolno Ci w rozwiązaniu używać pojęć, twierdzeń, ani notacji z tematów nieznanych (np. nie używaj wartości bezwzględnej / modułu przy obliczaniu odległości, jeśli uczeń nie poznał wprost tego pojęcia). Rozwiązanie musi być oparte na najprostszych, aktualnie dostępnych dla ucznia metodach krok po kroku!
+4. Sprawdź, czy dokładnie JEDNA opcja jest poprawna.
 
 Zwróć TYLKO czysty JSON jako listę wyników w tej samej kolejności. Nie przejmuj się formatowaniem LaTeX, używaj surowego tekstu z prostym ujęciem wzorów, bo kto inny to ładnie sformatuje. Najważniejsze to poprawność!
 [

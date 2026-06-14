@@ -162,6 +162,12 @@
                     <button class="btn btn-delete" onclick="removeTask(${index})">X Usuń</button>
                 </div>
                 
+                ${task.inspiration ? `
+                <div style="margin-bottom: 15px; padding: 10px; background: #fff3cd; border-left: 4px solid #ffc107; border-radius: 4px; font-size: 13px; color: #856404;">
+                    <strong>Użyta inspiracja:</strong> <span>${task.inspiration}</span>
+                </div>
+                ` : ''}
+                
                 <div class="split-view">
                     <div class="edit-side">
                         <div class="form-group">
