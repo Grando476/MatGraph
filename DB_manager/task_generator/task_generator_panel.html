@@ -173,29 +173,52 @@
                     
                     ${task.debug_info ? `
                     <div style="padding: 15px; background: #eef2f5; border-left: 4px solid #7f8c8d; border-radius: 4px; font-size: 13px; font-family: monospace;">
-                        <strong style="color: #2c3e50; font-size: 14px; display:block; margin-bottom: 5px;">🛠 Debug Info (Tok myślenia LLM):</strong>
+                        <strong style="color: #2c3e50; font-size: 14px; display:block; margin-bottom: 5px;">🛠 Debug Info (Wejścia / Wyjścia Agentów):</strong>
                         
                         <details style="margin-bottom: 5px; cursor: pointer;">
-                            <summary><b>1. Planer (Szkic zadania)</b></summary>
-                            <div style="padding: 10px; background: #fff; margin-top: 5px; border: 1px dashed #ccc; white-space: pre-wrap; overflow-x: auto;">${JSON.stringify(task.debug_info.blueprint, null, 2)}</div>
+                            <summary><b>1. Planer</b></summary>
+                            <div style="padding: 10px; background: #fff; margin-top: 5px; border: 1px dashed #ccc; white-space: pre-wrap; overflow-x: auto;">
+                                <strong style="color: #2980b9;">📥 INPUT:</strong><br>${JSON.stringify(task.debug_info.planner_input, null, 2)}
+                                <hr style="border: 0; border-top: 1px dashed #ddd; margin: 10px 0;">
+                                <strong style="color: #27ae60;">📤 OUTPUT:</strong><br>${JSON.stringify(task.debug_info.planner_output, null, 2)}
+                            </div>
                         </details>
 
                         <details style="margin-bottom: 5px; cursor: pointer;">
-                            <summary><b>2. Generator (Surowe zadanie)</b></summary>
-                            <div style="padding: 10px; background: #fff; margin-top: 5px; border: 1px dashed #ccc; white-space: pre-wrap; overflow-x: auto;">${JSON.stringify(task.debug_info.raw_task, null, 2)}</div>
+                            <summary><b>2. Generator</b></summary>
+                            <div style="padding: 10px; background: #fff; margin-top: 5px; border: 1px dashed #ccc; white-space: pre-wrap; overflow-x: auto;">
+                                <strong style="color: #2980b9;">📥 INPUT:</strong><br>${JSON.stringify(task.debug_info.generator_input, null, 2)}
+                                <hr style="border: 0; border-top: 1px dashed #ddd; margin: 10px 0;">
+                                <strong style="color: #27ae60;">📤 OUTPUT:</strong><br>${JSON.stringify(task.debug_info.generator_output, null, 2)}
+                            </div>
                         </details>
 
                         <details style="margin-bottom: 5px; cursor: pointer;">
-                            <summary><b>3. Solver (Surowe rozwiązanie)</b></summary>
-                            <div style="padding: 10px; background: #fff; margin-top: 5px; border: 1px dashed #ccc; white-space: pre-wrap; overflow-x: auto;">${task.debug_info.raw_solution}</div>
+                            <summary><b>3. Solver</b></summary>
+                            <div style="padding: 10px; background: #fff; margin-top: 5px; border: 1px dashed #ccc; white-space: pre-wrap; overflow-x: auto;">
+                                <strong style="color: #2980b9;">📥 INPUT:</strong><br>${JSON.stringify(task.debug_info.solver_input, null, 2)}
+                                <hr style="border: 0; border-top: 1px dashed #ddd; margin: 10px 0;">
+                                <strong style="color: #27ae60;">📤 OUTPUT:</strong><br>${JSON.stringify(task.debug_info.solver_output, null, 2)}
+                            </div>
                         </details>
 
-                        ${task.debug_info.validator_reasoning ? `
+                        <details style="margin-bottom: 5px; cursor: pointer;">
+                            <summary><b>4. Formatter</b></summary>
+                            <div style="padding: 10px; background: #fff; margin-top: 5px; border: 1px dashed #ccc; white-space: pre-wrap; overflow-x: auto;">
+                                <strong style="color: #2980b9;">📥 INPUT:</strong><br>${JSON.stringify(task.debug_info.formatter_input, null, 2)}
+                                <hr style="border: 0; border-top: 1px dashed #ddd; margin: 10px 0;">
+                                <strong style="color: #27ae60;">📤 OUTPUT:</strong><br>${JSON.stringify(task.debug_info.formatter_output, null, 2)}
+                            </div>
+                        </details>
+
                         <details style="cursor: pointer;">
-                            <summary><b>4. Walidator (Rozumowanie błędu/sukcesu)</b></summary>
-                            <div style="padding: 10px; background: #fff; margin-top: 5px; border: 1px dashed #ccc; white-space: pre-wrap; overflow-x: auto;">${task.debug_info.validator_reasoning}</div>
+                            <summary><b>5. Validator</b></summary>
+                            <div style="padding: 10px; background: #fff; margin-top: 5px; border: 1px dashed #ccc; white-space: pre-wrap; overflow-x: auto;">
+                                <strong style="color: #2980b9;">📥 INPUT:</strong><br>${JSON.stringify(task.debug_info.validator_input, null, 2)}
+                                <hr style="border: 0; border-top: 1px dashed #ddd; margin: 10px 0;">
+                                <strong style="color: #27ae60;">📤 OUTPUT (wraz z rozumowaniem):</strong><br>${JSON.stringify(task.debug_info.validator_output, null, 2)}
+                            </div>
                         </details>
-                        ` : ''}
                     </div>
                     ` : ''}
                 </div>
