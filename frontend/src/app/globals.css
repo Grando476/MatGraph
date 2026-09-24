@@ -3,27 +3,51 @@
 @tailwind utilities;
 
 :root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
-}
+  /* Główny motyw aplikacji (Dark Mode) */
+  --bg-dark: #171a1f;
+  --bg-card: #1a222c;
+  --bg-card-hover: #273549;
+  --bg-surface: #1e293b;
+  --bg-deep: #0f172a;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
-    --background-end-rgb: 0, 0, 0;
-  }
+  /* Obramowania */
+  --border-dark: #2d3748;
+  --border-subtle: #334155;
+
+  /* Teksty */
+  --text-main: #f8fafc;
+  --text-subtle: #cbd5e1;
+  --text-muted: #94a3b8;
+  --text-dim: #64748b;
+
+  /* Akcenty */
+  --accent-main: #38bdf8;
+  --accent-hover: #0ea5e9;
+  --accent-dark: #0284c7;
+  --accent-yellow: #fcee0a;
+  --node-green: #4cd39b;
+  --node-yellow: #facc15;
+  --edge-emerald: #047857;
+
+  /* Statusy zadań */
+  --success-bg: #064e3b;
+  --success-border: #10b981;
+  --success-text: #a7f3d0;
+  --success-highlight: #34d399;
+
+  --error-bg: #7f1d1d;
+  --error-border: #ef4444;
+  --error-text: #fecaca;
+  --error-highlight: #f87171;
+
+  --selected-bg: #0c4a6e;
+  --selected-text: #bae6fd;
+  --disabled-bg: #475569;
 }
 
 body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+  color: var(--text-main);
+  background-color: var(--bg-dark);
 }
 
 @layer utilities {
@@ -31,3 +55,4 @@ body {
     text-wrap: balance;
   }
 }
+

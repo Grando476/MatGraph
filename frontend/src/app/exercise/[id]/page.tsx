@@ -9,7 +9,7 @@ import { useRouter } from "next/navigation";
 // A helper component to parse strings like "Oblicz wartość wyrażenia $\\sqrt[4]{81}$."
 const MixedMathText = ({ text }: { text: string }) => {
   if (!text || typeof text !== 'string') return null;
-  
+
   if (!text.includes('$')) {
     return <span>{text}</span>;
   }
@@ -17,7 +17,7 @@ const MixedMathText = ({ text }: { text: string }) => {
   // Normalize $$ to $ so we can easily split and render everything as InlineMath
   const normalizedText = text.replace(/\$\$/g, '$');
   const parts = normalizedText.split('$');
-  
+
   return (
     <span>
       {parts.map((part, index) => {
@@ -61,7 +61,7 @@ export default function ExercisePage({ params }: { params: { id: string } }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 p-8 flex justify-center items-center">
+      <div className="min-h-screen bg-dark-bg text-text-main p-8 flex justify-center items-center">
         <p className="text-xl">Ładowanie zadań...</p>
       </div>
     );
@@ -69,9 +69,9 @@ export default function ExercisePage({ params }: { params: { id: string } }) {
 
   if (error || !taskGroup) {
     return (
-      <div className="min-h-screen bg-gray-50 p-8 flex flex-col justify-center items-center">
+      <div className="min-h-screen bg-dark-bg text-text-main p-8 flex flex-col justify-center items-center">
         <p className="text-xl text-red-500 mb-4">Błąd: {error || "Nie znaleziono zadań"}</p>
-        <button onClick={() => router.back()} className="text-blue-500 hover:underline">
+        <button onClick={() => router.back()} className="text-accent-main hover:text-accent-hover transition-colors">
           &larr; Wróć
         </button>
       </div>
@@ -79,12 +79,12 @@ export default function ExercisePage({ params }: { params: { id: string } }) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <div className="max-w-3xl mx-auto bg-white p-8 rounded-lg shadow-md text-black">
-        <button onClick={() => router.back()} className="text-blue-500 hover:underline mb-4 inline-block">
+    <div className="min-h-screen bg-dark-bg text-text-main p-8">
+      <div className="max-w-3xl mx-auto bg-card-bg border border-border-dark p-8 rounded-lg shadow-xl text-text-main">
+        <button onClick={() => router.back()} className="text-accent-main hover:text-accent-hover transition-colors mb-6 inline-block">
           &larr; Wróć do Lekcji
         </button>
-        <h1 className="text-3xl font-bold mb-6">{taskGroup.task_group_name}</h1>
+        <h1 className="text-3xl font-bold mb-6 text-text-main">{taskGroup.task_group_name}</h1>
 
         {taskGroup.tasks && taskGroup.tasks.length > 0 ? (
           <div className="space-y-8">
@@ -99,27 +99,79 @@ export default function ExercisePage({ params }: { params: { id: string } }) {
               }
 
               return (
-                <div key={task.id} className="p-6 border rounded-lg bg-gray-50">
-                  <h3 className="font-semibold text-lg text-gray-800 mb-4">
+                <div key={task.id} className="p-6 border border-border-subtle rounded-lg bg-surface-bg shadow-md">
+                  <h3 className="font-semibold text-lg text-text-subtle mb-4">
                     Zadanie {index + 1}
                   </h3>
-                  
-                  {/* The Question */}
-                  <div className="text-lg text-gray-900 mb-6">
+
+                  <div className="text-lg text-text-main mb-6">
                     <MixedMathText text={contentObj.question || ''} />
                   </div>
 
                   {/* The Options (if available) */}
                   {contentObj.options && Array.isArray(contentObj.options) && (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      {contentObj.options.map((opt: string, optIndex: number) => (
-                        <button 
-                          key={optIndex}
-                          className="p-3 text-center border rounded-md bg-white hover:bg-blue-50 hover:border-blue-300 transition-colors"
-                        >
-                          <MixedMathText text={opt} />
-                        </button>
-                      ))}
+                      {contentObj.options.map((opt: string, optIndex: number) => {
+                        let btnClass = "p-4 text-center border rounded-md transition-all text-lg ";
+                        if (isChecked) {
+                          if (optIndex === correctOpt) {
+                            btnClass += "bg-success-bg border-success-border text-success-text font-bold shadow-[0_0_10px_rgba(16,185,129,0.3)]";
+                          } else if (optIndex === selectedOpt) {
+                            btnClass += "bg-error-bg border-error-border text-error-text opacity-80";
+                          } else {
+                            btnClass += "bg-deep-bg border-border-subtle text-text-dim opacity-50";
+                          }
+                        } else {
+                          if (selectedOpt === optIndex) {
+                            btnClass += "bg-selected-bg border-accent-hover text-selected-text shadow-[0_0_10px_rgba(14,165,233,0.3)]";
+                          } else {
+                            btnClass += "bg-card-bg border-border-subtle text-text-subtle hover:bg-card-hover hover:border-accent-hover";
+                          }
+                        }
+
+                        return (
+                          <button
+                            key={optIndex}
+                            onClick={() => handleSelect(task.id, optIndex)}
+                            disabled={isChecked}
+                            className={btnClass}
+                          >
+                            <MixedMathText text={opt} />
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  {contentObj.options && (
+                    <div className="mt-8 flex flex-col items-start gap-4">
+                      <button
+                        onClick={() => handleCheck(task.id)}
+                        disabled={isChecked || selectedOpt === undefined}
+                        className={`px-8 py-3 rounded-md font-bold text-white transition-all ${isChecked || selectedOpt === undefined
+                            ? 'bg-disabled-bg cursor-not-allowed opacity-50'
+                            : 'bg-accent-hover hover:bg-accent-dark shadow-[0_0_15px_rgba(14,165,233,0.4)] hover:shadow-[0_0_20px_rgba(14,165,233,0.6)]'
+                          }`}
+                      >
+                        {isChecked ? "Sprawdzono" : "Sprawdź odpowiedź"}
+                      </button>
+
+                      {isChecked && (
+                        <div className={`mt-4 p-5 w-full rounded-md border ${selectedOpt === correctOpt ? 'bg-success-bg/30 border-success-border' : 'bg-error-bg/30 border-error-border'}`}>
+                          <p className={`font-bold text-lg mb-2 ${selectedOpt === correctOpt ? 'text-success-highlight' : 'text-error-highlight'}`}>
+                            {selectedOpt === correctOpt ? "✨ Świetnie! Poprawna odpowiedź." : "❌ Niestety, to nie jest poprawna odpowiedź."}
+                          </p>
+
+                          {task.exemplary_solution && (
+                            <div className="mt-5 pt-5 border-t border-border-subtle text-text-main">
+                              <h4 className="font-semibold text-accent-main mb-3">Wyjaśnienie:</h4>
+                              <div className="text-lg bg-deep-bg p-4 rounded-md border border-surface-bg">
+                                <MixedMathText text={task.exemplary_solution} />
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -127,7 +179,7 @@ export default function ExercisePage({ params }: { params: { id: string } }) {
             })}
           </div>
         ) : (
-          <p className="text-gray-500 italic">Brak zadań w tej grupie.</p>
+          <p className="text-text-muted italic">Brak zadań w tej grupie.</p>
         )}
       </div>
     </div>
