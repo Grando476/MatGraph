@@ -383,6 +383,15 @@
         if (tab === 'import') renderImportSchema();
     }
 
+    function escapeHtml(str) {
+        if (!str) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    }
+
     function generateFormFields(table) {
         const conf = SCHEMA[table];
         const container = document.getElementById('form-fields');
@@ -394,12 +403,21 @@
                 html += `<input type="${f.type}" id="field-${f.name}" ${f.name==='video_url'?'':'required'}>`;
             } else if (f.type === 'select') {
                 html += `<select id="field-${f.name}" required><option value="">Select...</option>`;
-                DB[f.source].forEach(opt => html += `<option value="${opt.id}">${opt.name || opt.content.substring(0,30)}</option>`);
+                DB[f.source].forEach(opt => {
+                    let optLabel = opt.name;
+                    if (!optLabel && opt.content) {
+                        optLabel = typeof opt.content === 'object' 
+                            ? (opt.content.question ? opt.content.question.substring(0, 30) : JSON.stringify(opt.content).substring(0, 30))
+                            : String(opt.content).substring(0, 30);
+                    }
+                    html += `<option value="${opt.id}">${optLabel || opt.id.substring(0, 8)}</option>`;
+                });
                 html += `</select>`;
             } else if (f.type === 'enum') {
                 html += `<select id="field-${f.name}"><option value="Easy">Easy</option><option value="Medium">Medium</option><option value="Hard">Hard</option><option value="Very Hard">Very Hard</option></select>`;
             } else if (f.type === 'latex' || f.type === 'latex-small') {
-                html += `<textarea id="field-${f.name}" rows="${f.type === 'latex'?5:2}" oninput="renderLatex('field-${f.name}', 'preview-${f.name}')"></textarea><div id="preview-${f.name}" class="latex-preview"></div>`;
+                const rows = (f.name === 'content' && table === 'tasks') ? 8 : (f.type === 'latex' ? 5 : 2);
+                html += `<textarea id="field-${f.name}" rows="${rows}" oninput="renderLatex('field-${f.name}', 'preview-${f.name}')"></textarea><div id="preview-${f.name}" class="latex-preview"></div>`;
             }
             html += `</div>`;
             container.innerHTML += html;
@@ -407,10 +425,51 @@
     }
 
     function renderLatex(inputId, previewId) {
-        const text = document.getElementById(inputId).value;
+        const text = (document.getElementById(inputId).value || '').trim();
         const previewElement = document.getElementById(previewId);
-        previewElement.innerText = text || "Preview..."; 
-        if (window.renderMathInElement) renderMathInElement(previewElement, { delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], throwOnError: false });
+        
+        if (!text) {
+            previewElement.innerText = "Preview..."; 
+            return;
+        }
+
+        // Sprawdzenie czy pole zawiera obiekt JSON zadania (np. z pytaniem i opcjami)
+        if (text.startsWith('{') && text.endsWith('}')) {
+            try {
+                const parsed = JSON.parse(text);
+                if (parsed && typeof parsed === 'object' && parsed.question) {
+                    let html = `<div style="margin-bottom: 8px;"><strong>Pytanie:</strong> <div>${escapeHtml(parsed.question)}</div></div>`;
+                    if (Array.isArray(parsed.options)) {
+                        html += `<div style="margin-top: 6px;"><strong>Opcje odpowiedzi:</strong><ul style="margin: 4px 0 0 20px; padding: 0;">`;
+                        parsed.options.forEach((opt, idx) => {
+                            const letter = ['A', 'B', 'C', 'D'][idx] || (idx + 1);
+                            let optText = typeof opt === 'object' ? (opt.text || opt.id || JSON.stringify(opt)) : String(opt);
+                            const isCorrect = (parsed.correct_index === idx) || (typeof opt === 'object' && opt.id && opt.id === parsed.correct_option_id);
+                            html += `<li style="margin-bottom: 3px;"><strong>${letter})</strong> ${escapeHtml(optText)} ${isCorrect ? '✅' : ''}</li>`;
+                        });
+                        html += `</ul></div>`;
+                    }
+                    previewElement.innerHTML = html;
+                    if (window.renderMathInElement) {
+                        renderMathInElement(previewElement, { 
+                            delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], 
+                            throwOnError: false 
+                        });
+                    }
+                    return;
+                }
+            } catch (e) {
+                // Niepoprawny JSON w trakcie edycji - renderuj normalnie jako tekst
+            }
+        }
+
+        previewElement.innerText = text; 
+        if (window.renderMathInElement) {
+            renderMathInElement(previewElement, { 
+                delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], 
+                throwOnError: false 
+            });
+        }
     }
 
     function showForm(table, modeText) {
@@ -431,7 +490,11 @@
         SCHEMA[table].fields.forEach(f => {
             const el = document.getElementById(`field-${f.name}`);
             if (el && item[f.name] !== undefined && item[f.name] !== null) {
-                el.value = item[f.name];
+                if (typeof item[f.name] === 'object') {
+                    el.value = JSON.stringify(item[f.name], null, 2);
+                } else {
+                    el.value = item[f.name];
+                }
                 if (f.type.includes('latex')) renderLatex(`field-${f.name}`, `preview-${f.name}`);
             }
         });
@@ -470,10 +533,34 @@
         const table = document.getElementById('form-table').value;
         const id = document.getElementById('form-id').value;
         const payload = {};
+        let hasJsonError = false;
+
         SCHEMA[table].fields.forEach(f => {
             const el = document.getElementById(`field-${f.name}`);
-            if (el) payload[f.name] = el.value || null;
+            if (el) {
+                let val = el.value ? el.value.trim() : null;
+                if (val && table === 'tasks' && f.name === 'content') {
+                    try {
+                        val = JSON.parse(val);
+                    } catch (err) {
+                        alert("Błąd w składni JSON dla pola CONTENT! Popraw format przed zapisem:\n" + err.message);
+                        hasJsonError = true;
+                    }
+                } else if (val && (val.startsWith('{') || val.startsWith('['))) {
+                    try {
+                        val = JSON.parse(val);
+                    } catch (e) {}
+                }
+                payload[f.name] = val;
+            }
         });
+
+        if (hasJsonError) {
+            statusDiv.innerText = "Błąd formatu JSON!";
+            statusDiv.classList.add('error');
+            return;
+        }
+
         const path = id ? `update/${table}/${id}` : `create/${table}`;
         try {
             const res = await fetch(`${API_URL}/${path}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
