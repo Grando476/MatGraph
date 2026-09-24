@@ -57,6 +57,7 @@ CREATE TABLE IF NOT EXISTS public.tasks (
     difficulty_level task_difficulty DEFAULT 'Easy' NOT NULL,
     exemplary_solution TEXT,
     video_url TEXT,
+    human_validated BOOLEAN DEFAULT FALSE NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
@@ -86,3 +87,67 @@ BEGIN
   INTO res FROM information_schema.columns WHERE table_name = ANY(tables);
   RETURN res;
 END; $$;
+
+-- FUNKCJA POBIERAJĄCA POPRZEDNIĄ WIEDZĘ (Z GRAFU I POPRZEDNICH PODTEMATÓW)
+CREATE OR REPLACE FUNCTION get_prior_knowledge(p_subtopic_id UUID)
+RETURNS JSON
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    v_topic_id UUID;
+    v_sort_order INTEGER;
+    v_known_topics JSON;
+    v_known_subtopics JSON;
+    v_unknown_topics JSON;
+BEGIN
+    -- Pobierz topic_id i sort_order dla podanego podtematu
+    SELECT topic_id, sort_order INTO v_topic_id, v_sort_order
+    FROM public.subtopics
+    WHERE id = p_subtopic_id;
+
+    -- Pobierz nazwy poprzednich tematów korzystając z grafu (DAG)
+    WITH RECURSIVE ancestors AS (
+        SELECT parent_id
+        FROM public.topic_edges
+        WHERE child_id = v_topic_id
+        UNION
+        SELECT e.parent_id
+        FROM public.topic_edges e
+        INNER JOIN ancestors a ON a.parent_id = e.child_id
+    )
+    SELECT COALESCE(json_agg(t.name), '[]'::json) INTO v_known_topics
+    FROM public.topics t
+    JOIN ancestors a ON t.id = a.parent_id;
+
+    -- Pobierz nazwy tematów, których uczeń jeszcze nie zna (reszta grafu)
+    WITH RECURSIVE ancestors AS (
+        SELECT parent_id
+        FROM public.topic_edges
+        WHERE child_id = v_topic_id
+        UNION
+        SELECT e.parent_id
+        FROM public.topic_edges e
+        INNER JOIN ancestors a ON a.parent_id = e.child_id
+    )
+    SELECT COALESCE(json_agg(t.name), '[]'::json) INTO v_unknown_topics
+    FROM public.topics t
+    WHERE t.id != v_topic_id AND t.id NOT IN (SELECT parent_id FROM ancestors);
+
+    -- Pobierz wcześniejsze podtematy w ramach tego samego tematu
+    SELECT COALESCE(json_agg(
+        json_build_object(
+            'name', name,
+            'content_tex', content_tex
+        )
+    ), '[]'::json) INTO v_known_subtopics
+    FROM public.subtopics
+    WHERE topic_id = v_topic_id AND sort_order < v_sort_order;
+
+    -- Zwróć wynik jako JSON
+    RETURN json_build_object(
+        'known_topics_names', v_known_topics,
+        'known_subtopics', v_known_subtopics,
+        'unknown_topics_names', v_unknown_topics
+    );
+END;
+$$;

@@ -10,16 +10,38 @@ supabase: Client = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_
 app = Flask(__name__)
 CORS(app)
 
+def fetch_all_records(table_name, select_query="*", order_col=None):
+    all_data = []
+    page_size = 1000
+    start = 0
+    while True:
+        query = supabase.table(table_name).select(select_query)
+        if order_col:
+            query = query.order(order_col)
+        query = query.range(start, start + page_size - 1)
+        res = query.execute()
+        
+        if not res.data:
+            break
+            
+        all_data.extend(res.data)
+        
+        if len(res.data) < page_size:
+            break
+            
+        start += page_size
+    return all_data
+
 @app.route('/api/data', methods=['GET'])
 def get_data():
     try:
         return jsonify({
-            "chapters": supabase.table("chapters").select("*").order("created_at").execute().data,
-            "topics": supabase.table("topics").select("*, chapters(name)").order("created_at").execute().data,
-            "subtopics": supabase.table("subtopics").select("*, topics(name)").order("sort_order").execute().data,
-            "task_groups": supabase.table("task_groups").select("*, subtopics(name)").order("created_at").execute().data,
-            "tasks": supabase.table("tasks").select("*, task_groups(name)").order("created_at").execute().data,
-            "topic_edges": supabase.table("topic_edges").select("*").execute().data
+            "chapters": fetch_all_records("chapters", "*", "created_at"),
+            "topics": fetch_all_records("topics", "*, chapters(name)", "created_at"),
+            "subtopics": fetch_all_records("subtopics", "*, topics(name)", "sort_order"),
+            "task_groups": fetch_all_records("task_groups", "*, subtopics(name)", "created_at"),
+            "tasks": fetch_all_records("tasks", "*, task_groups(name)", "created_at"),
+            "topic_edges": fetch_all_records("topic_edges", "*")
         })
     except Exception as e:
         return jsonify({"error": str(e)}), 500
