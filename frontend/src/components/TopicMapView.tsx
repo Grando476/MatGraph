@@ -228,19 +228,49 @@ export default function TopicMapView() {
                       </div>
                   )}
               </div>
-              <button 
-                  onClick={saveLayout}
-                  disabled={savingLayout}
-                  style={{
-                      position: 'absolute', top: 20, right: 20, zIndex: 100,
-                      padding: '10px 20px', background: savingLayout ? 'var(--text-dim)' : 'var(--accent-hover)',
-                      color: 'white', border: 'none', borderRadius: '5px',
-                      fontWeight: 'bold', cursor: savingLayout ? 'not-allowed' : 'pointer',
-                      boxShadow: '0 0 15px rgba(14, 165, 233, 0.4)', transition: 'background 0.2s'
-                  }}
-              >
-                  {savingLayout ? 'Saving...' : 'Save Layout'}
-              </button>
+              <div style={{
+                  position: 'absolute', top: 20, right: 20, zIndex: 100,
+                  display: 'flex', gap: '10px', alignItems: 'center'
+              }}>
+                  <button
+                      onClick={() => router.push('/')}
+                      style={{
+                          padding: '10px 16px', background: 'var(--bg-card)',
+                          color: 'var(--text-main)', border: '1px solid var(--border-dark)', borderRadius: '5px',
+                          fontWeight: '600', cursor: 'pointer', transition: 'all 0.2s',
+                          boxShadow: '0 4px 6px rgba(0,0,0,0.3)'
+                      }}
+                      onMouseEnter={(e: any) => e.currentTarget.style.borderColor = 'var(--accent-main)'}
+                      onMouseLeave={(e: any) => e.currentTarget.style.borderColor = 'var(--border-dark)'}
+                  >
+                      &larr; Strona Główna
+                  </button>
+                  <button
+                      onClick={() => router.push('/login')}
+                      style={{
+                          padding: '10px 16px', background: 'var(--bg-card)',
+                          color: 'var(--accent-main)', border: '1px solid var(--accent-dark)', borderRadius: '5px',
+                          fontWeight: '600', cursor: 'pointer', transition: 'all 0.2s',
+                          boxShadow: '0 4px 6px rgba(0,0,0,0.3)'
+                      }}
+                      onMouseEnter={(e: any) => e.currentTarget.style.background = 'var(--bg-card-hover)'}
+                      onMouseLeave={(e: any) => e.currentTarget.style.background = 'var(--bg-card)'}
+                  >
+                      Zaloguj się
+                  </button>
+                  <button 
+                      onClick={saveLayout}
+                      disabled={savingLayout}
+                      style={{
+                          padding: '10px 20px', background: savingLayout ? 'var(--text-dim)' : 'var(--accent-hover)',
+                          color: 'white', border: 'none', borderRadius: '5px',
+                          fontWeight: 'bold', cursor: savingLayout ? 'not-allowed' : 'pointer',
+                          boxShadow: '0 0 15px rgba(14, 165, 233, 0.4)', transition: 'background 0.2s'
+                      }}
+                  >
+                      {savingLayout ? 'Saving...' : 'Save Layout'}
+                  </button>
+              </div>
               <ReactFlow 
                 nodes={nodes} 
                 edges={edges} 

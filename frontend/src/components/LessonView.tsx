@@ -48,7 +48,7 @@ export default function LessonView({ lessonId }: LessonViewProps) {
     return (
       <div className="min-h-screen bg-dark-bg text-text-main p-8 flex flex-col justify-center items-center">
         <p className="text-xl text-red-500 mb-4">Błąd: {error || "Nie znaleziono lekcji"}</p>
-        <Link href="/" className="text-accent-main hover:text-accent-hover transition-colors">
+        <Link href="/graph" className="text-accent-main hover:text-accent-hover transition-colors">
           &larr; Wróć do Mapy
         </Link>
       </div>
@@ -58,7 +58,7 @@ export default function LessonView({ lessonId }: LessonViewProps) {
   return (
     <div className="min-h-screen bg-dark-bg text-text-main p-8">
       <div className="max-w-3xl mx-auto bg-card-bg border border-border-dark p-8 rounded-lg shadow-xl">
-        <Link href="/" className="text-accent-main hover:text-accent-hover transition-colors mb-6 inline-block">
+        <Link href="/graph" className="text-accent-main hover:text-accent-hover transition-colors mb-6 inline-block">
           &larr; Wróć do Mapy
         </Link>
         <h1 className="text-3xl font-bold mb-6 text-text-main">{lesson.title}</h1>
