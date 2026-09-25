@@ -29,6 +29,10 @@ ZASADY:
 5. Inspiracja wizjonerska: {inspiration}
    (Spróbuj przemycić ten klimat/ideę w szkicach, o ile ma to sens i nie psuje matematyki).
 6. Random Seed: {random_seed} (dla unikalności).
+7. Tabele i dane statystyczne: Jeśli grupa zadań ("{group}") lub temat dotyczy tabeli (np. "tabela liczebności", "obliczanie średniej z tabeli", mediana/dominanta z tabeli, zestawienie danych):
+   - W polu "task_concept" ZAWSZE zaplanuj zadanie oparte na tabeli danych.
+   - Wskaż, jakie dane i nagłówki mają znaleźć się w tabeli (np. oceny i liczba uczniów, wyniki pomiarów i liczebność, liczba rodzeństwa i liczba osób).
+   - Dbaj o zróżnicowanie w batchu (raz tabela pozioma, raz pionowa, a na wyższych trudnościach np. jedna brakująca liczebność oznaczona jako $x$ przy podanej średniej).
 
 Zwróć TYLKO czysty JSON jako listę dokładnie {count} obiektów:
 [
@@ -61,11 +65,13 @@ TWOJE WYTYCZNE DLA KAŻDEGO SZKICU:
 3. Opcje: Wygeneruj dokładnie 4 opcje (0, 1, 2, 3). TYLKO JEDNA opcja musi być w 100% poprawna. Pozostałe 3 niepoprawne odpowiedzi muszą być dystraktorami (wynikać z typowych błędów, pomyłek w znakach, niezrozumienia 'haczyka' ze szkicu itp.).
 4. Ograniczenie wiedzy: Nawet realizując szkic, BEZWZGLĘDNIE trzymaj się zasady, by nie używać pojęć i symboli nieznanych uczniowi (Zakazany materiał).
 5. Formatowanie: Używaj czystego tekstu z prostym ujęciem LaTeX dla matematyki (bez ucieczkowania JSON - tym zajmie się formater w innym kroku).
+6. Tabele i struktury danych: Jeśli szkic lub grupa ("{group}") dotyczy danych tabelarycznych (np. tabela liczebności, zestawienie danych):
+   - W treści zadania ("question") koniecznie przedstaw dane w czytelnej strukturze tabeli (np. prosty układ tabeli z wierszami/kolumnami lub wstępny zapis \\begin{{array}}), tak aby dane wynikały wprost z tabeli, a formater mógł przekształcić ją w estetyczną tabelę LaTeX.
 
 Zwróć TYLKO czysty JSON jako LISTĘ obiektów (w takiej samej kolejności i liczbie jak przekazane szkice):
 [
   {{
-    "question": "Treść zadania (surowy tekst z prostym texem, bez ukośników)",
+    "question": "Treść zadania (surowy tekst z prostym texem, bez ucieczkowania JSON)",
     "options": ["Opcja 0", "Opcja 1", "Opcja 2", "Opcja 3"],
     "correct_index": 0
   }}
@@ -88,7 +94,8 @@ ZADANIE DLA KAŻDEGO ELEMENTU Z PACZKI:
 1. Rozwiąż zadanie od zera krok po kroku, nie patrząc na "correct_index" sugerowany przez AI.
 2. Pisz BARDZO PROSTYM i zrozumiałym językiem. Tłumacz rozwiązanie tak, jakbyś mówił do ucznia szkoły średniej. Unikaj sztywnego, akademickiego żargonu.
 3. OGRANICZENIA WIEDZY (KRYTYCZNE): Uczeń zna TYLKO zagadnienia z bieżącej teorii i wiedzy uprzedniej. Absolutnie nie wolno Ci w rozwiązaniu używać pojęć, twierdzeń, ani notacji z tematów nieznanych (np. nie używaj wartości bezwzględnej / modułu przy obliczaniu odległości, jeśli uczeń nie poznał wprost tego pojęcia). Rozwiązanie musi być oparte na najprostszych, aktualnie dostępnych dla ucznia metodach krok po kroku!
-4. Sprawdź, czy dokładnie JEDNA opcja jest poprawna.
+4. Zadania z danymi w tabeli (np. średnia z tabeli liczebności): W rozwiązaniu wyraźnie wskaż odczytanie danych z tabeli, wyznacz łączną sumę liczebności (mianownik) oraz sumę iloczynów (licznik) i zapisz pełne działanie prowadzące do wyniku.
+5. Sprawdź, czy dokładnie JEDNA opcja jest poprawna.
 
 Zwróć TYLKO czysty JSON jako listę wyników w tej samej kolejności. Nie przejmuj się formatowaniem LaTeX, używaj surowego tekstu z prostym ujęciem wzorów, bo kto inny to ładnie sformatuje. Najważniejsze to poprawność!
 [
@@ -127,6 +134,20 @@ KRYTYCZNE ZASADY FORMATOWANIA (JSON I LATEX):
    - WZORCOWY ZAPIS (w zdaniu): "Wynik to $ \\\\frac{{1}}{{2}} $."
    - WZORCOWY ZAPIS (blokowy, z wysokimi równaniami): "Zatem wynik to:\n$$ \\\\frac{{1}}{{2}} \\\\\\\\[15pt] \\\\frac{{3}}{{4}} $$"
 4. OZNACZENIA ODPOWIEDZI (KRYTYCZNE): W tekście rozwiązania (w "exemplary_solution") ABSOLUTNIE NIE PISZ o "indeksach" odpowiedzi (np. "odpowiada indeksowi 1", "opcja o indeksie 2"). Jeśli podsumowujesz wynik i chcesz wskazać prawidłową opcję, używaj ZAWSZE liter A, B, C, D (gdzie indeks 0 to A, 1 to B, 2 to C, 3 to D). Np. pisz "Poprawna odpowiedź to B", a nie "Poprawna odpowiedź to indeks 1".
+5. TABELE I STRUKTURY DANYCH (KRYTYCZNIE WAŻNE - np. TABELA LICZEBNOŚCI, ROZKŁAD DANYCH, UKŁADY RÓWNAŃ):
+   - Jeśli zadanie zawiera tabelę lub zestawienie danych (np. tabela liczebności do obliczenia średniej, mediany czy dominanty, zestawienie ocen i liczby uczniów):
+     BEZWZGLĘDNIE sformatuj te dane jako estetyczną, wyśrodkowaną tabelę LaTeX w osobnym bloku $$...$$ przy użyciu środowiska \\\\begin{{array}} ... \\\\end{{array}}.
+   - Zadbaj o pełne obramowanie tabeli: podaj pionowe kreski między kolumnami (np. {{|c|c|c|c|}}) oraz linie poziome (\\\\hline) przed pierwszym wierszem, po każdym wierszu i na końcu tabeli.
+   - KRYTYCZNA ZASADA DLA WYRAZÓW W TABELI: Ponieważ środowisko array działa w trybie matematycznym, KAŻDY polski wyraz lub nagłówek (np. Wartość, Liczebność, Ocena, Liczba uczniów, Wynik) MUSI być zapisany wewnątrz komendy \\\\text{{...}} (np. \\\\text{{Ocena}} lub \\\\text{{Liczba uczniów}}). Bez tego tekst zleje się w brzydkie pochyłe litery matematyczne!
+   - Nowy wiersz w tabeli LaTeX to symbol podwójnego ukośnika, co w formacie JSON wymaga zapisania CZTERECH ukośników: "\\\\\\\\".
+   - WAŻNE DLA RENDERERÓW: Otwierające $$ i zamykające $$ umieszczaj w tej samej linijce co \\\\begin{{array}} i \\\\end{{array}} (np. "$$ \\\\begin{{array}}...\\\\end{{array}} $$"), bez pustych enterów zaraz po '$$' ani przed '$$'.
+   - WZORCOWY ZAPIS TABELI POZIOMEJ W TREŚCI ZADANIA (question):
+     "W tabeli przedstawiono wyniki sprawdzianu z matematyki w pewnej klasie:\n$$ \\\\begin{{array}}{{|c|c|c|c|c|}}\\\\hline \\\\text{{Ocena}} & 2 & 3 & 4 & 5 \\\\\\\\ \\\\hline \\\\text{{Liczba uczniów}} & 3 & 7 & 6 & 4 \\\\\\\\ \\\\hline \\\\end{{array}} $$\nŚrednia arytmetyczna ocen z tego sprawdzianu jest równa:"
+   - WZORCOWY ZAPIS TABELI PIONOWEJ (gdy danych jest więcej):
+     "W tabeli przedstawiono zestawienie danych statystycznych:\n$$ \\\\begin{{array}}{{|c|c|}}\\\\hline \\\\text{{Wartość cechy}} & \\\\text{{Liczebność}} \\\\\\\\ \\\\hline 10 & 2 \\\\\\\\ \\\\hline 20 & 5 \\\\\\\\ \\\\hline 30 & 3 \\\\\\\\ \\\\hline \\\\end{{array}} $$\nOblicz średnią arytmetyczną podanych danych."
+   - UKŁADY RÓWNAŃ I FUNKCJE KLAMROWE: Gdy w zadaniu występuje układ równań lub funkcja klamrowa, również używaj czystego bloku $$...$$ ze środowiskiem \\\\begin{{cases}} ... \\\\end{{cases}}.
+   - ROZWIĄZANIE DLA ZADAŃ Z TABELI: W exemplary_solution elegancko rozpisuj obliczenia za pomocą ułamka blokowego, np.:
+     "Obliczamy średnią arytmetyczną z danych w tabeli:\n$$ \\\\bar{{x}} = \\\\frac{{2 \\\\cdot 3 + 3 \\\\cdot 7 + 4 \\\\cdot 6 + 5 \\\\cdot 4}}{{3 + 7 + 6 + 4}} = \\\\frac{{6 + 21 + 24 + 20}}{{20}} = \\\\frac{{71}}{{20}} = 3,55 $$"
 
 Zwróć TYLKO czystą listę JSON z przepisanymi zadaniami:
 [
@@ -149,9 +170,9 @@ ZADANIE DO OCENY:
 {final_task_json}
 
 KRYTERIA:
-1. MATEMATYKA: Czy wskazany "correct_index" na pewno pasuje do rozwiązania "exemplary_solution" i pytania "question"? Zrób rygorystyczny przegląd rachunków.
+1. MATEMATYKA: Czy wskazany "correct_index" na pewno pasuje do rozwiązania "exemplary_solution" i pytania "question"? Zrób rygorystyczny przegląd rachunków (zwłaszcza przy średniej ważonej / z tabeli liczebności).
 2. ROZWIĄZANIE: Czy zadanie posiada "exemplary_solution" i nie jest to wartość pusta? (Brak rozwiązania oznacza natychmiastowy brak walidacji).
-3. FORMAT: Czy WSZYSTKIE liczby i zmienne są w znacznikach $...$ lub $$...$$? Czy bloki równań i układów są poprawne?
+3. FORMAT: Czy WSZYSTKIE liczby i zmienne są w znacznikach $...$ lub $$...$$? Czy bloki równań, układów oraz ewentualnych tabel (\\\\begin{{array}}...\\\\end{{array}}) są poprawne składniowo i estetyczne? Jeśli zadanie dotyczy tabeli liczebności, czy w pytaniu faktycznie znajduje się estetyczna tabela w LaTeX z nagłówkami w \\\\text{{...}}?
 
 Zwróć TYLKO czysty JSON. BARDZO WAŻNE: Pamiętaj o ucieczkowaniu ukośników w polu "reasoning" zgodnie ze standardem JSON (np. komendy zapisuj jako "\\\\alpha", "\\\\frac", a nową linię w LaTeX jako "\\\\\\\\"), aby nie zepsuć struktury pliku:
 {{

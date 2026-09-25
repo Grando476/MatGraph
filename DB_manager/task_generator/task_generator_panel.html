@@ -32,7 +32,7 @@
         .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         
         .card-header { display: flex; justify-content: space-between; margin-bottom: 15px; font-weight: bold; border-bottom: 1px solid #eee; padding-bottom: 10px; }
-        .latex-preview { font-size: 15px; line-height: 1.5; }
+        .latex-preview { font-size: 15px; line-height: 1.5; white-space: pre-wrap; }
         
         .split-view { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         .edit-side { display: flex; flex-direction: column; }
@@ -332,7 +332,7 @@
     function updatePreview(inputId, previewId) {
         const text = document.getElementById(inputId).value;
         const el = document.getElementById(previewId);
-        el.innerText = text;
+        el.textContent = text;
         renderMathInElement(el, { delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], throwOnError: false });
     }
 
