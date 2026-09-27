@@ -4,41 +4,42 @@ import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { ReactFlow, Background, Controls, Node, Edge, useNodesState, useEdgesState, Position, Handle, BackgroundVariant } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
+import Footer from "@/components/Footer";
 
 const CyberNode = ({ data, selected }: any) => {
-  const color = selected ? 'var(--node-yellow)' : 'var(--node-green)'; 
+  const color = selected ? 'var(--node-yellow)' : 'var(--node-green)';
   const dropShadow = selected ? `drop-shadow(0 0 10px ${color})` : 'none';
-  
+
   return (
     <div style={{ position: 'relative', width: 140, height: 140, filter: dropShadow, transition: 'all 0.2s', cursor: 'pointer' }}>
       <svg width="140" height="140" viewBox="0 0 140 140" style={{ position: 'absolute', top: 0, left: 0 }}>
-         {/* Outer glowing octagon */}
-         <polygon points="40,5 100,5 135,40 135,100 100,135 40,135 5,100 5,40" 
-            fill="var(--bg-surface)" stroke={color} strokeWidth="3" opacity="0.9" />
-         {/* Inner decoration octagon */}
-         <polygon points="45,15 95,15 125,45 125,95 95,125 45,125 15,95 15,45" 
-            fill="rgba(255, 255, 255, 0.03)" stroke={color} strokeWidth="1" opacity="0.5" />
+        {/* Outer glowing octagon */}
+        <polygon points="40,5 100,5 135,40 135,100 100,135 40,135 5,100 5,40"
+          fill="var(--bg-surface)" stroke={color} strokeWidth="3" opacity="0.9" />
+        {/* Inner decoration octagon */}
+        <polygon points="45,15 95,15 125,45 125,95 95,125 45,125 15,95 15,45"
+          fill="rgba(255, 255, 255, 0.03)" stroke={color} strokeWidth="1" opacity="0.5" />
       </svg>
-      
+
       <Handle type="target" position={Position.Bottom} style={{ background: 'transparent', border: 'none' }} />
-      
-      <div style={{ 
-          position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', 
-          color: 'var(--text-main)', textAlign: 'center', display: 'flex', flexDirection: 'column', 
-          alignItems: 'center', justifyContent: 'center', width: '70%', height: '70%',
-          pointerEvents: 'none'
+
+      <div style={{
+        position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+        color: 'var(--text-main)', textAlign: 'center', display: 'flex', flexDirection: 'column',
+        alignItems: 'center', justifyContent: 'center', width: '70%', height: '70%',
+        pointerEvents: 'none'
       }}>
-         <span style={{ fontSize: '0.8rem', fontWeight: 'bold', lineHeight: '1.2', textShadow: `0 0 4px rgba(0,0,0,0.5)`, wordBreak: 'break-word' }}>
-             {data.label}
-         </span>
-         <span style={{ 
-             fontSize: '0.7rem', background: color, color: 'var(--bg-deep)', 
-             padding: '2px 8px', marginTop: '8px', borderRadius: '2px', fontWeight: 'bold'
-         }}>
-            {data.subtasksCount ? `${data.subtasksCount}/${data.subtasksCount}` : '0/0'}
-         </span>
+        <span style={{ fontSize: '0.8rem', fontWeight: 'bold', lineHeight: '1.2', textShadow: `0 0 4px rgba(0,0,0,0.5)`, wordBreak: 'break-word' }}>
+          {data.label}
+        </span>
+        <span style={{
+          fontSize: '0.7rem', background: color, color: 'var(--bg-deep)',
+          padding: '2px 8px', marginTop: '8px', borderRadius: '2px', fontWeight: 'bold'
+        }}>
+          {data.subtasksCount ? `${data.subtasksCount}/${data.subtasksCount}` : '0/0'}
+        </span>
       </div>
-      
+
       <Handle type="source" position={Position.Top} style={{ background: 'transparent', border: 'none' }} />
     </div>
   );
@@ -80,27 +81,27 @@ export default function TopicMapView() {
         if (res.ok) {
           const data = await res.json();
           if (!data.nodes || !data.edges) return;
-          
+
           const rawNodes: Node[] = data.nodes.map((n: any) => ({
-              id: n.id,
-              type: 'cyber',
-              targetPosition: Position.Bottom,
-              sourcePosition: Position.Top,
-              position: { x: n.ui_x || 0, y: n.ui_y || 0 },
-              data: { label: n.name, subtasksCount: n.subtasks_count },
+            id: n.id,
+            type: 'cyber',
+            targetPosition: Position.Bottom,
+            sourcePosition: Position.Top,
+            position: { x: n.ui_x || 0, y: n.ui_y || 0 },
+            data: { label: n.name, subtasksCount: n.subtasks_count },
           }));
-          
+
           const rawEdges: Edge[] = data.edges.map((e: any, idx: number) => ({
-              id: `e${e.source}-${e.target}-${idx}`,
-              source: e.source,
-              target: e.target,
-              type: 'default',
-              animated: false,
-              style: { 
-                stroke: 'var(--edge-emerald)',
-                strokeWidth: 2,
-                filter: 'drop-shadow(0 0 2px rgba(4, 120, 87, 0.4))'
-              }
+            id: `e${e.source}-${e.target}-${idx}`,
+            source: e.source,
+            target: e.target,
+            type: 'default',
+            animated: false,
+            style: {
+              stroke: 'var(--edge-emerald)',
+              strokeWidth: 2,
+              filter: 'drop-shadow(0 0 2px rgba(4, 120, 87, 0.4))'
+            }
           }));
 
           setNodes(rawNodes);
@@ -114,25 +115,25 @@ export default function TopicMapView() {
     };
     fetchNodes();
   }, [setNodes, setEdges]);
-  
+
   const onNodeClick = useCallback(async (event: React.MouseEvent, node: Node) => {
-      setSelectedNode(node);
-      setSidebarLessons([]);
-      setLoadingLessons(true);
-      try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
-        const res = await fetch(`${apiUrl}/api/v1/nodes/${node.id}/lessons`);
-        if (res.ok) {
-          const data = await res.json();
-          if (data.lessons) {
-            setSidebarLessons(data.lessons);
-          }
+    setSelectedNode(node);
+    setSidebarLessons([]);
+    setLoadingLessons(true);
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+      const res = await fetch(`${apiUrl}/api/v1/nodes/${node.id}/lessons`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.lessons) {
+          setSidebarLessons(data.lessons);
         }
-      } catch (err) {
-        console.error("Error fetching lessons:", err);
-      } finally {
-        setLoadingLessons(false);
       }
+    } catch (err) {
+      console.error("Error fetching lessons:", err);
+    } finally {
+      setLoadingLessons(false);
+    }
   }, []);
 
   const saveLayout = async () => {
@@ -144,7 +145,7 @@ export default function TopicMapView() {
         x: Math.round(n.position.x),
         y: Math.round(n.position.y),
       }));
-      
+
       const res = await fetch(`${apiUrl}/api/v1/nodes/positions`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -160,12 +161,12 @@ export default function TopicMapView() {
         }
         throw new Error(msg);
       }
-      
+
       const data = await res.json();
       if (data.error) {
-         throw new Error(`Database Error: ${data.error}`);
+        throw new Error(`Database Error: ${data.error}`);
       }
-      
+
       alert("Layout saved successfully!");
     } catch (err: any) {
       console.error("Error saving layout:", err);
@@ -178,175 +179,175 @@ export default function TopicMapView() {
   return (
     <div style={{ width: '100vw', height: '100vh', background: 'var(--bg-dark)', display: 'flex' }}>
       <div style={{ flex: 1, position: 'relative' }}>
-          {loading ? (
-              <div className="flex items-center justify-center h-full w-full">
-                  <p className="text-2xl font-semibold text-accent-yellow animate-pulse">Initializing Cyber-Tree...</p>
-              </div>
-          ) : (
-              <>
-              <div style={{
-                  position: 'absolute', top: 20, left: 20, zIndex: 100,
-                  display: 'flex', flexDirection: 'column', gap: '5px'
-              }}>
-                  <input 
-                      type="text" 
-                      placeholder="Szukaj tematu..." 
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
+        {loading ? (
+          <div className="flex items-center justify-center h-full w-full">
+            <p className="text-2xl font-semibold text-accent-yellow animate-pulse">Initializing Cyber-Tree...</p>
+          </div>
+        ) : (
+          <>
+            <div style={{
+              position: 'absolute', top: 20, left: 20, zIndex: 100,
+              display: 'flex', flexDirection: 'column', gap: '5px'
+            }}>
+              <input
+                type="text"
+                placeholder="Szukaj tematu..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                style={{
+                  padding: '10px 15px', width: '300px',
+                  background: 'var(--bg-card)', color: 'var(--text-main)',
+                  border: '1px solid var(--border-dark)', borderRadius: '5px',
+                  outline: 'none', boxShadow: '0 4px 6px rgba(0,0,0,0.3)'
+                }}
+              />
+              {searchQuery && (
+                <div style={{
+                  background: 'var(--bg-card)', border: '1px solid var(--border-dark)',
+                  borderRadius: '5px', maxHeight: '300px', overflowY: 'auto',
+                  boxShadow: '0 4px 15px rgba(0,0,0,0.5)'
+                }}>
+                  {filteredNodes.length > 0 ? filteredNodes.map(node => (
+                    <div
+                      key={node.id}
+                      onClick={() => onSearchSelect(node)}
                       style={{
-                          padding: '10px 15px', width: '300px',
-                          background: 'var(--bg-card)', color: 'var(--text-main)',
-                          border: '1px solid var(--border-dark)', borderRadius: '5px',
-                          outline: 'none', boxShadow: '0 4px 6px rgba(0,0,0,0.3)'
-                      }}
-                  />
-                  {searchQuery && (
-                      <div style={{
-                          background: 'var(--bg-card)', border: '1px solid var(--border-dark)',
-                          borderRadius: '5px', maxHeight: '300px', overflowY: 'auto',
-                          boxShadow: '0 4px 15px rgba(0,0,0,0.5)'
-                      }}>
-                          {filteredNodes.length > 0 ? filteredNodes.map(node => (
-                              <div 
-                                  key={node.id} 
-                                  onClick={() => onSearchSelect(node)}
-                                  style={{
-                                      padding: '10px 15px', color: 'var(--text-subtle)',
-                                      cursor: 'pointer', borderBottom: '1px solid var(--border-dark)',
-                                      transition: 'background 0.2s'
-                                  }}
-                                  onMouseEnter={(e: any) => e.currentTarget.style.background = 'var(--bg-card-hover)'}
-                                  onMouseLeave={(e: any) => e.currentTarget.style.background = 'transparent'}
-                              >
-                                  {node.data.label as string}
-                              </div>
-                          )) : (
-                              <div style={{ padding: '10px 15px', color: 'var(--text-dim)', fontStyle: 'italic' }}>
-                                  Brak wyników
-                              </div>
-                          )}
-                      </div>
-                  )}
-              </div>
-              <div style={{
-                  position: 'absolute', top: 20, right: 20, zIndex: 100,
-                  display: 'flex', gap: '10px', alignItems: 'center'
-              }}>
-                  <button
-                      onClick={() => router.push('/')}
-                      style={{
-                          padding: '10px 16px', background: 'var(--bg-card)',
-                          color: 'var(--text-main)', border: '1px solid var(--border-dark)', borderRadius: '5px',
-                          fontWeight: '600', cursor: 'pointer', transition: 'all 0.2s',
-                          boxShadow: '0 4px 6px rgba(0,0,0,0.3)'
-                      }}
-                      onMouseEnter={(e: any) => e.currentTarget.style.borderColor = 'var(--accent-main)'}
-                      onMouseLeave={(e: any) => e.currentTarget.style.borderColor = 'var(--border-dark)'}
-                  >
-                      &larr; Strona Główna
-                  </button>
-                  <button
-                      onClick={() => router.push('/login')}
-                      style={{
-                          padding: '10px 16px', background: 'var(--bg-card)',
-                          color: 'var(--accent-main)', border: '1px solid var(--accent-dark)', borderRadius: '5px',
-                          fontWeight: '600', cursor: 'pointer', transition: 'all 0.2s',
-                          boxShadow: '0 4px 6px rgba(0,0,0,0.3)'
+                        padding: '10px 15px', color: 'var(--text-subtle)',
+                        cursor: 'pointer', borderBottom: '1px solid var(--border-dark)',
+                        transition: 'background 0.2s'
                       }}
                       onMouseEnter={(e: any) => e.currentTarget.style.background = 'var(--bg-card-hover)'}
-                      onMouseLeave={(e: any) => e.currentTarget.style.background = 'var(--bg-card)'}
-                  >
-                      Zaloguj się
-                  </button>
-                  <button 
-                      onClick={saveLayout}
-                      disabled={savingLayout}
-                      style={{
-                          padding: '10px 20px', background: savingLayout ? 'var(--text-dim)' : 'var(--accent-hover)',
-                          color: 'white', border: 'none', borderRadius: '5px',
-                          fontWeight: 'bold', cursor: savingLayout ? 'not-allowed' : 'pointer',
-                          boxShadow: '0 0 15px rgba(14, 165, 233, 0.4)', transition: 'background 0.2s'
-                      }}
-                  >
-                      {savingLayout ? 'Saving...' : 'Save Layout'}
-                  </button>
-              </div>
-              <ReactFlow 
-                nodes={nodes} 
-                edges={edges} 
-                onNodesChange={onNodesChange}
-                onEdgesChange={onEdgesChange}
-                onNodeClick={onNodeClick}
-                nodeTypes={nodeTypes}
-                nodesDraggable={true}
-                nodesConnectable={false}
-                elementsSelectable={true}
-                panOnDrag={true}
-                panOnScroll={false}
-                zoomOnScroll={true}
-                zoomOnPinch={true}
-                zoomOnDoubleClick={true}
-                minZoom={0.01}
-                fitView
-                fitViewOptions={{ minZoom: 0.3, maxZoom: 1 }}
-                onInit={setRfInstance}
-                proOptions={{ hideAttribution: true }}
+                      onMouseLeave={(e: any) => e.currentTarget.style.background = 'transparent'}
+                    >
+                      {node.data.label as string}
+                    </div>
+                  )) : (
+                    <div style={{ padding: '10px 15px', color: 'var(--text-dim)', fontStyle: 'italic' }}>
+                      Brak wyników
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+            <div style={{
+              position: 'absolute', top: 20, right: 20, zIndex: 100,
+              display: 'flex', gap: '10px', alignItems: 'center'
+            }}>
+              <button
+                onClick={() => router.push('/')}
+                style={{
+                  padding: '10px 16px', background: 'var(--bg-card)',
+                  color: 'var(--text-main)', border: '1px solid var(--border-dark)', borderRadius: '5px',
+                  fontWeight: '600', cursor: 'pointer', transition: 'all 0.2s',
+                  boxShadow: '0 4px 6px rgba(0,0,0,0.3)'
+                }}
+                onMouseEnter={(e: any) => e.currentTarget.style.borderColor = 'var(--accent-main)'}
+                onMouseLeave={(e: any) => e.currentTarget.style.borderColor = 'var(--border-dark)'}
               >
-                <Background color="var(--border-subtle)" gap={25} size={2} variant={BackgroundVariant.Dots} />
-                <Controls style={{ filter: 'invert(80%) sepia(90%) saturate(400%) hue-rotate(360deg)' }} />
-              </ReactFlow>
-              </>
-          )}
+                &larr; Strona Główna
+              </button>
+              <button
+                onClick={() => router.push('/login')}
+                style={{
+                  padding: '10px 16px', background: 'var(--bg-card)',
+                  color: 'var(--accent-main)', border: '1px solid var(--accent-dark)', borderRadius: '5px',
+                  fontWeight: '600', cursor: 'pointer', transition: 'all 0.2s',
+                  boxShadow: '0 4px 6px rgba(0,0,0,0.3)'
+                }}
+                onMouseEnter={(e: any) => e.currentTarget.style.background = 'var(--bg-card-hover)'}
+                onMouseLeave={(e: any) => e.currentTarget.style.background = 'var(--bg-card)'}
+              >
+                Zaloguj się
+              </button>
+              <button
+                onClick={saveLayout}
+                disabled={savingLayout}
+                style={{
+                  padding: '10px 20px', background: savingLayout ? 'var(--text-dim)' : 'var(--accent-hover)',
+                  color: 'white', border: 'none', borderRadius: '5px',
+                  fontWeight: 'bold', cursor: savingLayout ? 'not-allowed' : 'pointer',
+                  boxShadow: '0 0 15px rgba(14, 165, 233, 0.4)', transition: 'background 0.2s'
+                }}
+              >
+                {savingLayout ? 'Saving...' : 'Save Layout'}
+              </button>
+            </div>
+            <ReactFlow
+              nodes={nodes}
+              edges={edges}
+              onNodesChange={onNodesChange}
+              onEdgesChange={onEdgesChange}
+              onNodeClick={onNodeClick}
+              nodeTypes={nodeTypes}
+              nodesDraggable={true}
+              nodesConnectable={false}
+              elementsSelectable={true}
+              panOnDrag={true}
+              panOnScroll={false}
+              zoomOnScroll={true}
+              zoomOnPinch={true}
+              zoomOnDoubleClick={true}
+              minZoom={0.01}
+              fitView
+              fitViewOptions={{ minZoom: 0.3, maxZoom: 1 }}
+              onInit={setRfInstance}
+              proOptions={{ hideAttribution: true }}
+            >
+              <Background color="var(--border-subtle)" gap={25} size={2} variant={BackgroundVariant.Dots} />
+              <Controls style={{ filter: 'invert(80%) sepia(90%) saturate(400%) hue-rotate(360deg)' }} />
+            </ReactFlow>
+          </>
+        )}
       </div>
-      
+
       {selectedNode && (
-        <div style={{ 
-            width: '350px', 
-            background: 'var(--bg-card)', 
-            borderLeft: '1px solid var(--border-dark)',
-            boxShadow: '-4px 0 25px rgba(0,0,0,0.5)',
-            display: 'flex',
-            flexDirection: 'column',
-            zIndex: 10
+        <div style={{
+          width: '350px',
+          background: 'var(--bg-card)',
+          borderLeft: '1px solid var(--border-dark)',
+          boxShadow: '-4px 0 25px rgba(0,0,0,0.5)',
+          display: 'flex',
+          flexDirection: 'column',
+          zIndex: 10
         }}>
-            <div style={{ padding: '20px', borderBottom: '1px solid var(--border-dark)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h2 style={{ fontSize: '1.25rem', fontWeight: 'bold', color: 'var(--text-main)', margin: 0 }}>{selectedNode.data.label as string}</h2>
-                <button 
-                  onClick={() => setSelectedNode(null)}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.5rem', color: 'var(--text-muted)' }}
-                >
-                    &times;
-                </button>
-            </div>
-            <div style={{ padding: '20px', overflowY: 'auto', flex: 1 }}>
-                <h3 style={{ fontSize: '1rem', fontWeight: '600', color: 'var(--text-subtle)', marginBottom: '15px' }}>Lessons</h3>
-                {loadingLessons ? (
-                    <p style={{ color: 'var(--text-dim)' }}>Loading lessons...</p>
-                ) : sidebarLessons.length > 0 ? (
-                    <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                        {sidebarLessons.map((lesson: any) => (
-                            <li key={lesson.id} style={{ 
-                                padding: '15px', 
-                                border: '1px solid var(--border-subtle)', 
-                                borderRadius: '8px', 
-                                marginBottom: '10px',
-                                cursor: 'pointer',
-                                transition: 'all 0.2s',
-                                background: 'var(--bg-surface)'
-                            }}
-                            onClick={() => router.push(`/lesson/${lesson.id}`)}
-                            onMouseEnter={(e: any) => { e.currentTarget.style.borderColor = 'var(--accent-hover)'; e.currentTarget.style.background = 'var(--bg-card-hover)'; }}
-                            onMouseLeave={(e: any) => { e.currentTarget.style.borderColor = 'var(--border-subtle)'; e.currentTarget.style.background = 'var(--bg-surface)'; }}
-                            >
-                                <h4 style={{ margin: '0 0 5px 0', color: 'var(--accent-main)', fontSize: '1rem' }}>{lesson.title}</h4>
-                                {lesson.importance && <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 'bold', display: 'block', marginTop: '4px' }}>Importance: {lesson.importance} / 5</span>}
-                            </li>
-                        ))}
-                    </ul>
-                ) : (
-                    <p style={{ color: 'var(--text-dim)', fontStyle: 'italic', fontSize: '0.875rem' }}>No lessons available for this topic yet.</p>
-                )}
-            </div>
+          <div style={{ padding: '20px', borderBottom: '1px solid var(--border-dark)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <h2 style={{ fontSize: '1.25rem', fontWeight: 'bold', color: 'var(--text-main)', margin: 0 }}>{selectedNode.data.label as string}</h2>
+            <button
+              onClick={() => setSelectedNode(null)}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.5rem', color: 'var(--text-muted)' }}
+            >
+              &times;
+            </button>
+          </div>
+          <div style={{ padding: '20px', overflowY: 'auto', flex: 1 }}>
+            <h3 style={{ fontSize: '1rem', fontWeight: '600', color: 'var(--text-subtle)', marginBottom: '15px' }}>Lessons</h3>
+            {loadingLessons ? (
+              <p style={{ color: 'var(--text-dim)' }}>Loading lessons...</p>
+            ) : sidebarLessons.length > 0 ? (
+              <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                {sidebarLessons.map((lesson: any) => (
+                  <li key={lesson.id} style={{
+                    padding: '15px',
+                    border: '1px solid var(--border-subtle)',
+                    borderRadius: '8px',
+                    marginBottom: '10px',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    background: 'var(--bg-surface)'
+                  }}
+                    onClick={() => router.push(`/lesson/${lesson.id}`)}
+                    onMouseEnter={(e: any) => { e.currentTarget.style.borderColor = 'var(--accent-hover)'; e.currentTarget.style.background = 'var(--bg-card-hover)'; }}
+                    onMouseLeave={(e: any) => { e.currentTarget.style.borderColor = 'var(--border-subtle)'; e.currentTarget.style.background = 'var(--bg-surface)'; }}
+                  >
+                    <h4 style={{ margin: '0 0 5px 0', color: 'var(--accent-main)', fontSize: '1rem' }}>{lesson.title}</h4>
+                    {lesson.importance && <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 'bold', display: 'block', marginTop: '4px' }}>Importance: {lesson.importance} / 5</span>}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p style={{ color: 'var(--text-dim)', fontStyle: 'italic', fontSize: '0.875rem' }}>No lessons available for this topic yet.</p>
+            )}
+          </div>
         </div>
       )}
     </div>

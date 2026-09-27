@@ -1,17 +1,18 @@
 import Link from "next/link";
+import Footer from "@/components/Footer";
 
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-[var(--bg-dark)] text-[var(--text-main)] flex flex-col justify-between relative overflow-hidden selection:bg-[var(--accent-main)] selection:text-black">
-      
+
       {/* Dynamic Glowing Background Orbs */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[450px] bg-gradient-to-b from-[var(--accent-dark)]/20 via-[var(--accent-main)]/10 to-transparent blur-[140px] pointer-events-none" />
       <div className="absolute top-1/3 right-10 w-[400px] h-[400px] bg-[var(--node-green)]/10 rounded-full blur-[130px] pointer-events-none" />
       <div className="absolute bottom-10 left-10 w-[450px] h-[450px] bg-[var(--accent-yellow)]/5 rounded-full blur-[140px] pointer-events-none" />
 
       {/* Grid Overlay background */}
-      <div 
-        className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b15_1px,transparent_1px),linear-gradient(to_bottom,#1e293b15_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] pointer-events-none" 
+      <div
+        className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b15_1px,transparent_1px),linear-gradient(to_bottom,#1e293b15_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] pointer-events-none"
       />
 
       {/* Header / Navbar */}
@@ -30,12 +31,6 @@ export default function HomePage() {
         {/* Header Action Buttons */}
         <div className="flex items-center gap-4">
           <Link
-            href="/graph"
-            className="hidden sm:flex items-center gap-2 px-4 py-2 text-sm font-medium text-[var(--text-subtle)] hover:text-white transition-colors"
-          >
-            <span>Graf Wiedzy</span>
-          </Link>
-          <Link
             href="/login"
             className="px-5 py-2.5 text-sm font-semibold rounded-lg bg-[var(--bg-card)] border border-[var(--border-subtle)] text-[var(--text-main)] hover:border-[var(--accent-main)] hover:text-[var(--accent-main)] hover:shadow-[0_0_15px_rgba(56,189,248,0.25)] transition-all"
           >
@@ -46,12 +41,7 @@ export default function HomePage() {
 
       {/* Hero Section */}
       <main className="relative z-10 max-w-5xl mx-auto px-6 pt-16 pb-20 text-center flex-1 flex flex-col justify-center items-center">
-        
-        {/* Top Badge */}
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[var(--bg-surface)] border border-[var(--border-subtle)] text-xs font-semibold uppercase tracking-wider text-[var(--accent-main)] mb-8 shadow-inner animate-pulse">
-          <span className="w-2 h-2 rounded-full bg-[var(--node-green)]"></span>
-          <span>Interaktywna Platforma Edukacyjna</span>
-        </div>
+
 
         {/* Main Headline */}
         <h1 className="text-4xl sm:text-6xl md:text-7xl font-black tracking-tight leading-[1.1] mb-6">
@@ -68,16 +58,16 @@ export default function HomePage() {
 
         {/* Primary Action Buttons Requested by User */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full sm:w-auto mb-16">
-          
-          {/* Button 1: Transfer to Login Page */}
+
+          {/* Button 1: Transfer to Register Page */}
           <Link
-            href="/login"
+            href="/register"
             className="w-full sm:w-auto px-8 py-4 rounded-xl bg-gradient-to-r from-[var(--accent-dark)] to-[var(--accent-hover)] text-white font-bold text-base shadow-[0_0_25px_rgba(14,165,233,0.4)] hover:shadow-[0_0_35px_rgba(14,165,233,0.7)] hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3 group"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-sky-200 group-hover:rotate-12 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
             </svg>
-            <span>Zaloguj się</span>
+            <span>Zarejestruj się</span>
           </Link>
 
           {/* Button 2: Go unlogged into math graph page */}
@@ -88,14 +78,14 @@ export default function HomePage() {
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-[var(--node-green)] group-hover:scale-125 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
             </svg>
-            <span>Wejdź bez logowania (Graf Wiedzy)</span>
+            <span>Sprawdź bez logowania</span>
           </Link>
 
         </div>
 
         {/* Feature Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full text-left mt-4">
-          
+
           <div className="p-6 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-dark)] hover:border-[var(--accent-main)]/50 transition-all hover:-translate-y-1 shadow-lg group">
             <div className="w-12 h-12 rounded-xl bg-[var(--accent-dark)]/20 border border-[var(--accent-main)]/30 flex items-center justify-center text-[var(--accent-main)] mb-4 group-hover:scale-110 transition-transform">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -137,15 +127,7 @@ export default function HomePage() {
       </main>
 
       {/* Footer */}
-      <footer className="relative z-10 border-t border-[var(--border-dark)]/50 py-6 text-center text-xs text-[var(--text-dim)]">
-        <div className="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row justify-between items-center gap-4">
-          <span>&copy; {new Date().getFullYear()} EduMath Platform. Wszelkie prawa zastrzeżone.</span>
-          <div className="flex gap-6 text-[var(--text-muted)]">
-            <Link href="/graph" className="hover:text-white transition-colors">Graf Wiedzy</Link>
-            <Link href="/login" className="hover:text-white transition-colors">Logowanie</Link>
-          </div>
-        </div>
-      </footer>
+      <Footer />
 
     </div>
   );

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import Footer from "@/components/Footer";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -17,7 +18,7 @@ export default function LoginPage() {
       setMessage({ type: "error", text: "Proszę wypełnić wszystkie pola." });
       return;
     }
-    
+
     setIsLoading(true);
     setMessage(null);
 
@@ -39,8 +40,8 @@ export default function LoginPage() {
 
       {/* Top Header Navigation */}
       <header className="absolute top-6 left-6 right-6 flex justify-between items-center max-w-6xl mx-auto w-full z-10">
-        <Link 
-          href="/" 
+        <Link
+          href="/"
           className="flex items-center gap-2 text-xl font-bold tracking-tight text-[var(--text-main)] hover:text-[var(--accent-main)] transition-colors"
         >
           <div className="w-8 h-8 rounded-lg bg-[var(--accent-dark)]/30 border border-[var(--accent-main)] flex items-center justify-center text-[var(--accent-main)] font-mono text-sm font-bold">
@@ -49,19 +50,12 @@ export default function LoginPage() {
           <span>Edu<span className="text-[var(--accent-main)]">Math</span></span>
         </Link>
 
-        <Link
-          href="/graph"
-          className="px-4 py-2 text-sm rounded-lg border border-[var(--border-subtle)] text-[var(--text-subtle)] hover:border-[var(--accent-main)] hover:text-[var(--text-main)] transition-all flex items-center gap-2"
-        >
-          <span>Wykres bez logowania</span>
-          <span>&rarr;</span>
-        </Link>
       </header>
 
       {/* Login Card */}
       <main className="w-full max-w-md z-10 my-12">
         <div className="bg-[var(--bg-card)] border border-[var(--border-dark)] rounded-2xl p-8 shadow-2xl backdrop-blur-md relative">
-          
+
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-subtle)] text-[var(--accent-main)] mb-3 shadow-inner">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -75,11 +69,10 @@ export default function LoginPage() {
           </div>
 
           {message && (
-            <div className={`mb-6 p-4 rounded-lg text-sm border ${
-              message.type === "success" 
-                ? "bg-[var(--success-bg)] border-[var(--success-border)] text-[var(--success-text)]" 
+            <div className={`mb-6 p-4 rounded-lg text-sm border ${message.type === "success"
+                ? "bg-[var(--success-bg)] border-[var(--success-border)] text-[var(--success-text)]"
                 : "bg-[var(--error-bg)] border-[var(--error-border)] text-[var(--error-text)]"
-            }`}>
+              }`}>
               {message.text}
             </div>
           )}
@@ -120,9 +113,9 @@ export default function LoginPage() {
 
             <div className="flex items-center justify-between text-sm">
               <label className="flex items-center gap-2 cursor-pointer text-[var(--text-muted)]">
-                <input 
-                  type="checkbox" 
-                  className="rounded border-[var(--border-subtle)] bg-[var(--bg-surface)] text-[var(--accent-main)] focus:ring-0" 
+                <input
+                  type="checkbox"
+                  className="rounded border-[var(--border-subtle)] bg-[var(--bg-surface)] text-[var(--accent-main)] focus:ring-0"
                 />
                 <span>Zapamiętaj mnie</span>
               </label>
@@ -167,17 +160,15 @@ export default function LoginPage() {
 
           <p className="mt-6 text-center text-xs text-[var(--text-muted)]">
             Nie masz jeszcze konta?{" "}
-            <a href="#" className="text-[var(--accent-main)] font-semibold hover:underline">
+            <Link href="/register" className="text-[var(--accent-main)] font-semibold hover:underline">
               Zarejestruj się
-            </a>
+            </Link>
           </p>
         </div>
       </main>
 
       {/* Footer */}
-      <footer className="text-xs text-[var(--text-dim)] z-10 pb-6">
-        &copy; {new Date().getFullYear()} EduMath Platform. Wszelkie prawa zastrzeżone.
-      </footer>
+      <Footer />
     </div>
   );
 }
