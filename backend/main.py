@@ -1,11 +1,11 @@
 from fastapi import FastAPI
 from core.cors import setup_cors
-from routers import health, nodes, lessons, exercises
+from routers import health, nodes, lessons, exercises, auth
 
 # FastAPI application initialization
 app = FastAPI(
     title="EduMath API",
-    description="Backend API dla platformy hybrydowej EduMath",
+    description="Backend API dla platformy hybrydowej EduMath z autoryzacją Supabase JWT",
     version="1.0.0"
 )
 
@@ -17,3 +17,4 @@ app.include_router(health.router)
 app.include_router(nodes.router)
 app.include_router(lessons.router)
 app.include_router(exercises.router)
+app.include_router(auth.router)

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { createClient } from "@/utils/supabase/client";
 import Footer from "@/components/Footer";
 
 export default function RegisterPage() {
@@ -11,11 +12,12 @@ export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [role, setRole] = useState<"student" | "tutor">("student");
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!name || !email || !password || !confirmPassword) {
@@ -41,17 +43,39 @@ export default function RegisterPage() {
     setIsLoading(true);
     setMessage(null);
 
-    // Mock registration simulation
-    setTimeout(() => {
-      setIsLoading(false);
-      setMessage({ 
-        type: "success", 
-        text: "Konto zostało pomyślnie utworzone! Przekierowanie do grafu wiedzy..." 
+    try {
+      const supabase = createClient();
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: name,
+            role: role,
+          },
+        },
       });
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      setMessage({
+        type: "success",
+        text: "Konto zostało pomyślnie utworzone! Przekierowanie do logowania...",
+      });
+
       setTimeout(() => {
-        router.push("/graph");
-      }, 1400);
-    }, 900);
+        router.push("/login");
+      }, 1500);
+    } catch (err: any) {
+      setMessage({
+        type: "error",
+        text: err.message || "Rejestracja nie powiodła się.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -95,7 +119,7 @@ export default function RegisterPage() {
             </div>
             <h1 className="text-2xl font-bold text-[var(--text-main)]">Dołącz do EduMath</h1>
             <p className="text-sm text-[var(--text-muted)] mt-1">
-              Utwórz darmowe konto i rozpocznij naukę z interaktywnym grafem.
+              Utwórz darmowe konto i wybierz swoją rolę w serwisie.
             </p>
           </div>
 
@@ -112,7 +136,37 @@ export default function RegisterPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-xs font-semibold uppercase tracking-wider text-[var(--text-subtle)] mb-1.5">
-                Nazwa użytkownika / Imię
+                Rola w serwisie
+              </label>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => setRole("student")}
+                  className={`py-2.5 px-3 rounded-lg border text-sm font-semibold transition-all flex items-center justify-center gap-2 ${
+                    role === "student"
+                      ? "bg-[var(--accent-dark)]/40 border-[var(--accent-main)] text-[var(--accent-main)] shadow-[0_0_12px_rgba(56,189,248,0.2)]"
+                      : "bg-[var(--bg-surface)] border-[var(--border-subtle)] text-[var(--text-muted)] hover:border-[var(--text-subtle)]"
+                  }`}
+                >
+                  <span>🎓 Uczeń</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setRole("tutor")}
+                  className={`py-2.5 px-3 rounded-lg border text-sm font-semibold transition-all flex items-center justify-center gap-2 ${
+                    role === "tutor"
+                      ? "bg-[var(--accent-dark)]/40 border-[var(--accent-main)] text-[var(--accent-main)] shadow-[0_0_12px_rgba(56,189,248,0.2)]"
+                      : "bg-[var(--bg-surface)] border-[var(--border-subtle)] text-[var(--text-muted)] hover:border-[var(--text-subtle)]"
+                  }`}
+                >
+                  <span>👨‍🏫 Korepetytor</span>
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-[var(--text-subtle)] mb-1.5">
+                Imię i nazwisko
               </label>
               <input
                 type="text"
@@ -192,7 +246,7 @@ export default function RegisterPage() {
                   <span>Rejestracja...</span>
                 </>
               ) : (
-                <span>Zarejestruj się</span>
+                <span>Zarejestruj się jako {role === "student" ? "Uczeń" : "Korepetytor"}</span>
               )}
             </button>
           </form>

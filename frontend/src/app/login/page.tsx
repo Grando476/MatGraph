@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { createClient } from "@/utils/supabase/client";
 import Footer from "@/components/Footer";
 
 export default function LoginPage() {
@@ -12,7 +13,7 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) {
       setMessage({ type: "error", text: "Proszę wypełnić wszystkie pola." });
@@ -22,14 +23,30 @@ export default function LoginPage() {
     setIsLoading(true);
     setMessage(null);
 
-    // Dynamic mock login simulation
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      const supabase = createClient();
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
       setMessage({ type: "success", text: "Zalogowano pomyślnie! Przekierowanie do grafu wiedzy..." });
       setTimeout(() => {
         router.push("/graph");
-      }, 1200);
-    }, 800);
+        router.refresh();
+      }, 1000);
+    } catch (err: any) {
+      setMessage({
+        type: "error",
+        text: err.message || "Błąd logowania. Sprawdź e-mail i hasło.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -49,7 +66,6 @@ export default function LoginPage() {
           </div>
           <span>Edu<span className="text-[var(--accent-main)]">Math</span></span>
         </Link>
-
       </header>
 
       {/* Login Card */}
@@ -80,10 +96,10 @@ export default function LoginPage() {
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
               <label className="block text-xs font-semibold uppercase tracking-wider text-[var(--text-subtle)] mb-2">
-                Adres e-mail lub login
+                Adres e-mail
               </label>
               <input
-                type="text"
+                type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="np. student@edumath.pl"
@@ -109,16 +125,6 @@ export default function LoginPage() {
                 className="w-full px-4 py-3 bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-lg text-[var(--text-main)] placeholder-[var(--text-dim)] focus:outline-none focus:border-[var(--accent-main)] focus:ring-1 focus:ring-[var(--accent-main)] transition-all"
                 required
               />
-            </div>
-
-            <div className="flex items-center justify-between text-sm">
-              <label className="flex items-center gap-2 cursor-pointer text-[var(--text-muted)]">
-                <input
-                  type="checkbox"
-                  className="rounded border-[var(--border-subtle)] bg-[var(--bg-surface)] text-[var(--accent-main)] focus:ring-0"
-                />
-                <span>Zapamiętaj mnie</span>
-              </label>
             </div>
 
             <button
@@ -147,7 +153,6 @@ export default function LoginPage() {
             <div className="h-px bg-[var(--border-dark)] flex-1" />
           </div>
 
-          {/* Guest Button Option inside form */}
           <Link
             href="/graph"
             className="w-full py-3 px-4 border border-[var(--border-subtle)] bg-[var(--bg-surface)] hover:bg-[var(--bg-card-hover)] text-[var(--text-main)] font-medium rounded-lg transition-all flex items-center justify-center gap-2 group"
