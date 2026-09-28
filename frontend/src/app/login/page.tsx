@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/utils/supabase/client";
+import { authLogin } from "@/utils/auth";
 import Footer from "@/components/Footer";
 
 export default function LoginPage() {
@@ -24,14 +24,10 @@ export default function LoginPage() {
     setMessage(null);
 
     try {
-      const supabase = createClient();
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+      const { success, error } = await authLogin(email, password);
 
-      if (error) {
-        throw new Error(error.message);
+      if (!success || error) {
+        throw new Error(error || "Błąd logowania. Sprawdź e-mail i hasło.");
       }
 
       setMessage({ type: "success", text: "Zalogowano pomyślnie! Przekierowanie do grafu wiedzy..." });

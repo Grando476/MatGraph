@@ -42,7 +42,7 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
         cur = conn.cursor(cursor_factory=RealDictCursor)
         try:
             cur.execute(
-                "SELECT full_name, role, created_at FROM public.profiles WHERE id = %s;",
+                "SELECT first_name, last_name, role, created_at FROM public.profiles WHERE id = %s;",
                 (user_id,)
             )
             profile = cur.fetchone()
@@ -52,13 +52,15 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
             cur.close()
             conn.close()
 
-        full_name = profile.get("full_name") if profile else payload.get("user_metadata", {}).get("full_name", "")
+        first_name = profile.get("first_name") if profile else payload.get("user_metadata", {}).get("first_name", "")
+        last_name = profile.get("last_name") if profile else payload.get("user_metadata", {}).get("last_name", "")
         role = profile.get("role") if profile else payload.get("user_metadata", {}).get("role", "student")
 
         return {
             "user_id": user_id,
             "email": email,
-            "full_name": full_name,
+            "first_name": first_name,
+            "last_name": last_name,
             "role": role,
             "user_metadata": payload.get("user_metadata", {}),
             "token": token

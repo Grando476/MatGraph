@@ -1,13 +1,11 @@
-import { createClient } from '@/utils/supabase/client';
+import { getAuthToken } from '@/utils/auth';
 
 export async function fetchWithAuth(url: string, options: RequestInit = {}) {
-  const supabase = createClient();
-  const { data: { session } } = await supabase.auth.getSession();
-  
+  const token = await getAuthToken();
   const headers = new Headers(options.headers || {});
-  
-  if (session?.access_token) {
-    headers.set('Authorization', `Bearer ${session.access_token}`);
+
+  if (token) {
+    headers.set('Authorization', `Bearer ${token}`);
   }
 
   return fetch(url, {
