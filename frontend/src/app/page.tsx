@@ -72,7 +72,7 @@ export default function HomePage() {
 
           {/* Button 2: Go unlogged into math graph page */}
           <Link
-            href="/GraphPage"
+            href="/graph"
             className="w-full sm:w-auto px-8 py-4 rounded-xl bg-[var(--bg-card)] border-2 border-[var(--border-subtle)] text-[var(--text-main)] font-bold text-base hover:border-[var(--node-green)] hover:text-white hover:shadow-[0_0_25px_rgba(76,211,155,0.3)] hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3 group"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-[var(--node-green)] group-hover:scale-125 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
