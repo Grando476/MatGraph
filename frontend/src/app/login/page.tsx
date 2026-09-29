@@ -82,8 +82,8 @@ export default function LoginPage() {
 
           {message && (
             <div className={`mb-6 p-4 rounded-lg text-sm border ${message.type === "success"
-                ? "bg-[var(--success-bg)] border-[var(--success-border)] text-[var(--success-text)]"
-                : "bg-[var(--error-bg)] border-[var(--error-border)] text-[var(--error-text)]"
+              ? "bg-[var(--success-bg)] border-[var(--success-border)] text-[var(--success-text)]"
+              : "bg-[var(--error-bg)] border-[var(--error-border)] text-[var(--error-text)]"
               }`}>
               {message.text}
             </div>
@@ -150,7 +150,7 @@ export default function LoginPage() {
           </div>
 
           <Link
-            href="/graph"
+            href="/GraphPage"
             className="w-full py-3 px-4 border border-[var(--border-subtle)] bg-[var(--bg-surface)] hover:bg-[var(--bg-card-hover)] text-[var(--text-main)] font-medium rounded-lg transition-all flex items-center justify-center gap-2 group"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-[var(--node-green)] group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
