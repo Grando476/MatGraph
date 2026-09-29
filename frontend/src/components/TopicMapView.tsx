@@ -4,7 +4,6 @@ import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { ReactFlow, Background, Controls, Node, Edge, useNodesState, useEdgesState, Position, Handle, BackgroundVariant } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import Footer from "@/components/Footer";
 
 const CyberNode = ({ data, selected }: any) => {
   const color = selected ? 'var(--node-yellow)' : 'var(--node-green)';

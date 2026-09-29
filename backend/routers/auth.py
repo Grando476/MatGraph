@@ -51,15 +51,38 @@ async def login(body: LoginRequest):
 
         user_id = str(user["id"])
 
-        # Fetch profile information
-        cur.execute(
-            "SELECT first_name, last_name, role FROM public.profiles WHERE id = %s;",
-            (user_id,)
-        )
-        profile = cur.fetchone() or {}
-        first_name = profile.get("first_name") or user.get("raw_user_meta_data", {}).get("first_name", "")
-        last_name = profile.get("last_name") or user.get("raw_user_meta_data", {}).get("last_name", "")
-        role = profile.get("role") or user.get("raw_user_meta_data", {}).get("role", "student")
+        # Safely parse raw_user_meta_data
+        raw_meta = user.get("raw_user_meta_data")
+        if isinstance(raw_meta, str):
+            try:
+                raw_meta = json.loads(raw_meta)
+            except Exception:
+                raw_meta = {}
+        elif not isinstance(raw_meta, dict):
+            raw_meta = {}
+
+        # Fetch profile information safely (in case public.profiles doesn't exist yet or is empty)
+        first_name = ""
+        last_name = ""
+        role = ""
+        try:
+            cur.execute(
+                "SELECT first_name, last_name, role FROM public.profiles WHERE id = %s;",
+                (user_id,)
+            )
+            profile = cur.fetchone() or {}
+            first_name = profile.get("first_name") or ""
+            last_name = profile.get("last_name") or ""
+            role = profile.get("role") or ""
+        except Exception:
+            conn.rollback()
+
+        if not first_name:
+            first_name = raw_meta.get("first_name", "")
+        if not last_name:
+            last_name = raw_meta.get("last_name", "")
+        if not role:
+            role = raw_meta.get("role", "student")
 
         payload = {
             "sub": user_id,
@@ -88,6 +111,15 @@ async def login(body: LoginRequest):
                 "role": role
             }
         }
+    except HTTPException:
+        conn.rollback()
+        raise
+    except Exception as e:
+        conn.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Błąd logowania: {str(e)}"
+        )
     finally:
         cur.close()
         conn.close()
