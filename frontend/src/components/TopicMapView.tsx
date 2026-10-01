@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { ReactFlow, Background, Controls, Node, Edge, useNodesState, useEdgesState, Position, Handle, BackgroundVariant, CoordinateExtent } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
+import { getCurrentUser, authLogout, UserProfile } from "@/utils/auth";
 
 const NODE_SIZE = 180;
 
@@ -93,6 +94,9 @@ export default function TopicMapView() {
   const [searchQuery, setSearchQuery] = useState("");
   const [rfInstance, setRfInstance] = useState<any>(null);
   const [translateExtent, setTranslateExtent] = useState<CoordinateExtent | undefined>(undefined);
+  const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const profileRef = useRef<HTMLDivElement>(null);
 
   const filteredNodes = searchQuery
     ? nodes.filter(n => (n.data.label as string).toLowerCase().includes(searchQuery.toLowerCase()))
@@ -104,6 +108,44 @@ export default function TopicMapView() {
     }
     onNodeClick({} as React.MouseEvent, node);
     setSearchQuery("");
+  };
+
+  useEffect(() => {
+    let isMounted = true;
+    const fetchUser = async () => {
+      try {
+        const u = await getCurrentUser();
+        if (isMounted) setCurrentUser(u);
+      } catch (err) {
+        console.error("Error fetching user profile:", err);
+      }
+    };
+    fetchUser();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (profileRef.current && !profileRef.current.contains(event.target as globalThis.Node)) {
+        setIsProfileOpen(false);
+      }
+    };
+    if (isProfileOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isProfileOpen]);
+
+  const handleLogout = async () => {
+    await authLogout();
+    setCurrentUser(null);
+    setIsProfileOpen(false);
+    router.push("/");
+    router.refresh();
   };
 
   useEffect(() => {
@@ -276,44 +318,175 @@ export default function TopicMapView() {
               position: 'absolute', top: 20, right: 20, zIndex: 100,
               display: 'flex', gap: '10px', alignItems: 'center'
             }}>
-              <button
-                onClick={() => router.push('/')}
-                style={{
-                  padding: '10px 16px', background: 'var(--bg-card)',
-                  color: 'var(--text-main)', border: '1px solid var(--border-dark)', borderRadius: '5px',
-                  fontWeight: '600', cursor: 'pointer', transition: 'all 0.2s',
-                  boxShadow: '0 4px 6px rgba(0,0,0,0.3)'
-                }}
-                onMouseEnter={(e: any) => e.currentTarget.style.borderColor = 'var(--accent-main)'}
-                onMouseLeave={(e: any) => e.currentTarget.style.borderColor = 'var(--border-dark)'}
-              >
-                &larr; Strona Główna
-              </button>
-              <button
-                onClick={() => router.push('/login')}
-                style={{
-                  padding: '10px 16px', background: 'var(--bg-card)',
-                  color: 'var(--accent-main)', border: '1px solid var(--accent-dark)', borderRadius: '5px',
-                  fontWeight: '600', cursor: 'pointer', transition: 'all 0.2s',
-                  boxShadow: '0 4px 6px rgba(0,0,0,0.3)'
-                }}
-                onMouseEnter={(e: any) => e.currentTarget.style.background = 'var(--bg-card-hover)'}
-                onMouseLeave={(e: any) => e.currentTarget.style.background = 'var(--bg-card)'}
-              >
-                Zaloguj się
-              </button>
-              <button
-                onClick={saveLayout}
-                disabled={savingLayout}
-                style={{
-                  padding: '10px 20px', background: savingLayout ? 'var(--text-dim)' : 'var(--accent-hover)',
-                  color: 'white', border: 'none', borderRadius: '5px',
-                  fontWeight: 'bold', cursor: savingLayout ? 'not-allowed' : 'pointer',
-                  boxShadow: '0 0 15px rgba(14, 165, 233, 0.4)', transition: 'background 0.2s'
-                }}
-              >
-                {savingLayout ? 'Saving...' : 'Save Layout'}
-              </button>
+              {!currentUser ? (
+                <button
+                  onClick={() => router.push('/login')}
+                  style={{
+                    padding: '9px 18px', background: 'var(--bg-card)',
+                    color: 'var(--accent-main)', border: '1px solid var(--accent-dark)', borderRadius: '6px',
+                    fontWeight: '600', fontSize: '0.875rem', cursor: 'pointer', transition: 'all 0.2s',
+                    boxShadow: '0 4px 10px rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', gap: '8px'
+                  }}
+                  onMouseEnter={(e: any) => e.currentTarget.style.background = 'var(--bg-card-hover)'}
+                  onMouseLeave={(e: any) => e.currentTarget.style.background = 'var(--bg-card)'}
+                >
+                  Zaloguj się
+                </button>
+              ) : (
+                <div ref={profileRef} style={{ position: 'relative' }}>
+                  <button
+                    onClick={() => setIsProfileOpen(!isProfileOpen)}
+                    title="Profil użytkownika"
+                    style={{
+                      width: '42px',
+                      height: '42px',
+                      borderRadius: '50%',
+                      background: isProfileOpen ? 'var(--bg-card-hover)' : 'var(--bg-card)',
+                      border: `1.5px solid ${isProfileOpen ? 'var(--accent-main)' : 'var(--border-dark)'}`,
+                      color: isProfileOpen ? 'var(--accent-main)' : 'var(--text-main)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                      boxShadow: '0 4px 10px rgba(0,0,0,0.4)',
+                    }}
+                    onMouseEnter={(e: any) => {
+                      e.currentTarget.style.borderColor = 'var(--accent-main)';
+                      e.currentTarget.style.color = 'var(--accent-main)';
+                    }}
+                    onMouseLeave={(e: any) => {
+                      if (!isProfileOpen) {
+                        e.currentTarget.style.borderColor = 'var(--border-dark)';
+                        e.currentTarget.style.color = 'var(--text-main)';
+                      }
+                    }}
+                  >
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                      <circle cx="12" cy="7" r="4" />
+                    </svg>
+                  </button>
+
+                  {isProfileOpen && (
+                    <div
+                      style={{
+                        position: 'absolute',
+                        top: '50px',
+                        right: 0,
+                        width: '260px',
+                        background: 'var(--bg-card)',
+                        border: '1px solid var(--border-dark)',
+                        borderRadius: '8px',
+                        padding: '14px',
+                        boxShadow: '0 10px 25px rgba(0,0,0,0.6)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '12px',
+                        zIndex: 200,
+                      }}
+                    >
+                      {/* User Info */}
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', paddingBottom: '10px', borderBottom: '1px solid var(--border-dark)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                          <span style={{ fontSize: '0.875rem', fontWeight: '700', color: 'var(--text-main)' }}>
+                            {currentUser.firstName || currentUser.lastName
+                              ? `${currentUser.firstName || ''} ${currentUser.lastName || ''}`.trim()
+                              : (currentUser.email ? currentUser.email.split('@')[0] : 'Użytkownik')}
+                          </span>
+                          <span
+                            style={{
+                              fontSize: '0.68rem',
+                              fontWeight: '700',
+                              textTransform: 'uppercase',
+                              padding: '2px 7px',
+                              borderRadius: '4px',
+                              background: currentUser.role === 'admin' ? 'rgba(234, 179, 8, 0.15)' : 'rgba(37, 99, 235, 0.15)',
+                              color: currentUser.role === 'admin' ? 'var(--node-yellow)' : 'var(--accent-main)',
+                              border: `1px solid ${currentUser.role === 'admin' ? 'rgba(234, 179, 8, 0.3)' : 'rgba(37, 99, 235, 0.3)'}`,
+                            }}
+                          >
+                            {currentUser.role === 'admin' ? 'Admin' : 'Uczeń'}
+                          </span>
+                        </div>
+                        <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {currentUser.email}
+                        </span>
+                      </div>
+
+                      {/* Admin Tools: Save Layout */}
+                      {currentUser.role === 'admin' && (
+                        <div style={{ paddingBottom: '10px', borderBottom: '1px solid var(--border-dark)' }}>
+                          <button
+                            onClick={saveLayout}
+                            disabled={savingLayout}
+                            style={{
+                              width: '100%',
+                              padding: '9px 12px',
+                              background: savingLayout ? 'var(--text-dim)' : 'var(--accent-hover)',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '5px',
+                              fontWeight: '600',
+                              fontSize: '0.8rem',
+                              cursor: savingLayout ? 'not-allowed' : 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              gap: '8px',
+                              boxShadow: '0 0 10px rgba(14, 165, 233, 0.3)',
+                              transition: 'all 0.2s',
+                            }}
+                          >
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+                              <polyline points="17 21 17 13 7 13 7 21" />
+                              <polyline points="7 3 7 8 15 8" />
+                            </svg>
+                            {savingLayout ? 'Saving...' : 'Save Layout'}
+                          </button>
+                        </div>
+                      )}
+
+                      {/* Bottom Logout Button */}
+                      <button
+                        onClick={handleLogout}
+                        style={{
+                          width: '100%',
+                          padding: '8px 12px',
+                          background: 'transparent',
+                          color: '#f87171',
+                          border: '1px solid rgba(248, 113, 113, 0.25)',
+                          borderRadius: '5px',
+                          fontWeight: '600',
+                          fontSize: '0.825rem',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '8px',
+                          transition: 'all 0.2s',
+                        }}
+                        onMouseEnter={(e: any) => {
+                          e.currentTarget.style.background = 'rgba(239, 68, 68, 0.12)';
+                          e.currentTarget.style.borderColor = 'rgba(248, 113, 113, 0.5)';
+                        }}
+                        onMouseLeave={(e: any) => {
+                          e.currentTarget.style.background = 'transparent';
+                          e.currentTarget.style.borderColor = 'rgba(248, 113, 113, 0.25)';
+                        }}
+                      >
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                          <polyline points="16 17 21 12 16 7" />
+                          <line x1="21" y1="12" x2="9" y2="12" />
+                        </svg>
+                        Wyloguj się
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
             <ReactFlow
               nodes={nodes}

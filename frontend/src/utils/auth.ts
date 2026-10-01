@@ -110,16 +110,84 @@ export async function authRegister(params: {
   }
 }
 
-export async function authLogout(): Promise<void> {
-  if (isLocalAuth()) {
-    document.cookie = 'auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('auth_token');
-      localStorage.removeItem('user_profile');
+export interface UserProfile {
+  id: string;
+  email: string;
+  firstName?: string;
+  lastName?: string;
+  role: string;
+}
+
+export async function getCurrentUser(): Promise<UserProfile | null> {
+  if (typeof window !== 'undefined') {
+    const stored = localStorage.getItem('user_profile');
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        if (parsed && (parsed.id || parsed.user_id || parsed.email)) {
+          return {
+            id: parsed.id || parsed.user_id || '',
+            email: parsed.email || '',
+            firstName: parsed.first_name || parsed.firstName || '',
+            lastName: parsed.last_name || parsed.lastName || '',
+            role: parsed.role || 'student',
+          };
+        }
+      } catch {
+        // continue
+      }
     }
-  } else {
+  }
+
+  try {
+    const supabase = createSupabaseClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      let role = user.user_metadata?.role || (user.app_metadata as any)?.role || 'student';
+      let firstName = user.user_metadata?.first_name || '';
+      let lastName = user.user_metadata?.last_name || '';
+
+      try {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role, first_name, last_name')
+          .eq('id', user.id)
+          .maybeSingle();
+        if (profile) {
+          if (profile.role) role = profile.role;
+          if (profile.first_name) firstName = profile.first_name;
+          if (profile.last_name) lastName = profile.last_name;
+        }
+      } catch {
+        // fallback to metadata
+      }
+
+      return {
+        id: user.id,
+        email: user.email || '',
+        firstName,
+        lastName,
+        role,
+      };
+    }
+  } catch {
+    // ignore
+  }
+
+  return null;
+}
+
+export async function authLogout(): Promise<void> {
+  document.cookie = 'auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+  if (typeof window !== 'undefined') {
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('user_profile');
+  }
+  try {
     const supabase = createSupabaseClient();
     await supabase.auth.signOut();
+  } catch {
+    // ignore
   }
 }
 
