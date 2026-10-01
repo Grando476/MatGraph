@@ -56,3 +56,40 @@ body {
     text-wrap: balance;
   }
 }
+
+/* ReactFlow Zoom & Pan Controls (dolny lewy róg) */
+.react-flow__controls {
+  border-radius: 8px !important;
+  overflow: hidden !important;
+  border: 1px solid var(--border-dark) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4) !important;
+  background: var(--bg-card) !important;
+}
+
+.react-flow__controls-button {
+  background: var(--bg-card) !important;
+  border-bottom: 1px solid var(--border-dark) !important;
+  color: var(--accent-main) !important;
+  width: 32px !important;
+  height: 32px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: all 0.2s ease !important;
+}
+
+.react-flow__controls-button:hover {
+  background: var(--bg-card-hover) !important;
+  color: var(--node-yellow) !important;
+}
+
+.react-flow__controls-button:last-child {
+  border-bottom: none !important;
+}
+
+.react-flow__controls-button svg {
+  fill: currentColor !important;
+  width: 14px !important;
+  height: 14px !important;
+  transition: fill 0.2s ease !important;
+}

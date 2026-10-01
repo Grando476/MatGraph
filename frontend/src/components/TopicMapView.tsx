@@ -513,7 +513,7 @@ export default function TopicMapView() {
               proOptions={{ hideAttribution: true }}
             >
               <Background color="var(--border-subtle)" gap={25} size={2} variant={BackgroundVariant.Dots} />
-              <Controls style={{ filter: 'invert(80%) sepia(90%) saturate(400%) hue-rotate(360deg)' }} />
+              <Controls />
             </ReactFlow>
           </>
         )}
