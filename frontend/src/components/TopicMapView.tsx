@@ -2,22 +2,24 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { ReactFlow, Background, Controls, Node, Edge, useNodesState, useEdgesState, Position, Handle, BackgroundVariant } from "@xyflow/react";
+import { ReactFlow, Background, Controls, Node, Edge, useNodesState, useEdgesState, Position, Handle, BackgroundVariant, CoordinateExtent } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
+
+const NODE_SIZE = 180;
 
 const CyberNode = ({ data, selected }: any) => {
   const color = selected ? 'var(--node-yellow)' : 'var(--node-green)';
-  const dropShadow = selected ? `drop-shadow(0 0 10px ${color})` : 'none';
+  const dropShadow = selected ? `drop-shadow(0 0 14px ${color})` : `drop-shadow(0 0 4px rgba(0,0,0,0.6))`;
 
   return (
-    <div style={{ position: 'relative', width: 140, height: 140, filter: dropShadow, transition: 'all 0.2s', cursor: 'pointer' }}>
-      <svg width="140" height="140" viewBox="0 0 140 140" style={{ position: 'absolute', top: 0, left: 0 }}>
+    <div style={{ position: 'relative', width: NODE_SIZE, height: NODE_SIZE, filter: dropShadow, transition: 'all 0.2s', cursor: 'pointer' }}>
+      <svg width={NODE_SIZE} height={NODE_SIZE} viewBox="0 0 140 140" style={{ position: 'absolute', top: 0, left: 0 }}>
         {/* Outer glowing octagon */}
         <polygon points="40,5 100,5 135,40 135,100 100,135 40,135 5,100 5,40"
-          fill="var(--bg-surface)" stroke={color} strokeWidth="3" opacity="0.9" />
+          fill="var(--bg-surface)" stroke={color} strokeWidth="3" opacity="0.95" />
         {/* Inner decoration octagon */}
         <polygon points="45,15 95,15 125,45 125,95 95,125 45,125 15,95 15,45"
-          fill="rgba(255, 255, 255, 0.03)" stroke={color} strokeWidth="1" opacity="0.5" />
+          fill="rgba(255, 255, 255, 0.04)" stroke={color} strokeWidth="1" opacity="0.6" />
       </svg>
 
       <Handle type="target" position={Position.Bottom} style={{ background: 'transparent', border: 'none' }} />
@@ -25,15 +27,30 @@ const CyberNode = ({ data, selected }: any) => {
       <div style={{
         position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
         color: 'var(--text-main)', textAlign: 'center', display: 'flex', flexDirection: 'column',
-        alignItems: 'center', justifyContent: 'center', width: '70%', height: '70%',
+        alignItems: 'center', justifyContent: 'center', width: '78%', height: '78%',
         pointerEvents: 'none'
       }}>
-        <span style={{ fontSize: '0.8rem', fontWeight: 'bold', lineHeight: '1.2', textShadow: `0 0 4px rgba(0,0,0,0.5)`, wordBreak: 'break-word' }}>
+        <span style={{
+          fontFamily: 'var(--font-node), Outfit, sans-serif',
+          fontSize: '0.94rem',
+          fontWeight: 800,
+          lineHeight: '1.25',
+          letterSpacing: '-0.01em',
+          textShadow: `0 1px 4px rgba(0,0,0,0.8)`,
+          wordBreak: 'break-word',
+        }}>
           {data.label}
         </span>
         <span style={{
-          fontSize: '0.7rem', background: color, color: 'var(--bg-deep)',
-          padding: '2px 8px', marginTop: '8px', borderRadius: '2px', fontWeight: 'bold'
+          fontFamily: 'var(--font-node), Outfit, sans-serif',
+          fontSize: '0.72rem',
+          background: color,
+          color: 'var(--bg-deep)',
+          padding: '2px 9px',
+          marginTop: '7px',
+          borderRadius: '3px',
+          fontWeight: 800,
+          letterSpacing: '0.02em',
         }}>
           {data.subtasksCount ? `${data.subtasksCount}/${data.subtasksCount}` : '0/0'}
         </span>
@@ -48,6 +65,22 @@ const nodeTypes = {
   cyber: CyberNode,
 };
 
+const calculateExtent = (nodeList: Node[]): CoordinateExtent | undefined => {
+  if (!nodeList || nodeList.length === 0) return undefined;
+  const xs = nodeList.map((n) => n.position.x);
+  const ys = nodeList.map((n) => n.position.y);
+  const minX = Math.min(...xs);
+  const maxX = Math.max(...xs) + NODE_SIZE;
+  const minY = Math.min(...ys);
+  const maxY = Math.max(...ys) + NODE_SIZE;
+  const PADDING_X = 700;
+  const PADDING_Y = 600;
+  return [
+    [minX - PADDING_X, minY - PADDING_Y],
+    [maxX + PADDING_X, maxY + PADDING_Y],
+  ];
+};
+
 export default function TopicMapView() {
   const router = useRouter();
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
@@ -59,6 +92,7 @@ export default function TopicMapView() {
   const [loadingLessons, setLoadingLessons] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [rfInstance, setRfInstance] = useState<any>(null);
+  const [translateExtent, setTranslateExtent] = useState<CoordinateExtent | undefined>(undefined);
 
   const filteredNodes = searchQuery
     ? nodes.filter(n => (n.data.label as string).toLowerCase().includes(searchQuery.toLowerCase()))
@@ -66,7 +100,7 @@ export default function TopicMapView() {
 
   const onSearchSelect = (node: Node) => {
     if (rfInstance) {
-      rfInstance.setCenter(node.position.x + 70, node.position.y + 70, { zoom: 1.2, duration: 800 });
+      rfInstance.setCenter(node.position.x + NODE_SIZE / 2, node.position.y + NODE_SIZE / 2, { zoom: 1.15, duration: 600 });
     }
     onNodeClick({} as React.MouseEvent, node);
     setSearchQuery("");
@@ -105,6 +139,7 @@ export default function TopicMapView() {
 
           setNodes(rawNodes);
           setEdges(rawEdges);
+          setTranslateExtent(calculateExtent(rawNodes));
         }
       } catch (err) {
         console.error("Error fetching nodes:", err);
@@ -117,6 +152,14 @@ export default function TopicMapView() {
 
   const onNodeClick = useCallback(async (event: React.MouseEvent, node: Node) => {
     setSelectedNode(node);
+    if (rfInstance) {
+      const currentZoom = rfInstance.getZoom ? rfInstance.getZoom() : 1.0;
+      const targetZoom = Math.max(currentZoom, 1.0);
+      rfInstance.setCenter(node.position.x + NODE_SIZE / 2, node.position.y + NODE_SIZE / 2, {
+        zoom: targetZoom,
+        duration: 600,
+      });
+    }
     setSidebarLessons([]);
     setLoadingLessons(true);
     try {
@@ -133,7 +176,7 @@ export default function TopicMapView() {
     } finally {
       setLoadingLessons(false);
     }
-  }, []);
+  }, [rfInstance]);
 
   const saveLayout = async () => {
     setSavingLayout(true);
@@ -166,6 +209,7 @@ export default function TopicMapView() {
         throw new Error(`Database Error: ${data.error}`);
       }
 
+      setTranslateExtent(calculateExtent(nodes));
       alert("Layout saved successfully!");
     } catch (err: any) {
       console.error("Error saving layout:", err);
@@ -286,9 +330,12 @@ export default function TopicMapView() {
               zoomOnScroll={true}
               zoomOnPinch={true}
               zoomOnDoubleClick={true}
-              minZoom={0.01}
+              minZoom={0.65}
+              maxZoom={1.5}
+              translateExtent={translateExtent}
+              nodeExtent={translateExtent}
               fitView
-              fitViewOptions={{ minZoom: 0.3, maxZoom: 1 }}
+              fitViewOptions={{ minZoom: 0.65, maxZoom: 1.1, padding: 0.2 }}
               onInit={setRfInstance}
               proOptions={{ hideAttribution: true }}
             >

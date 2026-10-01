@@ -11,6 +11,7 @@ const config: Config = {
       fontFamily: {
         sans: ["var(--font-jakarta)", "Plus Jakarta Sans", "sans-serif"],
         heading: ["var(--font-jakarta)", "Plus Jakarta Sans", "sans-serif"],
+        node: ["var(--font-node)", "Outfit", "var(--font-jakarta)", "sans-serif"],
       },
       colors: {
         'dark-bg': 'var(--bg-dark)',

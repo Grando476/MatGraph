@@ -1,11 +1,18 @@
 import type { Metadata } from "next";
-import { Plus_Jakarta_Sans } from "next/font/google";
+import { Plus_Jakarta_Sans, Outfit } from "next/font/google";
 import "./globals.css";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
   variable: "--font-jakarta",
   weight: ["300", "400", "500", "600", "700", "800"],
+  display: "swap",
+});
+
+const nodeFont = Outfit({
+  subsets: ["latin"],
+  variable: "--font-node",
+  weight: ["600", "700", "800", "900"],
   display: "swap",
 });
 
@@ -20,7 +27,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pl" className={plusJakartaSans.variable}>
+    <html lang="pl" className={`${plusJakartaSans.variable} ${nodeFont.variable}`}>
       <body className={`${plusJakartaSans.className} font-sans bg-[var(--bg-dark)] text-[var(--text-main)] antialiased min-h-screen`}>
         {children}
       </body>
