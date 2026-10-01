@@ -81,8 +81,8 @@ export default function RegisterPage() {
 
       {/* Header Navigation */}
       <header className="absolute top-6 left-6 right-6 flex justify-between items-center max-w-6xl mx-auto w-full z-10">
-        <Link 
-          href="/" 
+        <Link
+          href="/"
           className="flex items-center gap-2 text-xl font-bold tracking-tight text-[var(--text-main)] hover:text-[var(--accent-main)] transition-colors"
         >
           <div className="w-8 h-8 rounded-lg bg-[var(--accent-dark)]/30 border border-[var(--accent-main)] flex items-center justify-center text-[var(--accent-main)] font-mono text-sm font-bold">
@@ -105,7 +105,7 @@ export default function RegisterPage() {
       {/* Registration Card Form */}
       <main className="w-full max-w-md z-10 my-16">
         <div className="bg-[var(--bg-card)] border border-[var(--border-dark)] rounded-2xl p-8 shadow-2xl backdrop-blur-md relative">
-          
+
           <div className="text-center mb-6">
             <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-subtle)] text-[var(--accent-main)] mb-3 shadow-inner">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -119,11 +119,10 @@ export default function RegisterPage() {
           </div>
 
           {message && (
-            <div className={`mb-6 p-4 rounded-lg text-sm border ${
-              message.type === "success" 
-                ? "bg-[var(--success-bg)] border-[var(--success-border)] text-[var(--success-text)]" 
+            <div className={`mb-6 p-4 rounded-lg text-sm border ${message.type === "success"
+                ? "bg-[var(--success-bg)] border-[var(--success-border)] text-[var(--success-text)]"
                 : "bg-[var(--error-bg)] border-[var(--error-border)] text-[var(--error-text)]"
-            }`}>
+              }`}>
               {message.text}
             </div>
           )}
@@ -203,11 +202,11 @@ export default function RegisterPage() {
 
             <div className="pt-1">
               <label className="flex items-start gap-2 cursor-pointer text-xs text-[var(--text-muted)] leading-snug">
-                <input 
-                  type="checkbox" 
+                <input
+                  type="checkbox"
                   checked={acceptTerms}
                   onChange={(e) => setAcceptTerms(e.target.checked)}
-                  className="mt-0.5 rounded border-[var(--border-subtle)] bg-[var(--bg-surface)] text-[var(--accent-main)] focus:ring-0" 
+                  className="mt-0.5 rounded border-[var(--border-subtle)] bg-[var(--bg-surface)] text-[var(--accent-main)] focus:ring-0"
                 />
                 <span>Akceptuję <a href="#" className="text-[var(--accent-main)] hover:underline">Regulamin</a> oraz <a href="#" className="text-[var(--accent-main)] hover:underline">Politykę Prywatności</a></span>
               </label>

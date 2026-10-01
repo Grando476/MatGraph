@@ -46,6 +46,7 @@
 }
 
 body {
+  font-family: var(--font-jakarta), 'Plus Jakarta Sans', sans-serif;
   color: var(--text-main);
   background-color: var(--bg-dark);
 }
@@ -55,4 +56,3 @@ body {
     text-wrap: balance;
   }
 }
-

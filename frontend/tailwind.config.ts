@@ -8,6 +8,10 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ["var(--font-jakarta)", "Plus Jakarta Sans", "sans-serif"],
+        heading: ["var(--font-jakarta)", "Plus Jakarta Sans", "sans-serif"],
+      },
       colors: {
         'dark-bg': 'var(--bg-dark)',
         'card-bg': 'var(--bg-card)',
