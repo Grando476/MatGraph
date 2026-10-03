@@ -63,6 +63,7 @@ TWOJE WYTYCZNE DLA KAŻDEGO SZKICU:
 4. Ograniczenie wiedzy: Nawet realizując szkic, BEZWZGLĘDNIE trzymaj się zasady, by nie używać pojęć i symboli nieznanych uczniowi (Zakazany materiał).
 5. Formatowanie: Używaj czystego tekstu z prostym ujęciem LaTeX dla matematyki (bez ucieczkowania JSON - tym zajmie się formater w innym kroku).
 6. Tabele: Strukturę tabeli w treści zadania ("question") stosuj TYLKO wtedy, gdy szkic lub grupa ("{group}") wyraźnie jej wymaga. W pozostałych przypadkach formułuj zadania standardowo, bez tabeli.
+7. Sens fizyczny wielkości policzalnych: Wszystkie rzeczy fizyczne i policzalne (np. liczba rzutów kostką, monetą, liczba osób, uczniów, kul, losów itp.) bezwzględnie muszą być liczbami całkowitymi – NIGDY nie mogą być ułamkami!
 
 Zwróć TYLKO czysty JSON jako LISTĘ obiektów (w takiej samej kolejności i liczbie jak przekazane szkice):
 [
@@ -170,6 +171,7 @@ KRYTERIA:
 1. MATEMATYKA: Czy wskazany "correct_index" na pewno pasuje do rozwiązania "exemplary_solution" i pytania "question"? Zrób rygorystyczny przegląd rachunków.
 2. ROZWIĄZANIE: Czy zadanie posiada "exemplary_solution" i nie jest to wartość pusta? (Brak rozwiązania oznacza natychmiastowy brak walidacji).
 3. FORMAT: Czy WSZYSTKIE liczby i zmienne są w znacznikach $...$ lub $$...$$? Czy bloki równań i układów są poprawne? Jeśli zadanie należy do grupy wprost wymagającej tabeli (np. tabela liczebności) lub zawiera tabelę, czy tabela w LaTeX jest poprawna składniowo i posiada nagłówki w \\\\text{{...}}? (W pozostałych zadaniach obecność tabeli nie jest wymagana).
+4. SENS FIZYCZNY I POLICZALNOŚĆ (RYGORYSTYCZNE): Wszystkie wielkości reprezentujące obiekty fizyczne lub policzalne w świecie rzeczywistym (np. liczba rzutów kostką, liczba rzutów monetą, liczba osób, uczniów, kul, kart, losów, wierzchołków, elementów itp.) BEZWZGLĘDNIE NIE MOGĄ BYĆ UŁAMKAMI. Muszą to być całkowite liczby. Jeśli liczba policzalnych rzeczy lub powtórzeń doświadczenia w treści zadania, opcjach lub rozwiązaniu jest ułamkiem (np. $3,5$ rzutu kostką, $2\\\\frac{{1}}{{2}}$ osoby), natychmiast odrzuć zadanie (ustaw "is_perfect": false i opisz to w "feedback").
 
 Zwróć TYLKO czysty JSON. BARDZO WAŻNE: Pamiętaj o ucieczkowaniu ukośników w polu "reasoning" zgodnie ze standardem JSON (np. komendy zapisuj jako "\\\\alpha", "\\\\frac", a nową linię w LaTeX jako "\\\\\\\\"), aby nie zepsuć struktury pliku:
 {{

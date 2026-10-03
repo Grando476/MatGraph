@@ -13,7 +13,7 @@ def invoke_with_retry(chain, params, max_retries=5, delay=10):
             time.sleep(delay)
     return None
 
-def run_generation_pipeline(llm, context, counts):
+def run_generation_pipeline(llm, context, counts, task_type="MCQ"):
     parser = JsonOutputParser()
 
     BATCH_SIZES = {
