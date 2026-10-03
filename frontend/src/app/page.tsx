@@ -1,261 +1,134 @@
-"use client";
+import Link from "next/link";
+import Footer from "@/components/Footer";
 
-import { useEffect, useState, useCallback } from "react";
-import { ReactFlow, Background, Controls, Node, Edge, useNodesState, useEdgesState, Position, Handle, BackgroundVariant } from "@xyflow/react";
-import "@xyflow/react/dist/style.css";
-
-const CyberNode = ({ data, selected }: any) => {
-  const color = selected ? '#fcee0a' : '#0ea5e9';
-  const dropShadow = selected ? `drop-shadow(0 0 10px ${color})` : 'none';
-  
+export default function HomePage() {
   return (
-    <div style={{ position: 'relative', width: 140, height: 140, filter: dropShadow, transition: 'all 0.2s', cursor: 'pointer' }}>
-      <svg width="140" height="140" viewBox="0 0 140 140" style={{ position: 'absolute', top: 0, left: 0 }}>
-         {/* Outer glowing octagon */}
-         <polygon points="40,5 100,5 135,40 135,100 100,135 40,135 5,100 5,40" 
-            fill="#0a0a0c" stroke={color} strokeWidth="3" opacity="0.9" />
-         {/* Inner decoration octagon */}
-         <polygon points="45,15 95,15 125,45 125,95 95,125 45,125 15,95 15,45" 
-            fill="rgba(255, 255, 255, 0.03)" stroke={color} strokeWidth="1" opacity="0.5" />
-      </svg>
-      
-      <Handle type="target" position={Position.Bottom} style={{ background: 'transparent', border: 'none' }} />
-      
-      <div style={{ 
-          position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', 
-          color: color, textAlign: 'center', display: 'flex', flexDirection: 'column', 
-          alignItems: 'center', justifyContent: 'center', width: '70%', height: '70%',
-          pointerEvents: 'none'
-      }}>
-         <span style={{ fontSize: '0.8rem', fontWeight: 'bold', lineHeight: '1.2', textShadow: `0 0 4px ${color}`, wordBreak: 'break-word' }}>
-             {data.label}
-         </span>
-         <span style={{ 
-             fontSize: '0.7rem', background: color, color: '#0a0a0c', 
-             padding: '2px 8px', marginTop: '8px', borderRadius: '2px', fontWeight: 'bold'
-         }}>
-            {data.subtasksCount ? `${data.subtasksCount}/${data.subtasksCount}` : '0/0'}
-         </span>
-      </div>
-      
-      <Handle type="source" position={Position.Top} style={{ background: 'transparent', border: 'none' }} />
-    </div>
-  );
-};
+    <div className="min-h-screen bg-[var(--bg-dark)] text-[var(--text-main)] flex flex-col justify-between relative overflow-hidden selection:bg-[var(--accent-main)] selection:text-black">
 
-const nodeTypes = {
-  cyber: CyberNode,
-};
+      {/* Dynamic Glowing Background Orbs */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[450px] bg-gradient-to-b from-[var(--accent-dark)]/20 via-[var(--accent-main)]/10 to-transparent blur-[140px] pointer-events-none" />
+      <div className="absolute top-1/3 right-10 w-[400px] h-[400px] bg-[var(--node-green)]/10 rounded-full blur-[130px] pointer-events-none" />
+      <div className="absolute bottom-10 left-10 w-[450px] h-[450px] bg-[var(--accent-yellow)]/5 rounded-full blur-[140px] pointer-events-none" />
 
-export default function Home() {
-  // const router = useRouter();
-  const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
-  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
-  const [loading, setLoading] = useState(true);
-  const [savingLayout, setSavingLayout] = useState(false);
-  const [selectedNode, setSelectedNode] = useState<Node | null>(null);
-  const [sidebarLessons, setSidebarLessons] = useState<any[]>([]);
-  const [loadingLessons, setLoadingLessons] = useState(false);
+      {/* Grid Overlay background */}
+      <div
+        className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b15_1px,transparent_1px),linear-gradient(to_bottom,#1e293b15_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] pointer-events-none"
+      />
 
-  useEffect(() => {
-    const fetchNodes = async () => {
-      try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
-        const res = await fetch(`${apiUrl}/api/v1/nodes`);
-        if (res.ok) {
-          const data = await res.json();
-          if (!data.nodes || !data.edges) return;
-          
-          const rawNodes: Node[] = data.nodes.map((n: any) => ({
-              id: n.id,
-              type: 'cyber',
-              targetPosition: Position.Bottom,
-              sourcePosition: Position.Top,
-              position: { x: n.ui_x || 0, y: n.ui_y || 0 },
-              data: { label: n.name, subtasksCount: n.subtasks_count },
-          }));
-          
-          const rawEdges: Edge[] = data.edges.map((e: any, idx: number) => ({
-              id: `e${e.source}-${e.target}-${idx}`,
-              source: e.source,
-              target: e.target,
-              type: 'smoothstep',
-              animated: false,
-              style: { 
-                stroke: '#0ea5e9',
-                strokeWidth: 3,
-                filter: 'drop-shadow(0 0 5px rgba(14, 165, 233, 0.6))'
-              }
-          }));
-
-          setNodes(rawNodes);
-          setEdges(rawEdges);
-        }
-      } catch (err) {
-        console.error("Error fetching nodes:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchNodes();
-  }, [setNodes, setEdges]);
-  
-  const onNodeClick = useCallback(async (event: React.MouseEvent, node: Node) => {
-      setSelectedNode(node);
-      setSidebarLessons([]);
-      setLoadingLessons(true);
-      try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
-        const res = await fetch(`${apiUrl}/api/v1/nodes/${node.id}/lessons`);
-        if (res.ok) {
-          const data = await res.json();
-          if (data.lessons) {
-            setSidebarLessons(data.lessons);
-          }
-        }
-      } catch (err) {
-        console.error("Error fetching lessons:", err);
-      } finally {
-        setLoadingLessons(false);
-      }
-  }, []);
-
-  const saveLayout = async () => {
-    setSavingLayout(true);
-    try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
-      const positions = nodes.map((n) => ({
-        id: n.id,
-        x: Math.round(n.position.x),
-        y: Math.round(n.position.y),
-      }));
-      
-      const res = await fetch(`${apiUrl}/api/v1/nodes/positions`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ positions }),
-      });
-      if (!res.ok) {
-        let msg = `HTTP Error ${res.status}: ${res.statusText}`;
-        try {
-          const errData = await res.json();
-          msg += ` - ${errData.detail || errData.error || JSON.stringify(errData)}`;
-        } catch {
-          msg += ` - ${await res.text()}`;
-        }
-        throw new Error(msg);
-      }
-      
-      const data = await res.json();
-      if (data.error) {
-         throw new Error(`Database Error: ${data.error}`);
-      }
-      
-      alert("Layout saved successfully!");
-    } catch (err: any) {
-      console.error("Error saving layout:", err);
-      alert(`Failed to save layout.\n\nDetails: ${err.message}`);
-    } finally {
-      setSavingLayout(false);
-    }
-  };
-
-  return (
-    <div style={{ width: '100vw', height: '100vh', background: '#0a0a0c', display: 'flex' }}>
-      <div style={{ flex: 1, position: 'relative' }}>
-          {loading ? (
-              <div className="flex items-center justify-center h-full w-full">
-                  <p className="text-2xl font-semibold text-[#fcee0a] animate-pulse">Initializing Cyber-Tree...</p>
-              </div>
-          ) : (
-              <>
-              <button 
-                  onClick={saveLayout}
-                  disabled={savingLayout}
-                  style={{
-                      position: 'absolute', top: 20, right: 20, zIndex: 100,
-                      padding: '10px 20px', background: savingLayout ? '#64748b' : '#0ea5e9',
-                      color: 'white', border: 'none', borderRadius: '5px',
-                      fontWeight: 'bold', cursor: savingLayout ? 'not-allowed' : 'pointer',
-                      boxShadow: '0 0 15px rgba(14, 165, 233, 0.4)', transition: 'background 0.2s'
-                  }}
-              >
-                  {savingLayout ? 'Saving...' : 'Save Layout'}
-              </button>
-              <ReactFlow 
-                nodes={nodes} 
-                edges={edges} 
-                onNodesChange={onNodesChange}
-                onEdgesChange={onEdgesChange}
-                onNodeClick={onNodeClick}
-                nodeTypes={nodeTypes}
-                nodesDraggable={true}
-                nodesConnectable={false}
-                elementsSelectable={true}
-                panOnDrag={true}
-                panOnScroll={false}
-                zoomOnScroll={true}
-                zoomOnPinch={true}
-                zoomOnDoubleClick={true}
-                fitView
-                proOptions={{ hideAttribution: true }}
-              >
-                <Background color="#1f1f22" gap={25} size={2} variant={BackgroundVariant.Dots} />
-                <Controls style={{ filter: 'invert(80%) sepia(90%) saturate(400%) hue-rotate(360deg)' }} />
-              </ReactFlow>
-              </>
-          )}
-      </div>
-      
-      {selectedNode && (
-        <div style={{ 
-            width: '350px', 
-            background: '#1a222c', 
-            borderLeft: '1px solid #2d3748',
-            boxShadow: '-4px 0 25px rgba(0,0,0,0.5)',
-            display: 'flex',
-            flexDirection: 'column',
-            zIndex: 10
-        }}>
-            <div style={{ padding: '20px', borderBottom: '1px solid #2d3748', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h2 style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#f8fafc', margin: 0 }}>{selectedNode.data.label as string}</h2>
-                <button 
-                  onClick={() => setSelectedNode(null)}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.5rem', color: '#94a3b8' }}
-                >
-                    &times;
-                </button>
+      {/* Header / Navbar */}
+      <header className="relative z-20 max-w-7xl mx-auto w-full px-6 py-6 flex items-center justify-between border-b border-[var(--border-dark)]/50 backdrop-blur-sm">
+        <Link href="/" className="flex items-center gap-3 group">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[var(--accent-main)] to-[var(--accent-dark)] p-0.5 shadow-[0_0_20px_rgba(56,189,248,0.4)] group-hover:shadow-[0_0_25px_rgba(56,189,248,0.7)] transition-all">
+            <div className="w-full h-full bg-[var(--bg-dark)] rounded-[10px] flex items-center justify-center font-mono font-bold text-[var(--accent-main)] text-xl">
+              ∑
             </div>
-            <div style={{ padding: '20px', overflowY: 'auto', flex: 1 }}>
-                <h3 style={{ fontSize: '1rem', fontWeight: '600', color: '#cbd5e1', marginBottom: '15px' }}>Lessons</h3>
-                {loadingLessons ? (
-                    <p style={{ color: '#64748b' }}>Loading lessons...</p>
-                ) : sidebarLessons.length > 0 ? (
-                    <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                        {sidebarLessons.map((lesson: any) => (
-                            <li key={lesson.id} style={{ 
-                                padding: '15px', 
-                                border: '1px solid #334155', 
-                                borderRadius: '8px', 
-                                marginBottom: '10px',
-                                cursor: 'pointer',
-                                transition: 'all 0.2s',
-                                background: '#1e293b'
-                            }}
-                            onMouseEnter={(e: any) => { e.currentTarget.style.borderColor = '#0ea5e9'; e.currentTarget.style.background = '#273549'; }}
-                            onMouseLeave={(e: any) => { e.currentTarget.style.borderColor = '#334155'; e.currentTarget.style.background = '#1e293b'; }}
-                            >
-                                <h4 style={{ margin: '0 0 5px 0', color: '#38bdf8', fontSize: '1rem' }}>{lesson.title}</h4>
-                                {lesson.importance && <span style={{ fontSize: '0.8rem', color: '#94a3b8', fontWeight: 'bold', display: 'block', marginTop: '4px' }}>Importance: {lesson.importance} / 5</span>}
-                            </li>
-                        ))}
-                    </ul>
-                ) : (
-                    <p style={{ color: '#64748b', fontStyle: 'italic', fontSize: '0.875rem' }}>No lessons available for this topic yet.</p>
-                )}
-            </div>
+          </div>
+          <span className="text-2xl font-extrabold tracking-tight">
+            Edu<span className="text-[var(--accent-main)]">Math</span>
+          </span>
+        </Link>
+
+        {/* Header Action Buttons */}
+        <div className="flex items-center gap-4">
+          <Link
+            href="/login"
+            className="px-5 py-2.5 text-sm font-semibold rounded-lg bg-[var(--bg-card)] border border-[var(--border-subtle)] text-[var(--text-main)] hover:border-[var(--accent-main)] hover:text-[var(--accent-main)] hover:shadow-[0_0_15px_rgba(56,189,248,0.25)] transition-all"
+          >
+            Zaloguj się
+          </Link>
         </div>
-      )}
+      </header>
+
+      {/* Hero Section */}
+      <main className="relative z-10 max-w-5xl mx-auto px-6 pt-16 pb-20 text-center flex-1 flex flex-col justify-center items-center">
+
+
+        {/* Main Headline */}
+        <h1 className="text-4xl sm:text-6xl md:text-7xl font-black tracking-tight leading-[1.1] mb-6">
+          Odkrywaj matematykę w formie{" "}
+          <span className="bg-gradient-to-r from-[var(--accent-main)] via-[var(--node-green)] to-[var(--accent-yellow)] bg-clip-text text-transparent">
+            interaktywnego grafu
+          </span>
+        </h1>
+
+        {/* Subtitle */}
+        <p className="text-lg sm:text-xl text-[var(--text-subtle)] max-w-3xl mx-auto mb-10 leading-relaxed font-normal">
+          Wizualizuj zależności między pojęciami matematycznymi, ucz się z lekcji multimedialnych i rozwiązuj interaktywne zadania dopasowane do Twojego poziomu.
+        </p>
+
+        {/* Primary Action Buttons Requested by User */}
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full sm:w-auto mb-16">
+
+          {/* Button 1: Transfer to Register Page */}
+          <Link
+            href="/register"
+            className="w-full sm:w-auto px-8 py-4 rounded-xl bg-gradient-to-r from-[var(--accent-dark)] to-[var(--accent-hover)] text-white font-bold text-base shadow-[0_0_25px_rgba(14,165,233,0.4)] hover:shadow-[0_0_35px_rgba(14,165,233,0.7)] hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3 group"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-sky-200 group-hover:rotate-12 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+            </svg>
+            <span>Zarejestruj się</span>
+          </Link>
+
+          {/* Button 2: Go unlogged into math graph page */}
+          <Link
+            href="/graph"
+            className="w-full sm:w-auto px-8 py-4 rounded-xl bg-[var(--bg-card)] border-2 border-[var(--border-subtle)] text-[var(--text-main)] font-bold text-base hover:border-[var(--node-green)] hover:text-white hover:shadow-[0_0_25px_rgba(76,211,155,0.3)] hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3 group"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-[var(--node-green)] group-hover:scale-125 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+            <span>Sprawdź bez logowania</span>
+          </Link>
+
+        </div>
+
+        {/* Feature Cards Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full text-left mt-4">
+
+          <div className="p-6 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-dark)] hover:border-[var(--accent-main)]/50 transition-all hover:-translate-y-1 shadow-lg group">
+            <div className="w-12 h-12 rounded-xl bg-[var(--accent-dark)]/20 border border-[var(--accent-main)]/30 flex items-center justify-center text-[var(--accent-main)] mb-4 group-hover:scale-110 transition-transform">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2z" />
+              </svg>
+            </div>
+            <h3 className="text-xl font-bold mb-2 text-white">Graf Wiedzy</h3>
+            <p className="text-sm text-[var(--text-muted)] leading-relaxed">
+              Przeglądaj powiązane węzły tematów matematycznych. Przemieszczaj się płynnie od podstaw do zaawansowanych teorii.
+            </p>
+          </div>
+
+          <div className="p-6 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-dark)] hover:border-[var(--node-green)]/50 transition-all hover:-translate-y-1 shadow-lg group">
+            <div className="w-12 h-12 rounded-xl bg-[var(--node-green)]/10 border border-[var(--node-green)]/30 flex items-center justify-center text-[var(--node-green)] mb-4 group-hover:scale-110 transition-transform">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+              </svg>
+            </div>
+            <h3 className="text-xl font-bold mb-2 text-white">Dedykowane Lekcje</h3>
+            <p className="text-sm text-[var(--text-muted)] leading-relaxed">
+              Dostęp do teorii z pięknymi wzorami KaTeX oraz dedykowanymi materiałami wideo ułatwiającymi przyswojenie wiedzy.
+            </p>
+          </div>
+
+          <div className="p-6 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-dark)] hover:border-[var(--accent-yellow)]/50 transition-all hover:-translate-y-1 shadow-lg group">
+            <div className="w-12 h-12 rounded-xl bg-[var(--accent-yellow)]/10 border border-[var(--accent-yellow)]/30 flex items-center justify-center text-[var(--accent-yellow)] mb-4 group-hover:scale-110 transition-transform">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <h3 className="text-xl font-bold mb-2 text-white">Zadania i Praktyka</h3>
+            <p className="text-sm text-[var(--text-muted)] leading-relaxed">
+              Sprawdzaj wiedzę w praktyce, otrzymuj natychmiastową weryfikację odpowiedzi oraz pełne wzorcowe wyjaśnienia krok po kroku.
+            </p>
+          </div>
+
+        </div>
+
+      </main>
+
+      {/* Footer */}
+      <Footer />
+
     </div>
   );
 }
