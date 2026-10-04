@@ -273,10 +273,10 @@ export default function TopicMapView() {
       }
 
       setTranslateExtent(calculateExtent(nodes));
-      alert("Layout saved successfully!");
+      alert("Stan został pomyślnie zapisany!");
     } catch (err: any) {
       console.error("Error saving layout:", err);
-      alert(`Failed to save layout.\n\nDetails: ${err.message}`);
+      alert(`Nie udało się zapisać stanu.\n\nSzczegóły: ${err.message}`);
     } finally {
       setSavingLayout(false);
     }
@@ -356,91 +356,13 @@ export default function TopicMapView() {
                 pointerEvents: 'none',
               }}>
                 <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--node-yellow)', display: 'inline-block' }} />
-                Tryb edycji aktywny — przesuwanie węzłów odblokowane
+                Tryb edycji aktywny
               </div>
             )}
             <div style={{
               position: 'absolute', top: 20, right: 20, zIndex: 100,
               display: 'flex', gap: '10px', alignItems: 'center'
             }}>
-              {currentUser?.role === 'admin' && (
-                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                  {/* Special button to unlock/lock moving nodes */}
-                  <button
-                    onClick={() => setCanMoveNodes(!canMoveNodes)}
-                    title={canMoveNodes ? "Zablokuj przesuwanie węzłów" : "Odblokuj przesuwanie węzłów"}
-                    style={{
-                      padding: '9px 14px',
-                      background: canMoveNodes ? 'rgba(234, 179, 8, 0.18)' : 'var(--bg-card)',
-                      color: canMoveNodes ? 'var(--node-yellow)' : 'var(--text-main)',
-                      border: `1.5px solid ${canMoveNodes ? 'var(--node-yellow)' : 'var(--border-dark)'}`,
-                      borderRadius: '6px',
-                      fontWeight: '600',
-                      fontSize: '0.825rem',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '7px',
-                      boxShadow: canMoveNodes ? '0 0 12px rgba(234, 179, 8, 0.35)' : '0 4px 10px rgba(0,0,0,0.3)',
-                      transition: 'all 0.2s',
-                    }}
-                    onMouseEnter={(e: any) => {
-                      if (!canMoveNodes) e.currentTarget.style.background = 'var(--bg-card-hover)';
-                    }}
-                    onMouseLeave={(e: any) => {
-                      if (!canMoveNodes) e.currentTarget.style.background = 'var(--bg-card)';
-                    }}
-                  >
-                    {canMoveNodes ? (
-                      <>
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                          <path d="M7 11V7a5 5 0 0 1 9.9-1" />
-                        </svg>
-                        <span>Zablokuj węzły</span>
-                      </>
-                    ) : (
-                      <>
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                          <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                        </svg>
-                        <span>Odblokuj węzły</span>
-                      </>
-                    )}
-                  </button>
-
-                  {/* Save Layout Button */}
-                  <button
-                    onClick={saveLayout}
-                    disabled={savingLayout}
-                    title="Zapisz aktualne pozycje węzłów"
-                    style={{
-                      padding: '9px 15px',
-                      background: savingLayout ? 'var(--text-dim)' : 'var(--accent-hover)',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '6px',
-                      fontWeight: '600',
-                      fontSize: '0.825rem',
-                      cursor: savingLayout ? 'not-allowed' : 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '7px',
-                      boxShadow: '0 0 10px rgba(14, 165, 233, 0.3)',
-                      transition: 'all 0.2s',
-                    }}
-                  >
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
-                      <polyline points="17 21 17 13 7 13 7 21" />
-                      <polyline points="7 3 7 8 15 8" />
-                    </svg>
-                    <span>{savingLayout ? 'Saving...' : 'Save Layout'}</span>
-                  </button>
-                </div>
-              )}
-
               {!currentUser ? (
                 <button
                   onClick={() => router.push('/login')}
@@ -581,6 +503,7 @@ export default function TopicMapView() {
                           <button
                             onClick={saveLayout}
                             disabled={savingLayout}
+                            title="Zapisz stan"
                             style={{
                               width: '100%',
                               padding: '9px 12px',
@@ -604,7 +527,7 @@ export default function TopicMapView() {
                               <polyline points="17 21 17 13 7 13 7 21" />
                               <polyline points="7 3 7 8 15 8" />
                             </svg>
-                            {savingLayout ? 'Saving...' : 'Save Layout'}
+                            {savingLayout ? 'Zapisywanie...' : 'Zapisz stan'}
                           </button>
                         </div>
                       )}
@@ -700,9 +623,9 @@ export default function TopicMapView() {
             </button>
           </div>
           <div style={{ padding: '20px', overflowY: 'auto', flex: 1 }}>
-            <h3 style={{ fontSize: '1rem', fontWeight: '600', color: 'var(--text-subtle)', marginBottom: '15px' }}>Lessons</h3>
+            <h3 style={{ fontSize: '1rem', fontWeight: '600', color: 'var(--text-subtle)', marginBottom: '15px' }}>Lekcje</h3>
             {loadingLessons ? (
-              <p style={{ color: 'var(--text-dim)' }}>Loading lessons...</p>
+              <p style={{ color: 'var(--text-dim)' }}>Ładowanie lekcji...</p>
             ) : sidebarLessons.length > 0 ? (
               <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
                 {sidebarLessons.map((lesson: any) => (
@@ -720,12 +643,12 @@ export default function TopicMapView() {
                     onMouseLeave={(e: any) => { e.currentTarget.style.borderColor = 'var(--border-subtle)'; e.currentTarget.style.background = 'var(--bg-surface)'; }}
                   >
                     <h4 style={{ margin: '0 0 5px 0', color: 'var(--accent-main)', fontSize: '1rem' }}>{lesson.title}</h4>
-                    {lesson.importance && <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 'bold', display: 'block', marginTop: '4px' }}>Importance: {lesson.importance} / 5</span>}
+                    {lesson.importance && <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 'bold', display: 'block', marginTop: '4px' }}>Ważność: {lesson.importance} / 5</span>}
                   </li>
                 ))}
               </ul>
             ) : (
-              <p style={{ color: 'var(--text-dim)', fontStyle: 'italic', fontSize: '0.875rem' }}>No lessons available for this topic yet.</p>
+              <p style={{ color: 'var(--text-dim)', fontStyle: 'italic', fontSize: '0.875rem' }}>Brak dostępnych lekcji dla tego tematu.</p>
             )}
           </div>
         </div>
