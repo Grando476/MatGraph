@@ -88,6 +88,7 @@ export default function TopicMapView() {
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const [loading, setLoading] = useState(true);
   const [savingLayout, setSavingLayout] = useState(false);
+  const [canMoveNodes, setCanMoveNodes] = useState(false);
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
   const [sidebarLessons, setSidebarLessons] = useState<any[]>([]);
   const [loadingLessons, setLoadingLessons] = useState(false);
@@ -97,6 +98,8 @@ export default function TopicMapView() {
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
+
+  const canDragNodes = Boolean(currentUser?.role === 'admin' && canMoveNodes);
 
   const filteredNodes = searchQuery
     ? nodes.filter(n => (n.data.label as string).toLowerCase().includes(searchQuery.toLowerCase()))
@@ -127,6 +130,12 @@ export default function TopicMapView() {
   }, []);
 
   useEffect(() => {
+    if (currentUser?.role !== 'admin') {
+      setCanMoveNodes(false);
+    }
+  }, [currentUser]);
+
+  useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (profileRef.current && !profileRef.current.contains(event.target as globalThis.Node)) {
         setIsProfileOpen(false);
@@ -143,10 +152,22 @@ export default function TopicMapView() {
   const handleLogout = async () => {
     await authLogout();
     setCurrentUser(null);
+    setCanMoveNodes(false);
     setIsProfileOpen(false);
     router.push("/");
     router.refresh();
   };
+
+  const handleNodesChange = useCallback((changes: any) => {
+    if (!canDragNodes) {
+      const nonPositionChanges = changes.filter((c: any) => c.type !== 'position');
+      if (nonPositionChanges.length > 0) {
+        onNodesChange(nonPositionChanges);
+      }
+      return;
+    }
+    onNodesChange(changes);
+  }, [canDragNodes, onNodesChange]);
 
   useEffect(() => {
     const fetchNodes = async () => {
@@ -314,10 +335,112 @@ export default function TopicMapView() {
                 </div>
               )}
             </div>
+            {canDragNodes && (
+              <div style={{
+                position: 'absolute',
+                top: 20,
+                left: '50%',
+                transform: 'translateX(-50%)',
+                zIndex: 90,
+                background: 'rgba(234, 179, 8, 0.15)',
+                border: '1px solid var(--node-yellow)',
+                borderRadius: '20px',
+                padding: '6px 16px',
+                color: 'var(--node-yellow)',
+                fontSize: '0.8rem',
+                fontWeight: '700',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                boxShadow: '0 0 15px rgba(234, 179, 8, 0.25)',
+                pointerEvents: 'none',
+              }}>
+                <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--node-yellow)', display: 'inline-block' }} />
+                Tryb edycji aktywny — przesuwanie węzłów odblokowane
+              </div>
+            )}
             <div style={{
               position: 'absolute', top: 20, right: 20, zIndex: 100,
               display: 'flex', gap: '10px', alignItems: 'center'
             }}>
+              {currentUser?.role === 'admin' && (
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  {/* Special button to unlock/lock moving nodes */}
+                  <button
+                    onClick={() => setCanMoveNodes(!canMoveNodes)}
+                    title={canMoveNodes ? "Zablokuj przesuwanie węzłów" : "Odblokuj przesuwanie węzłów"}
+                    style={{
+                      padding: '9px 14px',
+                      background: canMoveNodes ? 'rgba(234, 179, 8, 0.18)' : 'var(--bg-card)',
+                      color: canMoveNodes ? 'var(--node-yellow)' : 'var(--text-main)',
+                      border: `1.5px solid ${canMoveNodes ? 'var(--node-yellow)' : 'var(--border-dark)'}`,
+                      borderRadius: '6px',
+                      fontWeight: '600',
+                      fontSize: '0.825rem',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '7px',
+                      boxShadow: canMoveNodes ? '0 0 12px rgba(234, 179, 8, 0.35)' : '0 4px 10px rgba(0,0,0,0.3)',
+                      transition: 'all 0.2s',
+                    }}
+                    onMouseEnter={(e: any) => {
+                      if (!canMoveNodes) e.currentTarget.style.background = 'var(--bg-card-hover)';
+                    }}
+                    onMouseLeave={(e: any) => {
+                      if (!canMoveNodes) e.currentTarget.style.background = 'var(--bg-card)';
+                    }}
+                  >
+                    {canMoveNodes ? (
+                      <>
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                          <path d="M7 11V7a5 5 0 0 1 9.9-1" />
+                        </svg>
+                        <span>Zablokuj węzły</span>
+                      </>
+                    ) : (
+                      <>
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                          <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                        </svg>
+                        <span>Odblokuj węzły</span>
+                      </>
+                    )}
+                  </button>
+
+                  {/* Save Layout Button */}
+                  <button
+                    onClick={saveLayout}
+                    disabled={savingLayout}
+                    title="Zapisz aktualne pozycje węzłów"
+                    style={{
+                      padding: '9px 15px',
+                      background: savingLayout ? 'var(--text-dim)' : 'var(--accent-hover)',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '6px',
+                      fontWeight: '600',
+                      fontSize: '0.825rem',
+                      cursor: savingLayout ? 'not-allowed' : 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '7px',
+                      boxShadow: '0 0 10px rgba(14, 165, 233, 0.3)',
+                      transition: 'all 0.2s',
+                    }}
+                  >
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+                      <polyline points="17 21 17 13 7 13 7 21" />
+                      <polyline points="7 3 7 8 15 8" />
+                    </svg>
+                    <span>{savingLayout ? 'Saving...' : 'Save Layout'}</span>
+                  </button>
+                </div>
+              )}
+
               {!currentUser ? (
                 <button
                   onClick={() => router.push('/login')}
@@ -414,9 +537,47 @@ export default function TopicMapView() {
                         </span>
                       </div>
 
-                      {/* Admin Tools: Save Layout */}
+                      {/* Admin Tools: Unlock Movement & Save Layout */}
                       {currentUser.role === 'admin' && (
-                        <div style={{ paddingBottom: '10px', borderBottom: '1px solid var(--border-dark)' }}>
+                        <div style={{ paddingBottom: '10px', borderBottom: '1px solid var(--border-dark)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                          <button
+                            onClick={() => setCanMoveNodes(!canMoveNodes)}
+                            style={{
+                              width: '100%',
+                              padding: '8px 12px',
+                              background: canMoveNodes ? 'rgba(234, 179, 8, 0.15)' : 'transparent',
+                              color: canMoveNodes ? 'var(--node-yellow)' : 'var(--text-main)',
+                              border: `1px solid ${canMoveNodes ? 'var(--node-yellow)' : 'var(--border-dark)'}`,
+                              borderRadius: '5px',
+                              fontWeight: '600',
+                              fontSize: '0.8rem',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              gap: '8px',
+                              transition: 'all 0.2s',
+                            }}
+                          >
+                            {canMoveNodes ? (
+                              <>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                                  <path d="M7 11V7a5 5 0 0 1 9.9-1" />
+                                </svg>
+                                <span>Zablokuj węzły</span>
+                              </>
+                            ) : (
+                              <>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                                </svg>
+                                <span>Odblokuj węzły</span>
+                              </>
+                            )}
+                          </button>
+
                           <button
                             onClick={saveLayout}
                             disabled={savingLayout}
@@ -491,11 +652,11 @@ export default function TopicMapView() {
             <ReactFlow
               nodes={nodes}
               edges={edges}
-              onNodesChange={onNodesChange}
+              onNodesChange={handleNodesChange}
               onEdgesChange={onEdgesChange}
               onNodeClick={onNodeClick}
               nodeTypes={nodeTypes}
-              nodesDraggable={true}
+              nodesDraggable={canDragNodes}
               nodesConnectable={false}
               elementsSelectable={true}
               panOnDrag={true}
