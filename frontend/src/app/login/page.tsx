@@ -62,12 +62,8 @@ export default function LoginPage() {
         <div className="bg-[var(--bg-card)] border border-[var(--border-dark)] rounded-2xl p-8 shadow-2xl backdrop-blur-md relative">
 
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-subtle)] text-[var(--accent-main)] mb-3 shadow-inner">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-              </svg>
-            </div>
-            <h1 className="text-2xl font-bold text-[var(--text-main)]">Zaloguj się do EduMath</h1>
+            <Logo size="lg" className="mb-4" />
+            <h1 className="text-2xl font-bold text-[var(--text-main)]">Zaloguj się do MatGraph</h1>
             <p className="text-sm text-[var(--text-muted)] mt-1">
               Uzyskaj dostęp do swojego profilu, postępów i spersonalizowanych lekcji.
             </p>

@@ -17,8 +17,8 @@ const nodeFont = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "EduMath — Graf Wiedzy i Relacji Matematycznych",
-  description: "Platforma wizualizacji zależności między pojęciami matematycznymi, analizy luk wiedzy i interaktywnej edukacji akademickiej.",
+  title: "MatGraph — Interaktywna Mapa do Matury | Graf Wiedzy",
+  description: "Platforma wizualizacji zależności między pojęciami matematycznymi, analizy luk wiedzy i interaktywnej edukacji maturalnej.",
 };
 
 export default function RootLayout({

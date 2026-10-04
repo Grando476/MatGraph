@@ -100,12 +100,8 @@ export default function RegisterPage() {
         <div className="bg-[var(--bg-card)] border border-[var(--border-dark)] rounded-2xl p-8 shadow-2xl backdrop-blur-md relative">
 
           <div className="text-center mb-6">
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-subtle)] text-[var(--accent-main)] mb-3 shadow-inner">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-              </svg>
-            </div>
-            <h1 className="text-2xl font-bold text-[var(--text-main)]">Dołącz do EduMath</h1>
+            <Logo size="lg" className="mb-3" />
+            <h1 className="text-2xl font-bold text-[var(--text-main)]">Dołącz do MatGraph</h1>
             <p className="text-sm text-[var(--text-muted)] mt-1">
               Utwórz darmowe konto ucznia i rozpocznij naukę.
             </p>

@@ -20,8 +20,9 @@ export default function HomePage() {
       </header>
 
       {/* Skupiona, minimalistyczna sekcja główna */}
-      <main className="max-w-3xl mx-auto px-6 py-20 sm:py-28 flex-1 flex flex-col justify-center items-center text-center">
-
+      <main className="max-w-3xl mx-auto px-6 py-14 sm:py-20 flex-1 flex flex-col justify-center items-center text-center">
+        {/* Nowe, powiększone logo w sekcji hero */}
+        <Logo size="2xl" className="mb-6" />
 
         {/* Czysty, wyrazisty nagłówek */}
         <h1 className="font-heading text-3xl sm:text-5xl font-bold tracking-tight text-[#e6edf3] leading-[1.15] mb-5">
