@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import 'katex/dist/katex.min.css';
 import MixedMathText from "@/components/MixedMathText";
 import Footer from "@/components/Footer";
+import Logo from "@/components/Logo";
 
 interface ExerciseViewProps {
   exerciseId: string;
@@ -71,11 +72,21 @@ export default function ExerciseView({ exerciseId }: ExerciseViewProps) {
 
   return (
     <div className="min-h-screen bg-[var(--bg-dark)] text-text-main flex flex-col justify-between">
+      {/* Header with enlarged Logo */}
+      <header className="border-b border-[#212836] bg-[#0d1117]/80 backdrop-blur-md sticky top-0 z-20">
+        <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
+          <Logo size="lg" showSubtitle />
+          <button
+            onClick={() => router.back()}
+            className="flex items-center gap-2 px-3.5 py-2 text-xs font-semibold rounded-lg border border-[var(--border-dark)] text-[var(--text-subtle)] bg-[var(--bg-card)] hover:bg-[var(--bg-card-hover)] hover:text-[var(--accent-main)] hover:border-[var(--accent-main)] transition-all shadow-sm"
+          >
+            &larr; Wróć
+          </button>
+        </div>
+      </header>
+
       <div className="p-8 flex-1">
         <div className="max-w-3xl mx-auto bg-card-bg border border-border-dark p-8 rounded-lg shadow-xl text-text-main">
-          <button onClick={() => router.back()} className="text-accent-main hover:text-accent-hover transition-colors mb-6 inline-block">
-            &larr; Wróć do Lekcji
-          </button>
           <h1 className="text-3xl font-bold mb-6 text-text-main">{taskGroup.task_group_name}</h1>
 
           {taskGroup.tasks && taskGroup.tasks.length > 0 ? (

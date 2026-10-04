@@ -1,24 +1,18 @@
 import Link from "next/link";
 import Footer from "@/components/Footer";
+import Logo from "@/components/Logo";
 
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-[#0d1117] text-[#e6edf3] flex flex-col justify-between selection:bg-blue-600/30 selection:text-[#e6edf3]">
-      {/* Czysty, minimalistyczny Header */}
-      <header className="border-b border-[#212836] bg-[#0d1117]/80 backdrop-blur-sm sticky top-0 z-20">
-        <div className="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2.5 group">
-            <span className="w-6 h-6 rounded bg-[#161c26] border border-[#2b3446] flex items-center justify-center font-mono text-xs font-semibold text-[#e6edf3] group-hover:border-[#384358] transition-colors">
-              ∑
-            </span>
-            <span className="font-heading font-bold text-sm tracking-tight text-[#e6edf3]">
-              EduMath
-            </span>
-          </Link>
+      {/* Header z drastycznie powiększonym logo */}
+      <header className="border-b border-[#212836] bg-[#0d1117]/80 backdrop-blur-md sticky top-0 z-20">
+        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+          <Logo size="xl" showSubtitle />
 
           <Link
             href="/login"
-            className="px-3 py-1.5 text-xs font-medium rounded-md border border-[#2b3446] text-[#e6edf3] bg-[#161c26] hover:bg-[#1c2430] hover:border-[#384358] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500 transition-colors"
+            className="px-4 py-2 text-sm font-semibold rounded-lg border border-[#2b3446] text-[#e6edf3] bg-[#161c26] hover:bg-[#1c2430] hover:border-[var(--accent-main)] hover:text-[var(--accent-main)] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500 transition-all shadow-sm"
           >
             Zaloguj się
           </Link>

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { authRegister } from "@/utils/auth";
 import Footer from "@/components/Footer";
+import Logo from "@/components/Logo";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -81,15 +82,7 @@ export default function RegisterPage() {
 
       {/* Header Navigation */}
       <header className="absolute top-6 left-6 right-6 flex justify-between items-center max-w-6xl mx-auto w-full z-10">
-        <Link
-          href="/"
-          className="flex items-center gap-2 text-xl font-bold tracking-tight text-[var(--text-main)] hover:text-[var(--accent-main)] transition-colors"
-        >
-          <div className="w-8 h-8 rounded-lg bg-[var(--accent-dark)]/30 border border-[var(--accent-main)] flex items-center justify-center text-[var(--accent-main)] font-mono text-sm font-bold">
-            ∑
-          </div>
-          <span>Edu<span className="text-[var(--accent-main)]">Math</span></span>
-        </Link>
+        <Logo size="xl" showSubtitle />
 
         <div className="flex items-center gap-3">
           <span className="hidden sm:inline text-xs text-[var(--text-muted)]">Masz już konto?</span>

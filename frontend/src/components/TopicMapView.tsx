@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { ReactFlow, Background, Controls, Node, Edge, useNodesState, useEdgesState, Position, Handle, BackgroundVariant, CoordinateExtent } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { getCurrentUser, authLogout, UserProfile } from "@/utils/auth";
+import Logo from "@/components/Logo";
 
 const NODE_SIZE = 180;
 
@@ -292,12 +293,14 @@ export default function TopicMapView() {
         ) : (
           <>
             <div style={{
-              position: 'absolute', top: 20, left: 20, zIndex: 100,
-              display: 'flex', flexDirection: 'column', gap: '5px'
+              position: 'absolute', top: 20, left: 24, zIndex: 100,
+              display: 'flex', alignItems: 'center', gap: '22px'
             }}>
-              <input
-                type="text"
-                placeholder="Szukaj tematu..."
+              <Logo size="lg" showSubtitle className="bg-[var(--bg-card)]/80 backdrop-blur-md px-3.5 py-2 rounded-xl border border-[var(--border-dark)] shadow-lg" />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                <input
+                  type="text"
+                  placeholder="Szukaj tematu..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 style={{
@@ -334,6 +337,7 @@ export default function TopicMapView() {
                   )}
                 </div>
               )}
+              </div>
             </div>
             {canDragNodes && (
               <div style={{
