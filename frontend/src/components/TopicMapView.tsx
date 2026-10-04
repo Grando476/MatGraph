@@ -107,6 +107,14 @@ export default function TopicMapView() {
     : [];
 
   const onSearchSelect = (node: Node) => {
+    // Podświetl wyszukany węzeł i wygaś poprzednio zaznaczony
+    setNodes((prevNodes) =>
+      prevNodes.map((n) => ({
+        ...n,
+        selected: n.id === node.id,
+      }))
+    );
+
     if (rfInstance) {
       rfInstance.setCenter(node.position.x + NODE_SIZE / 2, node.position.y + NODE_SIZE / 2, { zoom: 1.15, duration: 600 });
     }
@@ -304,6 +312,11 @@ export default function TopicMapView() {
                   placeholder="Szukaj"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && filteredNodes.length > 0) {
+                      onSearchSelect(filteredNodes[0]);
+                    }
+                  }}
                   style={{
                     padding: '8px 12px', width: '100%',
                     background: 'var(--bg-card)', color: 'var(--text-main)',
@@ -627,7 +640,10 @@ export default function TopicMapView() {
           <div style={{ padding: '20px', borderBottom: '1px solid var(--border-dark)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <h2 style={{ fontSize: '1.25rem', fontWeight: 'bold', color: 'var(--text-main)', margin: 0 }}>{selectedNode.data.label as string}</h2>
             <button
-              onClick={() => setSelectedNode(null)}
+              onClick={() => {
+                setSelectedNode(null);
+                setNodes((prev) => prev.map((n) => ({ ...n, selected: false })));
+              }}
               style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.5rem', color: 'var(--text-muted)' }}
             >
               &times;
