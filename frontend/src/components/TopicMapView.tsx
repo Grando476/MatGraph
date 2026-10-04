@@ -294,49 +294,56 @@ export default function TopicMapView() {
           <>
             <div style={{
               position: 'absolute', top: 20, left: 24, zIndex: 100,
-              display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '12px'
+              display: 'flex', flexDirection: 'column', gap: '10px',
+              width: '154px'
             }}>
-              <Logo size="lg" className="bg-[var(--bg-card)]/80 backdrop-blur-md px-3.5 py-2 rounded-xl border border-[var(--border-dark)] shadow-lg" />
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+              <Logo size="lg" className="w-full bg-[var(--bg-card)]/85 backdrop-blur-md py-2 rounded-xl border border-[var(--border-dark)] shadow-lg" />
+              <div style={{ position: 'relative', width: '100%' }}>
                 <input
                   type="text"
-                  placeholder="Szukaj tematu..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                style={{
-                  padding: '10px 15px', width: '300px',
-                  background: 'var(--bg-card)', color: 'var(--text-main)',
-                  border: '1px solid var(--border-dark)', borderRadius: '5px',
-                  outline: 'none', boxShadow: '0 4px 6px rgba(0,0,0,0.3)'
-                }}
-              />
-              {searchQuery && (
-                <div style={{
-                  background: 'var(--bg-card)', border: '1px solid var(--border-dark)',
-                  borderRadius: '5px', maxHeight: '300px', overflowY: 'auto',
-                  boxShadow: '0 4px 15px rgba(0,0,0,0.5)'
-                }}>
-                  {filteredNodes.length > 0 ? filteredNodes.map(node => (
-                    <div
-                      key={node.id}
-                      onClick={() => onSearchSelect(node)}
-                      style={{
-                        padding: '10px 15px', color: 'var(--text-subtle)',
-                        cursor: 'pointer', borderBottom: '1px solid var(--border-dark)',
-                        transition: 'background 0.2s'
-                      }}
-                      onMouseEnter={(e: any) => e.currentTarget.style.background = 'var(--bg-card-hover)'}
-                      onMouseLeave={(e: any) => e.currentTarget.style.background = 'transparent'}
-                    >
-                      {node.data.label as string}
-                    </div>
-                  )) : (
-                    <div style={{ padding: '10px 15px', color: 'var(--text-dim)', fontStyle: 'italic' }}>
-                      Brak wyników
-                    </div>
-                  )}
-                </div>
-              )}
+                  placeholder="Szukaj"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  style={{
+                    padding: '8px 12px', width: '100%',
+                    background: 'var(--bg-card)', color: 'var(--text-main)',
+                    border: '1px solid var(--border-dark)', borderRadius: '8px',
+                    outline: 'none', boxShadow: '0 4px 8px rgba(0,0,0,0.3)',
+                    fontSize: '0.85rem',
+                    textAlign: 'center',
+                    backdropFilter: 'blur(8px)',
+                  }}
+                />
+                {searchQuery && (
+                  <div style={{
+                    position: 'absolute', top: 'calc(100% + 6px)', left: 0,
+                    width: '260px',
+                    background: 'var(--bg-card)', border: '1px solid var(--border-dark)',
+                    borderRadius: '8px', maxHeight: '300px', overflowY: 'auto',
+                    boxShadow: '0 8px 25px rgba(0,0,0,0.6)', zIndex: 110
+                  }}>
+                    {filteredNodes.length > 0 ? filteredNodes.map(node => (
+                      <div
+                        key={node.id}
+                        onClick={() => onSearchSelect(node)}
+                        style={{
+                          padding: '10px 14px', color: 'var(--text-subtle)',
+                          cursor: 'pointer', borderBottom: '1px solid var(--border-dark)',
+                          fontSize: '0.875rem',
+                          transition: 'background 0.2s'
+                        }}
+                        onMouseEnter={(e: any) => e.currentTarget.style.background = 'var(--bg-card-hover)'}
+                        onMouseLeave={(e: any) => e.currentTarget.style.background = 'transparent'}
+                      >
+                        {node.data.label as string}
+                      </div>
+                    )) : (
+                      <div style={{ padding: '10px 14px', color: 'var(--text-dim)', fontStyle: 'italic', fontSize: '0.85rem' }}>
+                        Brak wyników
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
             {canDragNodes && (
