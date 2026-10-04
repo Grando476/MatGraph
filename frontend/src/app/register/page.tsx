@@ -80,21 +80,6 @@ export default function RegisterPage() {
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[550px] bg-[var(--accent-main)]/10 rounded-full blur-[130px] pointer-events-none" />
       <div className="absolute bottom-10 left-10 w-[350px] h-[350px] bg-[var(--node-green)]/10 rounded-full blur-[110px] pointer-events-none" />
 
-      {/* Header Navigation */}
-      <header className="absolute top-6 left-6 right-6 flex justify-between items-center max-w-6xl mx-auto w-full z-10">
-        <Logo size="xl" showSubtitle />
-
-        <div className="flex items-center gap-3">
-          <span className="hidden sm:inline text-xs text-[var(--text-muted)]">Masz już konto?</span>
-          <Link
-            href="/login"
-            className="px-4 py-2 text-sm rounded-lg border border-[var(--border-subtle)] text-[var(--text-main)] hover:border-[var(--accent-main)] hover:text-[var(--accent-main)] transition-all"
-          >
-            Zaloguj się
-          </Link>
-        </div>
-      </header>
-
       {/* Registration Card Form */}
       <main className="w-full max-w-md z-10 my-16">
         <div className="bg-[var(--bg-card)] border border-[var(--border-dark)] rounded-2xl p-8 shadow-2xl backdrop-blur-md relative">

@@ -294,9 +294,9 @@ export default function TopicMapView() {
           <>
             <div style={{
               position: 'absolute', top: 20, left: 24, zIndex: 100,
-              display: 'flex', alignItems: 'center', gap: '22px'
+              display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '12px'
             }}>
-              <Logo size="lg" showSubtitle className="bg-[var(--bg-card)]/80 backdrop-blur-md px-3.5 py-2 rounded-xl border border-[var(--border-dark)] shadow-lg" />
+              <Logo size="lg" className="bg-[var(--bg-card)]/80 backdrop-blur-md px-3.5 py-2 rounded-xl border border-[var(--border-dark)] shadow-lg" />
               <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
                 <input
                   type="text"

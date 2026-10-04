@@ -52,11 +52,6 @@ export default function LoginPage() {
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-[var(--accent-main)]/10 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-10 right-10 w-[350px] h-[350px] bg-[var(--accent-yellow)]/5 rounded-full blur-[100px] pointer-events-none" />
 
-      {/* Top Header Navigation */}
-      <header className="absolute top-6 left-6 right-6 flex justify-between items-center max-w-6xl mx-auto w-full z-10">
-        <Logo size="xl" showSubtitle />
-      </header>
-
       {/* Login Card */}
       <main className="w-full max-w-md z-10 my-12">
         <div className="bg-[var(--bg-card)] border border-[var(--border-dark)] rounded-2xl p-8 shadow-2xl backdrop-blur-md relative">

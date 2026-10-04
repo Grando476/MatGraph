@@ -5,22 +5,8 @@ import Logo from "@/components/Logo";
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-[#0d1117] text-[#e6edf3] flex flex-col justify-between selection:bg-blue-600/30 selection:text-[#e6edf3]">
-      {/* Header z drastycznie powiększonym logo */}
-      <header className="border-b border-[#212836] bg-[#0d1117]/80 backdrop-blur-md sticky top-0 z-20">
-        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Logo size="xl" showSubtitle />
-
-          <Link
-            href="/login"
-            className="px-4 py-2 text-sm font-semibold rounded-lg border border-[#2b3446] text-[#e6edf3] bg-[#161c26] hover:bg-[#1c2430] hover:border-[var(--accent-main)] hover:text-[var(--accent-main)] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500 transition-all shadow-sm"
-          >
-            Zaloguj się
-          </Link>
-        </div>
-      </header>
-
       {/* Skupiona, minimalistyczna sekcja główna */}
-      <main className="max-w-3xl mx-auto px-6 py-14 sm:py-20 flex-1 flex flex-col justify-center items-center text-center">
+      <main className="max-w-3xl mx-auto px-6 py-16 sm:py-24 flex-1 flex flex-col justify-center items-center text-center">
         {/* Nowe, powiększone logo w sekcji hero */}
         <Logo size="2xl" className="mb-6" />
 
@@ -31,66 +17,37 @@ export default function HomePage() {
 
         {/* Zwięzły opis */}
         <p className="font-sans text-sm sm:text-base text-[#9da7b3] leading-relaxed max-w-xl mb-10">
-          Wizualizacja pojęć w formie grafu zależności, teoria ze składem formuł KaTeX oraz ukierunkowane zadania dopasowane do Twojego poziomu.
+          Przygotuj się do matury krok po kroku poznając zagadnienia i rozwiązując zadania, które razem tworzą mozaikę wiedzy matematycznej
         </p>
 
         {/* Precyzyjne, minimalistyczne akcje */}
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 w-full sm:w-auto mb-16">
+        <div className="flex flex-col items-center justify-center gap-3 w-full sm:w-auto mb-10">
+          {/* Rząd z Zaloguj się oraz Zarejestruj się */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 w-full">
+            <Link
+              href="/login"
+              className="w-full sm:w-44 px-5 py-2.5 rounded-md bg-[#2563eb] hover:bg-[#1d4ed8] active:bg-[#1e40af] text-white text-xs font-semibold tracking-wide border border-blue-400/30 shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-400 transition-colors flex items-center justify-center gap-2"
+            >
+              Zaloguj się
+            </Link>
+
+            <Link
+              href="/register"
+              className="w-full sm:w-44 px-5 py-2.5 rounded-md bg-[#161c26] hover:bg-[#1c2430] active:bg-[#131821] text-[#e6edf3] text-xs font-semibold border border-[#2b3446] hover:border-[#384358] hover:text-[var(--accent-main)] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500 transition-colors flex items-center justify-center gap-2"
+            >
+              Zarejestruj się
+            </Link>
+          </div>
+
+          {/* Pod nimi: Przejdź do grafu jako Gość */}
           <Link
             href="/graph"
-            className="w-full sm:w-auto px-5 py-2.5 rounded-md bg-[#2563eb] hover:bg-[#1d4ed8] active:bg-[#1e40af] text-white text-xs font-semibold tracking-wide border border-blue-400/30 shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-400 transition-colors flex items-center justify-center gap-2"
+            className="w-full sm:w-[364px] px-5 py-2.5 rounded-md bg-[#111620] hover:bg-[#171f2b] active:bg-[#0e121a] text-[#9da7b3] hover:text-[#e6edf3] text-xs font-medium border border-[#232b3b] hover:border-[#384358] transition-colors flex items-center justify-center gap-2 group"
           >
             <span>Przejdź do grafu jako Gość</span>
-            <span className="font-mono text-xs">&rarr;</span>
-          </Link>
-
-          <Link
-            href="/register"
-            className="w-full sm:w-auto px-5 py-2.5 rounded-md bg-[#131821] hover:bg-[#19202c] active:bg-[#161c26] text-[#e6edf3] text-xs font-medium border border-[#2b3446] hover:border-[#384358] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500 transition-colors"
-          >
-            Zarejestruj konto
+            <span className="font-mono text-xs text-[var(--accent-main)] group-hover:translate-x-0.5 transition-transform">&rarr;</span>
           </Link>
         </div>
-
-        {/* Minimalistyczny, horyzontalny podział na 3 filary */}
-        <div className="w-full border-t border-[#212836] pt-10 grid grid-cols-1 sm:grid-cols-3 gap-6 text-left">
-          <div className="space-y-1.5">
-            <span className="text-[11px] font-mono text-[#768390] uppercase tracking-wider block">
-              01 // Topologia
-            </span>
-            <h2 className="font-heading text-xs font-semibold text-[#e6edf3]">
-              Struktura powiązań
-            </h2>
-            <p className="text-xs text-[#768390] leading-relaxed">
-              Przechodź płynnie od definicji bazowych do zaawansowanych teorii wzdłuż ścieżki krytycznej.
-            </p>
-          </div>
-
-          <div className="space-y-1.5">
-            <span className="text-[11px] font-mono text-[#768390] uppercase tracking-wider block">
-              02 // Teoria
-            </span>
-            <h2 className="font-heading text-xs font-semibold text-[#e6edf3]">
-              Formuły KaTeX
-            </h2>
-            <p className="text-xs text-[#768390] leading-relaxed">
-              Zwięzłe lekcje, czytelny zapis matematyczny i formalne definicje zoptymalizowane pod naukę.
-            </p>
-          </div>
-
-          <div className="space-y-1.5">
-            <span className="text-[11px] font-mono text-[#768390] uppercase tracking-wider block">
-              03 // Trening
-            </span>
-            <h2 className="font-heading text-xs font-semibold text-[#e6edf3]">
-              Praktyka & Zadania
-            </h2>
-            <p className="text-xs text-[#768390] leading-relaxed">
-              Natychmiastowa weryfikacja odpowiedzi i utrwalanie aparatu pojęciowego w praktyce.
-            </p>
-          </div>
-        </div>
-
       </main>
 
       {/* Dyskretny Footer */}

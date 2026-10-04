@@ -17,11 +17,11 @@ export default function Logo({
 }: LogoProps) {
   // Configured dimensions preserving the original 283:336 aspect ratio
   const config = {
-    sm: { width: 55, height: 65, classH: "h-[65px]" },
-    md: { width: 72, height: 85, classH: "h-[85px]" },
-    lg: { width: 92, height: 110, classH: "h-[110px]" },
-    xl: { width: 118, height: 140, classH: "h-[140px]" },
-    "2xl": { width: 152, height: 180, classH: "h-[180px]" },
+    sm: { width: 75, height: 88, classH: "h-[88px]" },
+    md: { width: 98, height: 116, classH: "h-[116px]" },
+    lg: { width: 126, height: 150, classH: "h-[150px]" },
+    xl: { width: 165, height: 195, classH: "h-[195px]" },
+    "2xl": { width: 220, height: 260, classH: "h-[260px]" },
   }[size];
 
   return (
