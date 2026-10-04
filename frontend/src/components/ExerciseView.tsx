@@ -74,19 +74,20 @@ export default function ExerciseView({ exerciseId }: ExerciseViewProps) {
     <div className="min-h-screen bg-[var(--bg-dark)] text-text-main flex flex-col justify-between">
       {/* Header with enlarged Logo */}
       <header className="border-b border-[var(--border-dark)] bg-[var(--bg-dark)]/90 backdrop-blur-md sticky top-0 z-20">
-        <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Logo size="lg" showSubtitle />
+        <div className="max-w-5xl mx-auto px-6 py-2.5 flex items-center justify-between">
+          <Logo size="md" href="/graph" />
           <button
             onClick={() => router.back()}
-            className="flex items-center gap-2 px-3.5 py-2 text-xs font-semibold rounded-lg border border-[var(--border-dark)] text-[var(--text-subtle)] bg-[var(--bg-card)] hover:bg-[var(--bg-card-hover)] hover:text-[var(--accent-main)] hover:border-[var(--accent-main)] transition-all shadow-sm"
+            className="flex items-center gap-2 text-sm font-semibold text-[var(--text-subtle)] hover:text-[var(--accent-main)] transition-colors group cursor-pointer"
           >
-            &larr; Wróć
+            <span className="text-lg transition-transform duration-200 group-hover:-translate-x-1.5">&larr;</span>
+            <span>Wróć</span>
           </button>
         </div>
       </header>
 
       <div className="p-8 flex-1">
-        <div className="max-w-3xl mx-auto bg-[var(--bg-card)] border border-[var(--border-dark)] p-8 shadow-xl text-[var(--text-main)]">
+        <div className="max-w-3xl mx-auto bg-[var(--bg-card)] border border-[var(--border-dark)] p-8 rounded-2xl shadow-xl text-[var(--text-main)]">
           <h1 className="text-3xl font-bold mb-6 text-[var(--text-main)]">{taskGroup.task_group_name}</h1>
 
           {taskGroup.tasks && taskGroup.tasks.length > 0 ? (
@@ -104,7 +105,7 @@ export default function ExerciseView({ exerciseId }: ExerciseViewProps) {
                 const correctOpt = contentObj.correct_index;
 
                 return (
-                  <div key={task.id} className="p-6 border border-border-subtle bg-surface-bg shadow-md">
+                  <div key={task.id} className="p-6 border border-border-subtle rounded-xl bg-surface-bg shadow-md">
                     <h3 className="font-semibold text-lg text-text-subtle mb-4">
                       Zadanie {index + 1}
                     </h3>
@@ -116,7 +117,7 @@ export default function ExerciseView({ exerciseId }: ExerciseViewProps) {
                     {contentObj.options && Array.isArray(contentObj.options) && (
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         {contentObj.options.map((opt: string, optIndex: number) => {
-                          let btnClass = "p-4 text-center border transition-all text-lg ";
+                          let btnClass = "p-4 text-center border rounded-lg transition-all text-lg ";
                           if (isChecked) {
                             if (optIndex === correctOpt) {
                               btnClass += "bg-success-bg border-success-border text-success-text font-bold shadow-[0_0_10px_rgba(16,185,129,0.3)]";
@@ -152,7 +153,7 @@ export default function ExerciseView({ exerciseId }: ExerciseViewProps) {
                         <button
                           onClick={() => handleCheck(task.id)}
                           disabled={isChecked || selectedOpt === undefined}
-                          className={`px-8 py-3 font-bold text-white transition-all ${isChecked || selectedOpt === undefined
+                          className={`px-8 py-3 rounded-lg font-bold text-white transition-all ${isChecked || selectedOpt === undefined
                               ? 'bg-disabled-bg cursor-not-allowed opacity-50'
                               : 'bg-accent-hover hover:bg-accent-dark shadow-[0_0_15px_rgba(14,165,233,0.4)] hover:shadow-[0_0_20px_rgba(14,165,233,0.6)]'
                             }`}
@@ -161,7 +162,7 @@ export default function ExerciseView({ exerciseId }: ExerciseViewProps) {
                         </button>
 
                         {isChecked && (
-                          <div className={`mt-4 p-5 w-full border ${selectedOpt === correctOpt ? 'bg-success-bg/30 border-success-border' : 'bg-error-bg/30 border-error-border'}`}>
+                          <div className={`mt-4 p-5 w-full rounded-lg border ${selectedOpt === correctOpt ? 'bg-success-bg/30 border-success-border' : 'bg-error-bg/30 border-error-border'}`}>
                             <p className={`font-bold text-lg mb-2 ${selectedOpt === correctOpt ? 'text-success-highlight' : 'text-error-highlight'}`}>
                               {selectedOpt === correctOpt ? "Poprawna odpowiedź." : "Niestety, to nie jest poprawna odpowiedź."}
                             </p>
@@ -169,7 +170,7 @@ export default function ExerciseView({ exerciseId }: ExerciseViewProps) {
                             {task.exemplary_solution && (
                               <div className="mt-5 pt-5 border-t border-border-subtle text-text-main">
                                 <h4 className="font-semibold text-accent-main mb-3">Wyjaśnienie:</h4>
-                                <div className="text-lg bg-deep-bg p-4 border border-surface-bg">
+                                <div className="text-lg bg-deep-bg p-4 rounded-lg border border-surface-bg">
                                   <MixedMathText text={task.exemplary_solution} />
                                 </div>
                               </div>

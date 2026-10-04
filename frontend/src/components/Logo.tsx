@@ -12,7 +12,7 @@ interface LogoProps {
 
 export default function Logo({
   size = "lg",
-  href = "/",
+  href = "/graph",
   className = "",
 }: LogoProps) {
   // Configured dimensions preserving the original 283:336 aspect ratio
