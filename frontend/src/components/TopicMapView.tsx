@@ -612,11 +612,11 @@ export default function TopicMapView() {
               zoomOnPinch={true}
               zoomOnDoubleClick={true}
               minZoom={0.65}
-              maxZoom={1.5}
+              maxZoom={1.3}
               translateExtent={translateExtent}
               nodeExtent={translateExtent}
               fitView
-              fitViewOptions={{ minZoom: 0.65, maxZoom: 1.1, padding: 0.2 }}
+              fitViewOptions={{ minZoom: 0.65, maxZoom: 1.3, padding: 0.2 }}
               onInit={setRfInstance}
               proOptions={{ hideAttribution: true }}
             >

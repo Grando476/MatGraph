@@ -7,11 +7,11 @@ export default function FloatingToolbar() {
   const { isOpen, toggle } = useScratchpadStore();
 
   return (
-    <div className="fixed bottom-6 right-6 z-40">
+    <div className="fixed right-6 top-1/2 -translate-y-1/2 z-40">
       <button
         onClick={toggle}
         type="button"
-        aria-label={isOpen ? "Zamknij brudnopis" : "Otwórz brudnopis"}
+        aria-label={isOpen ? "Zamknij kalkulator graficzny" : "Otwórz kalkulator graficzny"}
         aria-expanded={isOpen}
         className={`group flex items-center gap-2.5 px-4 py-3 rounded-full font-semibold text-sm transition-all duration-300 shadow-xl active:scale-95 cursor-pointer ${isOpen
           ? "bg-[var(--accent-main)] text-[var(--bg-dark)] shadow-[0_0_25px_rgba(56,189,248,0.5)] ring-2 ring-[var(--accent-hover)] font-bold scale-105"
