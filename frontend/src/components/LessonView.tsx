@@ -6,6 +6,7 @@ import { BlockMath } from 'react-katex';
 import { useEffect, useState } from "react";
 import Footer from "@/components/Footer";
 import Logo from "@/components/Logo";
+import Scratchpad from "@/components/Scratchpad";
 
 interface LessonViewProps {
   lessonId: string;
@@ -124,6 +125,7 @@ export default function LessonView({ lessonId }: LessonViewProps) {
         </div>
       </div>
       <Footer />
+      <Scratchpad />
     </div>
   );
 }

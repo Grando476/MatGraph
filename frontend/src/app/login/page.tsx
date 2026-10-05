@@ -31,7 +31,7 @@ export default function LoginPage() {
         throw new Error(error || "Błąd logowania. Sprawdź e-mail i hasło.");
       }
 
-      setMessage({ type: "success", text: "Zalogowano pomyślnie! Przekierowanie do grafu wiedzy..." });
+      setMessage({ type: "success", text: "Zalogowano pomyślnie" });
       setTimeout(() => {
         router.push("/graph");
         router.refresh();

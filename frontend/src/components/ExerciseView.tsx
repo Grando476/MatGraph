@@ -6,6 +6,7 @@ import 'katex/dist/katex.min.css';
 import MixedMathText from "@/components/MixedMathText";
 import Footer from "@/components/Footer";
 import Logo from "@/components/Logo";
+import Scratchpad from "@/components/Scratchpad";
 
 interface ExerciseViewProps {
   exerciseId: string;
@@ -189,6 +190,7 @@ export default function ExerciseView({ exerciseId }: ExerciseViewProps) {
         </div>
       </div>
       <Footer />
+      <Scratchpad />
     </div>
   );
 }
