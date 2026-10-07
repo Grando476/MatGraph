@@ -31,7 +31,7 @@ export default function LoginPage() {
         throw new Error(error || "Błąd logowania. Sprawdź e-mail i hasło.");
       }
 
-      setMessage({ type: "success", text: "Zalogowano pomyślnie" });
+      setMessage({ type: "success", text: "Zalogowano pomyślnie! Przekierowanie..." });
       setTimeout(() => {
         router.push("/graph");
         router.refresh();
@@ -47,35 +47,43 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--bg-dark)] text-[var(--text-main)] flex flex-col justify-center items-center relative overflow-hidden p-4">
-      {/* Background Decorative Glow Effects */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-[var(--accent-main)]/10 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-10 right-10 w-[350px] h-[350px] bg-[var(--accent-yellow)]/5 rounded-full blur-[100px] pointer-events-none" />
+    <div className="min-h-screen bg-[var(--bg-main)] text-[var(--text-main)] flex flex-col justify-between items-center relative overflow-hidden p-4">
+      {/* Decorative Badges */}
+      <div className="hidden sm:block absolute top-8 left-8 rotate-[-5deg] z-0 pointer-events-none">
+        <div className="bg-[var(--neo-yellow)] text-black font-extrabold text-xs px-3 py-1.5 border-2 border-black rounded-lg shadow-[3px_3px_0px_0px_#000] uppercase">
+          ★ Twoje Konto Ucznia
+        </div>
+      </div>
 
       {/* Login Card */}
-      <main className="w-full max-w-md z-10 my-12">
-        <div className="bg-[var(--bg-card)] border border-[var(--border-dark)] rounded-2xl p-8 shadow-2xl backdrop-blur-md relative">
+      <main className="w-full max-w-md z-10 my-10">
+        <div className="bg-[var(--bg-card)] border-3 border-[var(--border-dark)] rounded-2xl p-6 sm:p-8 shadow-[8px_8px_0px_0px_#000] relative">
 
-          <div className="text-center mb-8">
-            <Logo size="lg" className="mb-4" />
-            <h1 className="text-2xl font-bold text-[var(--text-main)]">Zaloguj się do MatGraph</h1>
-            <p className="text-sm text-[var(--text-muted)] mt-1">
-              Uzyskaj dostęp do swojego profilu, postępów i spersonalizowanych lekcji.
+          <div className="text-center mb-7">
+            <div className="flex justify-center mb-3">
+              <Logo size="lg" />
+            </div>
+            <h1 className="text-2xl font-black text-[var(--text-main)] tracking-tight">
+              Zaloguj się do MatGraph
+            </h1>
+            <p className="text-xs text-[var(--text-muted)] font-medium mt-1.5">
+              Uzyskaj dostęp do swojego profilu, postępów i lekcji.
             </p>
           </div>
 
           {message && (
-            <div className={`mb-6 p-4 rounded-lg text-sm border ${message.type === "success"
-              ? "bg-[var(--success-bg)] border-[var(--success-border)] text-[var(--success-text)]"
-              : "bg-[var(--error-bg)] border-[var(--error-border)] text-[var(--error-text)]"
-              }`}>
+            <div className={`mb-6 p-4 rounded-xl text-xs font-bold border-2 border-[var(--border-dark)] shadow-[3px_3px_0px_0px_#000] ${
+              message.type === "success"
+                ? "bg-[var(--success-bg)] text-[var(--success-text)]"
+                : "bg-[var(--error-bg)] text-[var(--error-text)]"
+            }`}>
               {message.text}
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-[var(--text-subtle)] mb-2">
+              <label className="block text-xs font-black uppercase tracking-wider text-[var(--text-main)] mb-1.5">
                 Adres e-mail
               </label>
               <input
@@ -83,17 +91,17 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="np. student@edumath.pl"
-                className="w-full px-4 py-3 bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-lg text-[var(--text-main)] placeholder-[var(--text-dim)] focus:outline-none focus:border-[var(--accent-main)] focus:ring-1 focus:ring-[var(--accent-main)] transition-all"
+                className="w-full px-4 py-3 bg-[var(--bg-deep)] border-2 border-[var(--border-dark)] rounded-xl text-[var(--text-main)] placeholder-[var(--text-dim)] font-semibold shadow-[3px_3px_0px_0px_#000] focus:shadow-[5px_5px_0px_0px_#000] focus:bg-white focus:outline-none transition-all"
                 required
               />
             </div>
 
             <div>
-              <div className="flex justify-between items-center mb-2">
-                <label className="block text-xs font-semibold uppercase tracking-wider text-[var(--text-subtle)]">
+              <div className="flex justify-between items-center mb-1.5">
+                <label className="block text-xs font-black uppercase tracking-wider text-[var(--text-main)]">
                   Hasło
                 </label>
-                <a href="#" className="text-xs text-[var(--accent-main)] hover:underline">
+                <a href="#" className="text-xs font-bold text-[var(--text-muted)] hover:text-black hover:underline">
                   Zapomniałeś hasła?
                 </a>
               </div>
@@ -102,7 +110,7 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full px-4 py-3 bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-lg text-[var(--text-main)] placeholder-[var(--text-dim)] focus:outline-none focus:border-[var(--accent-main)] focus:ring-1 focus:ring-[var(--accent-main)] transition-all"
+                className="w-full px-4 py-3 bg-[var(--bg-deep)] border-2 border-[var(--border-dark)] rounded-xl text-[var(--text-main)] placeholder-[var(--text-dim)] font-semibold shadow-[3px_3px_0px_0px_#000] focus:shadow-[5px_5px_0px_0px_#000] focus:bg-white focus:outline-none transition-all"
                 required
               />
             </div>
@@ -110,43 +118,43 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full py-3.5 px-4 bg-gradient-to-r from-[var(--accent-dark)] to-[var(--accent-hover)] text-white font-semibold rounded-lg shadow-lg hover:brightness-110 active:scale-[0.99] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="w-full py-3.5 px-4 bg-[var(--neo-yellow)] hover:bg-[#fde047] text-black font-black uppercase tracking-wider text-xs rounded-xl border-2.5 border-[var(--border-dark)] shadow-[4px_4px_0px_0px_#000] hover:shadow-[2px_2px_0px_0px_#000] hover:translate-x-[2px] hover:translate-y-[2px] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer mt-2"
             >
               {isLoading ? (
                 <>
-                  <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <svg className="animate-spin h-4 w-4 text-black" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
                   <span>Logowanie...</span>
                 </>
               ) : (
-                <span>Zaloguj się</span>
+                <span>Zaloguj się &rarr;</span>
               )}
             </button>
           </form>
 
           {/* Divider */}
-          <div className="my-6 flex items-center gap-3">
-            <div className="h-px bg-[var(--border-dark)] flex-1" />
-            <span className="text-xs text-[var(--text-dim)] uppercase">lub</span>
-            <div className="h-px bg-[var(--border-dark)] flex-1" />
+          <div className="my-5 flex items-center gap-3">
+            <div className="h-[2px] bg-black flex-1" />
+            <span className="text-[11px] font-black uppercase tracking-widest text-[var(--text-muted)]">lub</span>
+            <div className="h-[2px] bg-black flex-1" />
           </div>
 
           <Link
             href="/graph"
-            className="w-full py-3 px-4 border border-[var(--border-subtle)] bg-[var(--bg-surface)] hover:bg-[var(--bg-card-hover)] text-[var(--text-main)] font-medium rounded-lg transition-all flex items-center justify-center gap-2 group"
+            className="w-full py-3 px-4 border-2.5 border-[var(--border-dark)] bg-white hover:bg-[var(--neo-green)] text-black font-black text-xs uppercase tracking-wider rounded-xl shadow-[4px_4px_0px_0px_#000] hover:shadow-[2px_2px_0px_0px_#000] hover:translate-x-[2px] hover:translate-y-[2px] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none transition-all flex items-center justify-center gap-2 group"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-[var(--node-green)] group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-black group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
             </svg>
             <span>Przejdź do grafu jako Gość</span>
           </Link>
 
-          <p className="mt-6 text-center text-xs text-[var(--text-muted)]">
+          <p className="mt-6 text-center text-xs font-semibold text-[var(--text-muted)]">
             Nie masz jeszcze konta?{" "}
-            <Link href="/register" className="text-[var(--accent-main)] font-semibold hover:underline">
-              Zarejestruj się
+            <Link href="/register" className="text-black font-black underline hover:text-[var(--neo-pink)] ml-1">
+              Zarejestruj się &rarr;
             </Link>
           </p>
         </div>

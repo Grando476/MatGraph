@@ -13,19 +13,20 @@ export default function FloatingToolbar() {
         type="button"
         aria-label={isOpen ? "Zamknij kalkulator graficzny" : "Otwórz kalkulator graficzny"}
         aria-expanded={isOpen}
-        className={`group flex items-center gap-2.5 px-4 py-3 rounded-full font-semibold text-sm transition-all duration-300 shadow-xl active:scale-95 cursor-pointer ${isOpen
-          ? "bg-[var(--accent-main)] text-[var(--bg-dark)] shadow-[0_0_25px_rgba(56,189,248,0.5)] ring-2 ring-[var(--accent-hover)] font-bold scale-105"
-          : "bg-[var(--bg-card)]/90 hover:bg-[var(--bg-card-hover)] text-[var(--text-main)] border border-[var(--border-dark)] hover:border-[var(--accent-main)] hover:shadow-[0_0_20px_rgba(56,189,248,0.3)] backdrop-blur-md"
-          }`}
+        className={`group flex items-center gap-2.5 px-4 py-3 rounded-full font-black text-xs uppercase tracking-wider transition-all duration-150 cursor-pointer border-2.5 border-[var(--border-dark)] ${
+          isOpen
+            ? "bg-[var(--neo-green)] text-black shadow-[2px_2px_0px_0px_#000] translate-x-[2px] translate-y-[2px]"
+            : "bg-[var(--neo-yellow)] hover:bg-[#fde047] text-black shadow-[4px_4px_0px_0px_#000] hover:shadow-[2px_2px_0px_0px_#000] hover:translate-x-[2px] hover:translate-y-[2px] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none"
+        }`}
       >
         <span
-          className={`p-1 rounded-full transition-transform duration-300 ${isOpen ? "rotate-12 bg-white/20" : "group-hover:rotate-6 text-[var(--accent-main)]"
-            }`}
+          className={`p-1 rounded-full border border-black bg-white transition-transform duration-200 ${
+            isOpen ? "rotate-12 bg-white" : "group-hover:rotate-12"
+          }`}
         >
-          <Calculator className="w-5 h-5" />
+          <Calculator className="w-4 h-4 text-black" />
         </span>
-        <span className="tracking-wide">Kalkulator Graficzny</span>
-
+        <span>Kalkulator Graficzny</span>
       </button>
     </div>
   );

@@ -27,13 +27,13 @@ export default function Logo({
   return (
     <Link
       href={href}
-      className={`inline-flex items-center justify-center group select-none transition-transform duration-300 hover:scale-[1.04] active:scale-[0.98] ${className}`}
+      className={`inline-flex items-center justify-center group select-none transition-transform duration-200 hover:-translate-y-0.5 active:translate-y-0.5 ${className}`}
       title="MatGraph — Twoja interaktywna mapa do matury"
     >
       <div className="relative flex items-center justify-center">
-        {/* Ambient reactive neon glow aura */}
+        {/* Neobrutalist sticker badge effect */}
         <div
-          className="absolute inset-0 bg-gradient-to-tr from-[#38bdf8]/25 via-[#4cd39b]/30 to-[#facc15]/15 rounded-full blur-2xl opacity-60 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+          className="absolute inset-0 bg-[var(--neo-yellow)] rounded-2xl -rotate-2 opacity-0 group-hover:opacity-100 transition-all duration-200 scale-95 group-hover:scale-105 pointer-events-none -z-10 border-2 border-[var(--border-dark)] shadow-[3px_3px_0px_0px_#000]"
         />
 
         {/* The MatGraph Logo Image */}
@@ -43,7 +43,7 @@ export default function Logo({
           width={config.width}
           height={config.height}
           priority
-          className={`${config.classH} w-auto object-contain drop-shadow-[0_4px_20px_rgba(76,211,155,0.4)] transition-all duration-300 group-hover:drop-shadow-[0_6px_28px_rgba(56,189,248,0.65)]`}
+          className={`${config.classH} w-auto object-contain filter drop-shadow-[3px_3px_0px_#000] transition-all duration-200 group-hover:scale-[1.03]`}
         />
       </div>
     </Link>

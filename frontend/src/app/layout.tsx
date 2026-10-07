@@ -5,7 +5,7 @@ import "./globals.css";
 const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
   variable: "--font-jakarta",
-  weight: ["300", "400", "500", "600", "700", "800"],
+  weight: ["400", "500", "600", "700", "800"],
   display: "swap",
 });
 
@@ -28,10 +28,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pl" className={`${plusJakartaSans.variable} ${nodeFont.variable}`}>
-      <body className={`${plusJakartaSans.className} font-sans bg-[var(--bg-dark)] text-[var(--text-main)] antialiased min-h-screen`}>
+      <body className={`${plusJakartaSans.className} font-sans bg-[var(--bg-main)] text-[var(--text-main)] antialiased min-h-screen selection:bg-[var(--neo-yellow)] selection:text-[var(--text-main)]`}>
         {children}
       </body>
     </html>
   );
 }
-

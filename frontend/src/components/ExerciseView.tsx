@@ -45,51 +45,73 @@ export default function ExerciseView({ exerciseId }: ExerciseViewProps) {
 
   const handleSelect = (taskId: string, optionIndex: number) => {
     if (checkedTasks[taskId]) return;
-    setSelectedAnswers(prev => ({ ...prev, [taskId]: optionIndex }));
+    setSelectedAnswers((prev) => ({ ...prev, [taskId]: optionIndex }));
   };
 
   const handleCheck = (taskId: string) => {
-    setCheckedTasks(prev => ({ ...prev, [taskId]: true }));
+    setCheckedTasks((prev) => ({ ...prev, [taskId]: true }));
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-dark-bg text-text-main p-8 flex justify-center items-center">
-        <p className="text-xl">Ładowanie zadań...</p>
+      <div className="min-h-screen bg-[var(--bg-main)] text-[var(--text-main)] p-8 flex justify-center items-center">
+        <div className="bg-white border-3 border-[var(--border-dark)] p-8 rounded-2xl shadow-[6px_6px_0px_0px_#000] text-center">
+          <div className="w-10 h-10 border-3 border-black border-t-[var(--neo-yellow)] rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-base font-black uppercase tracking-wider">Ładowanie zadań...</p>
+        </div>
       </div>
     );
   }
 
   if (error || !taskGroup) {
     return (
-      <div className="min-h-screen bg-dark-bg text-text-main p-8 flex flex-col justify-center items-center">
-        <p className="text-xl text-red-500 mb-4">Błąd: {error || "Nie znaleziono zadań"}</p>
-        <button onClick={() => router.back()} className="text-accent-main hover:text-accent-hover transition-colors">
-          &larr; Wróć
-        </button>
+      <div className="min-h-screen bg-[var(--bg-main)] text-[var(--text-main)] p-8 flex flex-col justify-center items-center">
+        <div className="bg-white border-3 border-[var(--border-dark)] p-8 rounded-2xl shadow-[6px_6px_0px_0px_#000] text-center max-w-md">
+          <p className="text-base font-black text-red-600 mb-4 uppercase">Błąd: {error || "Nie znaleziono zadań"}</p>
+          <button
+            onClick={() => router.back()}
+            className="inline-flex items-center gap-2 bg-[var(--neo-yellow)] text-black font-black text-xs uppercase px-5 py-3 rounded-xl border-2 border-black shadow-[3px_3px_0px_0px_#000] hover:shadow-[1px_1px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] cursor-pointer"
+          >
+            &larr; Wróć
+          </button>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[var(--bg-dark)] text-text-main flex flex-col justify-between">
-      {/* Header with enlarged Logo */}
-      <header className="border-b border-[var(--border-dark)] bg-[var(--bg-dark)]/90 backdrop-blur-md sticky top-0 z-20">
-        <div className="max-w-5xl mx-auto px-6 py-2.5 flex items-center justify-between">
-          <Logo size="md" href="/graph" />
+    <div className="min-h-screen bg-[var(--bg-main)] text-[var(--text-main)] flex flex-col justify-between">
+      {/* Header */}
+      <header className="border-b-2.5 border-[var(--border-dark)] bg-[var(--bg-card)] sticky top-0 z-20">
+        <div className="max-w-5xl mx-auto px-6 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Logo size="md" href="/graph" />
+            <span className="hidden sm:inline-block bg-[var(--neo-green)] text-black border-2 border-black rounded-md px-2.5 py-0.5 font-black text-xs uppercase tracking-wider shadow-[2px_2px_0px_0px_#000]">
+              Zadania Praktyczne
+            </span>
+          </div>
           <button
             onClick={() => router.back()}
-            className="flex items-center gap-2 text-sm font-semibold text-[var(--text-subtle)] hover:text-[var(--accent-main)] transition-colors group cursor-pointer"
+            className="flex items-center gap-2 bg-white hover:bg-[var(--neo-yellow)] text-black font-black text-xs uppercase tracking-wider px-4 py-2.5 rounded-xl border-2 border-[var(--border-dark)] shadow-[3px_3px_0px_0px_#000] hover:shadow-[1px_1px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] transition-all cursor-pointer group"
           >
-            <span className="text-lg transition-transform duration-200 group-hover:-translate-x-1.5">&larr;</span>
+            <span className="text-base transition-transform duration-200 group-hover:-translate-x-1">&larr;</span>
             <span>Wróć</span>
           </button>
         </div>
       </header>
 
-      <div className="p-8 flex-1">
-        <div className="max-w-3xl mx-auto bg-[var(--bg-card)] border border-[var(--border-dark)] p-8 rounded-2xl shadow-xl text-[var(--text-main)]">
-          <h1 className="text-3xl font-bold mb-6 text-[var(--text-main)]">{taskGroup.task_group_name}</h1>
+      <div className="p-6 sm:p-10 flex-1">
+        <div className="max-w-3xl mx-auto bg-[var(--bg-card)] border-3 border-[var(--border-dark)] p-6 sm:p-10 rounded-2xl shadow-[8px_8px_0px_0px_#000]">
+          
+          <div className="flex items-center gap-2 mb-4">
+            <span className="bg-[var(--neo-pink)] text-black font-black text-xs px-3 py-1 border-2 border-black rounded-md shadow-[2px_2px_0px_0px_#000] uppercase">
+              ★ Grupa Zadań
+            </span>
+          </div>
+
+          <h1 className="text-3xl sm:text-4xl font-black mb-8 text-[var(--text-main)] tracking-tight">
+            {taskGroup.task_group_name}
+          </h1>
 
           {taskGroup.tasks && taskGroup.tasks.length > 0 ? (
             <div className="space-y-8">
@@ -106,32 +128,34 @@ export default function ExerciseView({ exerciseId }: ExerciseViewProps) {
                 const correctOpt = contentObj.correct_index;
 
                 return (
-                  <div key={task.id} className="p-6 border border-border-subtle rounded-xl bg-surface-bg shadow-md">
-                    <h3 className="font-semibold text-lg text-text-subtle mb-4">
-                      Zadanie {index + 1}
-                    </h3>
+                  <div key={task.id} className="p-6 border-2.5 border-[var(--border-dark)] rounded-xl bg-white shadow-[6px_6px_0px_0px_#000]">
+                    <div className="flex items-center justify-between mb-4">
+                      <span className="bg-[var(--neo-yellow)] text-black font-black text-xs uppercase tracking-wider px-3 py-1 rounded-md border-2 border-black shadow-[2px_2px_0px_0px_#000]">
+                        Zadanie {index + 1}
+                      </span>
+                    </div>
 
-                    <div className="text-lg text-text-main mb-6">
+                    <div className="text-lg font-semibold text-[var(--text-main)] mb-6 leading-relaxed">
                       <MixedMathText text={contentObj.question || ''} />
                     </div>
 
                     {contentObj.options && Array.isArray(contentObj.options) && (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                         {contentObj.options.map((opt: string, optIndex: number) => {
-                          let btnClass = "p-4 text-center border rounded-lg transition-all text-lg ";
+                          let btnClass = "p-4 text-center border-2.5 border-[var(--border-dark)] rounded-xl font-bold text-base transition-all ";
                           if (isChecked) {
                             if (optIndex === correctOpt) {
-                              btnClass += "bg-success-bg border-success-border text-success-text font-bold shadow-[0_0_10px_rgba(16,185,129,0.3)]";
+                              btnClass += "bg-[var(--neo-green)] text-black font-black shadow-[4px_4px_0px_0px_#000]";
                             } else if (optIndex === selectedOpt) {
-                              btnClass += "bg-error-bg border-error-border text-error-text opacity-80";
+                              btnClass += "bg-[var(--neo-pink)] text-black font-bold shadow-[2px_2px_0px_0px_#000] opacity-90";
                             } else {
-                              btnClass += "bg-deep-bg border-border-subtle text-text-dim opacity-50";
+                              btnClass += "bg-gray-100 text-gray-400 border-gray-300 shadow-none opacity-40";
                             }
                           } else {
                             if (selectedOpt === optIndex) {
-                              btnClass += "bg-selected-bg border-accent-hover text-selected-text shadow-[0_0_10px_rgba(14,165,233,0.3)]";
+                              btnClass += "bg-[var(--neo-blue)] text-black font-black shadow-[2px_2px_0px_0px_#000] translate-x-[2px] translate-y-[2px]";
                             } else {
-                              btnClass += "bg-card-bg border-border-subtle text-text-subtle hover:bg-card-hover hover:border-accent-hover";
+                              btnClass += "bg-white hover:bg-[var(--neo-yellow)] text-black shadow-[4px_4px_0px_0px_#000] hover:shadow-[2px_2px_0px_0px_#000] hover:translate-x-[2px] hover:translate-y-[2px] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none cursor-pointer";
                             }
                           }
 
@@ -154,24 +178,27 @@ export default function ExerciseView({ exerciseId }: ExerciseViewProps) {
                         <button
                           onClick={() => handleCheck(task.id)}
                           disabled={isChecked || selectedOpt === undefined}
-                          className={`px-8 py-3 rounded-lg font-bold text-white transition-all ${isChecked || selectedOpt === undefined
-                              ? 'bg-disabled-bg cursor-not-allowed opacity-50'
-                              : 'bg-accent-hover hover:bg-accent-dark shadow-[0_0_15px_rgba(14,165,233,0.4)] hover:shadow-[0_0_20px_rgba(14,165,233,0.6)]'
-                            }`}
+                          className={`px-8 py-3.5 rounded-xl font-black uppercase text-xs tracking-wider transition-all border-2.5 border-[var(--border-dark)] ${
+                            isChecked || selectedOpt === undefined
+                              ? 'bg-gray-200 text-gray-500 cursor-not-allowed opacity-50 shadow-none'
+                              : 'bg-[var(--neo-yellow)] hover:bg-[#fde047] text-black shadow-[4px_4px_0px_0px_#000] hover:shadow-[2px_2px_0px_0px_#000] hover:translate-x-[2px] hover:translate-y-[2px] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none cursor-pointer'
+                          }`}
                         >
-                          {isChecked ? "Sprawdzono" : "Sprawdź odpowiedź"}
+                          {isChecked ? "Sprawdzono ✓" : "Sprawdź odpowiedź &rarr;"}
                         </button>
 
                         {isChecked && (
-                          <div className={`mt-4 p-5 w-full rounded-lg border ${selectedOpt === correctOpt ? 'bg-success-bg/30 border-success-border' : 'bg-error-bg/30 border-error-border'}`}>
-                            <p className={`font-bold text-lg mb-2 ${selectedOpt === correctOpt ? 'text-success-highlight' : 'text-error-highlight'}`}>
-                              {selectedOpt === correctOpt ? "Poprawna odpowiedź." : "Niestety, to nie jest poprawna odpowiedź."}
+                          <div className={`mt-4 p-5 w-full rounded-xl border-2.5 border-[var(--border-dark)] shadow-[4px_4px_0px_0px_#000] ${
+                            selectedOpt === correctOpt ? 'bg-[var(--success-bg)]' : 'bg-[var(--error-bg)]'
+                          }`}>
+                            <p className="font-black text-lg text-black">
+                              {selectedOpt === correctOpt ? "✓ Poprawna odpowiedź! Brawo." : "✕ Niestety, to nie jest poprawna odpowiedź."}
                             </p>
 
                             {task.exemplary_solution && (
-                              <div className="mt-5 pt-5 border-t border-border-subtle text-text-main">
-                                <h4 className="font-semibold text-accent-main mb-3">Wyjaśnienie:</h4>
-                                <div className="text-lg bg-deep-bg p-4 rounded-lg border border-surface-bg">
+                              <div className="mt-4 pt-4 border-t-2 border-[var(--border-dark)] text-[var(--text-main)]">
+                                <h4 className="font-black text-xs uppercase tracking-wider mb-2">Wyjaśnienie krok po kroku:</h4>
+                                <div className="text-base bg-white p-4 rounded-xl border-2 border-[var(--border-dark)] shadow-[2px_2px_0px_0px_#000] font-medium">
                                   <MixedMathText text={task.exemplary_solution} />
                                 </div>
                               </div>
@@ -185,7 +212,7 @@ export default function ExerciseView({ exerciseId }: ExerciseViewProps) {
               })}
             </div>
           ) : (
-            <p className="text-text-muted italic">Brak zadań w tej grupie.</p>
+            <p className="text-[var(--text-muted)] italic font-medium">Brak zadań w tej grupie.</p>
           )}
         </div>
       </div>

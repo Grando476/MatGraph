@@ -92,9 +92,9 @@ export default function DesmosCalculator({ isVisible = true }: DesmosCalculatorP
       />
 
       {!scriptLoaded && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center bg-[var(--bg-card)] text-[var(--text-subtle)] gap-3 z-10">
-          <div className="w-8 h-8 border-3 border-[var(--accent-main)] border-t-transparent rounded-full animate-spin" />
-          <p className="text-sm font-medium">Inicjalizacja kalkulatora graficznego</p>
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-[var(--bg-main)] text-[var(--text-main)] gap-3 z-10">
+          <div className="w-9 h-9 border-3 border-black border-t-[var(--neo-yellow)] rounded-full animate-spin" />
+          <p className="text-xs font-black uppercase tracking-wider">Inicjalizacja kalkulatora graficznego...</p>
         </div>
       )}
 

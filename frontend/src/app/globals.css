@@ -3,52 +3,84 @@
 @tailwind utilities;
 
 :root {
-  /* Główny motyw aplikacji (Dark Mode) */
-  --bg-dark: #171a1f;
-  --bg-card: #1a222c;
-  --bg-card-hover: #273549;
-  --bg-surface: #1e293b;
-  --bg-deep: #0f172a;
+  /* =========================================================
+     NEOBRUTALISM DESIGN SYSTEM — COLOR PALETTE TOKENS
+     All colors are stored as CSS variables and reused across pages
+     ========================================================= */
 
-  /* Obramowania */
-  --border-dark: #2d3748;
-  --border-subtle: #334155;
+  /* 1. Core Canvas & Surface Backgrounds */
+  --bg-main: #fbf7ee;          /* Warm retro cream canvas */
+  --bg-dark: #fbf7ee;          /* Aliased for full backward-compatibility */
+  --bg-card: #ffffff;          /* Clean white card surface */
+  --bg-card-hover: #fef08a;    /* Bright pastel yellow hover */
+  --bg-surface: #ffffff;       /* Surface container */
+  --bg-deep: #f3efe2;          /* Recessed container / inputs */
+  --bg-inverted: #000000;      /* Contrast black fill */
 
-  /* Teksty */
-  --text-main: #f8fafc;
-  --text-subtle: #cbd5e1;
-  --text-muted: #94a3b8;
-  --text-dim: #64748b;
+  /* 2. Bold Neobrutalist Borders */
+  --border-dark: #000000;      /* Signature high-contrast black border */
+  --border-subtle: #000000;    /* Solid black dividers */
+  --border-main: #000000;
+  --neo-border-width: 2.5px;
 
-  /* Akcenty */
-  --accent-main: #38bdf8;
-  --accent-hover: #0ea5e9;
-  --accent-dark: #0284c7;
-  --accent-yellow: #fcee0a;
-  --node-green: #4cd39b;
-  --node-yellow: #facc15;
-  --edge-emerald: #047857;
+  /* 3. High-Contrast Typography */
+  --text-main: #000000;        /* Deep jet black text */
+  --text-subtle: #18181b;      /* Dark charcoal */
+  --text-muted: #3f3f46;       /* Medium slate */
+  --text-dim: #71717a;         /* Dim caption text */
+  --text-inverse: #ffffff;     /* White text on dark/colored blocks */
 
-  /* Statusy zadań */
-  --success-bg: #064e3b;
-  --success-border: #10b981;
-  --success-text: #a7f3d0;
-  --success-highlight: #34d399;
+  /* 4. Signature Neobrutalism Vibrant Accent Pop Colors */
+  --neo-yellow: #ffe600;       /* Electric Canary Yellow */
+  --neo-green: #4ade80;        /* Electric Mint Lime Green */
+  --neo-blue: #38bdf8;         /* Electric Sky Cyan */
+  --neo-pink: #ff70a6;         /* Hot Coral Pink */
+  --neo-purple: #c084fc;       /* Electric Lavender */
+  --neo-orange: #fb923c;       /* Tangerine Orange */
+  --neo-cream: #fbf7ee;        /* Cream Canvas */
+  --neo-white: #ffffff;        /* Pure White */
+  --neo-black: #000000;        /* Pure Black */
 
-  --error-bg: #7f1d1d;
-  --error-border: #ef4444;
-  --error-text: #fecaca;
-  --error-highlight: #f87171;
+  /* Functional mappings used throughout existing code */
+  --accent-main: var(--neo-yellow);
+  --accent-hover: #fde047;
+  --accent-dark: #eab308;
+  --accent-yellow: var(--neo-yellow);
+  --node-green: var(--neo-green);
+  --node-yellow: var(--neo-yellow);
+  --edge-emerald: #000000;     /* Graph edges: bold black lines */
+  --edge-color: #000000;
 
-  --selected-bg: #0c4a6e;
-  --selected-text: #bae6fd;
-  --disabled-bg: #475569;
+  /* 5. Status Feedback */
+  --success-bg: #bbf7d0;
+  --success-border: #000000;
+  --success-text: #052e16;
+  --success-highlight: #15803d;
+
+  --error-bg: #fecaca;
+  --error-border: #000000;
+  --error-text: #7f1d1d;
+  --error-highlight: #dc2626;
+
+  --selected-bg: #bae6fd;
+  --selected-text: #082f49;
+  --disabled-bg: #e4e4e7;
+
+  /* 6. Neobrutalist Hard Box Shadows (No blur!) */
+  --neo-shadow-xs: 1px 1px 0px 0px #000000;
+  --neo-shadow-sm: 2px 2px 0px 0px #000000;
+  --neo-shadow: 4px 4px 0px 0px #000000;
+  --neo-shadow-md: 5px 5px 0px 0px #000000;
+  --neo-shadow-lg: 6px 6px 0px 0px #000000;
+  --neo-shadow-xl: 8px 8px 0px 0px #000000;
 }
 
 body {
   font-family: var(--font-jakarta), 'Plus Jakarta Sans', sans-serif;
   color: var(--text-main);
-  background-color: var(--bg-dark);
+  background-color: var(--bg-main);
+  background-image: radial-gradient(#000000 0.85px, transparent 0.85px);
+  background-size: 24px 24px;
 }
 
 @layer utilities {
@@ -57,30 +89,138 @@ body {
   }
 }
 
-/* ReactFlow Zoom & Pan Controls (dolny lewy róg) */
+/* =========================================================
+   NEOBRUTALIST REUSABLE COMPONENT CLASSES
+   ========================================================= */
+@layer components {
+  /* Cards & Containers */
+  .neo-box {
+    border: 2.5px solid var(--border-dark);
+    box-shadow: var(--neo-shadow);
+    background-color: var(--bg-card);
+  }
+
+  .neo-box-sm {
+    border: 2px solid var(--border-dark);
+    box-shadow: var(--neo-shadow-sm);
+    background-color: var(--bg-card);
+  }
+
+  .neo-box-lg {
+    border: 3px solid var(--border-dark);
+    box-shadow: var(--neo-shadow-lg);
+    background-color: var(--bg-card);
+  }
+
+  .neo-box-xl {
+    border: 3px solid var(--border-dark);
+    box-shadow: var(--neo-shadow-xl);
+    background-color: var(--bg-card);
+  }
+
+  /* Interactive Buttons */
+  .neo-btn {
+    border: 2.5px solid var(--border-dark);
+    box-shadow: var(--neo-shadow);
+    font-weight: 800;
+    transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    user-select: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .neo-btn:hover {
+    transform: translate(-1px, -1px);
+    box-shadow: var(--neo-shadow-md);
+  }
+
+  .neo-btn:active {
+    transform: translate(3px, 3px);
+    box-shadow: none;
+  }
+
+  .neo-btn-sm {
+    border: 2px solid var(--border-dark);
+    box-shadow: var(--neo-shadow-sm);
+    font-weight: 700;
+    transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    user-select: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .neo-btn-sm:hover {
+    box-shadow: var(--neo-shadow);
+    transform: translate(-1px, -1px);
+  }
+
+  .neo-btn-sm:active {
+    transform: translate(2px, 2px);
+    box-shadow: none;
+  }
+
+  /* Form Inputs */
+  .neo-input {
+    border: 2.5px solid var(--border-dark);
+    box-shadow: var(--neo-shadow-sm);
+    background-color: var(--bg-surface);
+    color: var(--text-main);
+    font-weight: 600;
+    transition: all 0.15s ease;
+  }
+
+  .neo-input:focus {
+    outline: none;
+    box-shadow: var(--neo-shadow);
+    background-color: #ffffff;
+  }
+
+  /* Badges & Tags */
+  .neo-badge {
+    border: 2px solid var(--border-dark);
+    box-shadow: var(--neo-shadow-xs);
+    font-weight: 800;
+    text-transform: uppercase;
+    font-size: 0.72rem;
+    letter-spacing: 0.05em;
+    padding: 0.2rem 0.6rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+}
+
+/* =========================================================
+   REACTFLOW CONTROLS (Neobrutalism Style)
+   ========================================================= */
 .react-flow__controls {
-  border-radius: 8px !important;
+  border-radius: 10px !important;
   overflow: hidden !important;
-  border: 1px solid var(--border-dark) !important;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4) !important;
-  background: var(--bg-card) !important;
+  border: 2.5px solid #000000 !important;
+  box-shadow: 4px 4px 0px 0px #000000 !important;
+  background: #ffffff !important;
 }
 
 .react-flow__controls-button {
-  background: var(--bg-card) !important;
-  border-bottom: 1px solid var(--border-dark) !important;
-  color: var(--accent-main) !important;
-  width: 32px !important;
-  height: 32px !important;
+  background: #ffffff !important;
+  border-bottom: 2px solid #000000 !important;
+  color: #000000 !important;
+  width: 36px !important;
+  height: 36px !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  transition: all 0.2s ease !important;
+  transition: all 0.15s ease !important;
+  cursor: pointer !important;
 }
 
 .react-flow__controls-button:hover {
-  background: var(--bg-card-hover) !important;
-  color: var(--node-yellow) !important;
+  background: var(--neo-yellow) !important;
+  color: #000000 !important;
 }
 
 .react-flow__controls-button:last-child {
@@ -89,7 +229,11 @@ body {
 
 .react-flow__controls-button svg {
   fill: currentColor !important;
-  width: 14px !important;
-  height: 14px !important;
-  transition: fill 0.2s ease !important;
-}
+  width: 16px !important;
+  height: 16px !important;
+  transition: transform 0.15s ease !important;
+}
+
+.react-flow__controls-button:hover svg {
+  transform: scale(1.1);
+}
