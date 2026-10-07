@@ -26,12 +26,6 @@ export default function HomePage() {
       <main className="max-w-4xl mx-auto px-6 py-12 sm:py-16 flex-1 flex flex-col justify-center items-center text-center relative z-10 w-full">
         {/* Main Brutalist Container Card */}
         <div className="w-full bg-[var(--bg-card)] border-3 border-[var(--border-dark)] rounded-2xl p-6 sm:p-12 shadow-[8px_8px_0px_0px_#000] relative">
-          
-          {/* Top Pill Tag */}
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 mb-6 bg-[var(--neo-yellow)] border-2 border-[var(--border-dark)] rounded-full text-xs font-black uppercase tracking-wider shadow-[2px_2px_0px_0px_#000]">
-            <span className="w-2 h-2 rounded-full bg-black animate-pulse" />
-            <span>Matura 2026 • Interaktywna Platforma</span>
-          </div>
 
           {/* Logo w sekcji hero */}
           <div className="flex justify-center mb-6">
