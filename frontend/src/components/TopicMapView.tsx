@@ -727,7 +727,7 @@ export default function TopicMapView() {
               proOptions={{ hideAttribution: true }}
             >
               <Background color="#000000" gap={26} size={1.8} variant={BackgroundVariant.Dots} style={{ opacity: 0.2 }} />
-              <Controls />
+              <Controls showInteractive={false} />
             </ReactFlow>
           </>
         )}
@@ -745,14 +745,15 @@ export default function TopicMapView() {
           zIndex: 10
         }}>
           <div style={{
-            padding: '20px',
+            padding: '18px 20px',
             borderBottom: '2.5px solid #000000',
             background: 'var(--bg-deep)',
             display: 'flex',
             justifyContent: 'space-between',
-            alignItems: 'center'
+            alignItems: 'center',
+            gap: '12px'
           }}>
-            <div>
+            <div style={{ flex: 1, minWidth: 0 }}>
               <span style={{
                 background: 'var(--neo-yellow)',
                 border: '1.5px solid #000000',
@@ -767,7 +768,7 @@ export default function TopicMapView() {
               }}>
                 Temat
               </span>
-              <h2 style={{ fontSize: '1.2rem', fontWeight: 900, color: '#000000', margin: 0, lineHeight: '1.2' }}>
+              <h2 style={{ fontSize: '1.2rem', fontWeight: 900, color: '#000000', margin: 0, lineHeight: '1.2', wordBreak: 'break-word' }}>
                 {selectedNode.data.label as string}
               </h2>
             </div>
@@ -776,23 +777,35 @@ export default function TopicMapView() {
                 setSelectedNode(null);
                 setNodes((prev) => prev.map((n) => ({ ...n, selected: false })));
               }}
+              aria-label="Zamknij panel"
               style={{
+                alignSelf: 'center',
+                flexShrink: 0,
                 background: 'white',
                 border: '2px solid #000000',
                 borderRadius: '8px',
                 cursor: 'pointer',
-                fontSize: '1.2rem',
                 color: '#000000',
-                width: '32px',
-                height: '32px',
+                width: '34px',
+                height: '34px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
+                padding: 0,
                 boxShadow: '2px 2px 0px 0px #000000',
-                fontWeight: 900,
+                transition: 'all 0.15s ease',
+              }}
+              onMouseEnter={(e: any) => {
+                e.currentTarget.style.background = 'var(--neo-yellow)';
+              }}
+              onMouseLeave={(e: any) => {
+                e.currentTarget.style.background = 'white';
               }}
             >
-              &times;
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'block' }}>
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
             </button>
           </div>
 
