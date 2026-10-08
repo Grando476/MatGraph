@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback, useRef, Fragment } from "react";
 import { useRouter } from "next/navigation";
 import { ReactFlow, Background, Controls, Node, Edge, useNodesState, useEdgesState, Position, Handle, BackgroundVariant, CoordinateExtent } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
@@ -828,54 +828,83 @@ export default function TopicMapView() {
               </div>
             ) : sidebarLessons.length > 0 ? (
               <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                {sidebarLessons.map((lesson: any) => (
-                  <li
-                    key={lesson.id}
-                    style={{
-                      padding: '16px',
-                      border: '2.5px solid #000000',
-                      borderRadius: '12px',
-                      marginBottom: '12px',
-                      cursor: 'pointer',
-                      transition: 'all 0.15s ease',
-                      background: '#ffffff',
-                      boxShadow: '4px 4px 0px 0px #000000',
-                    }}
-                    onClick={() => router.push(`/lesson/${lesson.id}`)}
-                    onMouseEnter={(e: any) => {
-                      e.currentTarget.style.background = 'var(--neo-yellow)';
-                      e.currentTarget.style.transform = 'translate(2px, 2px)';
-                      e.currentTarget.style.boxShadow = '2px 2px 0px 0px #000000';
-                    }}
-                    onMouseLeave={(e: any) => {
-                      e.currentTarget.style.background = '#ffffff';
-                      e.currentTarget.style.transform = 'none';
-                      e.currentTarget.style.boxShadow = '4px 4px 0px 0px #000000';
-                    }}
-                  >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px' }}>
-                      <h4 style={{ margin: '0 0 5px 0', color: '#000000', fontSize: '0.98rem', fontWeight: 800 }}>
-                        {lesson.title}
-                      </h4>
-                      <span style={{ fontSize: '1rem', fontWeight: 900 }}>&rarr;</span>
-                    </div>
-                    {lesson.importance && (
-                      <span style={{
-                        fontSize: '0.68rem',
-                        color: '#000000',
-                        fontWeight: 900,
-                        display: 'inline-block',
-                        marginTop: '6px',
-                        background: 'var(--neo-green)',
-                        border: '1.5px solid #000000',
-                        borderRadius: '4px',
-                        padding: '1px 6px',
-                        boxShadow: '1px 1px 0px 0px #000000'
+                {sidebarLessons.map((lesson: any, index: number) => (
+                  <Fragment key={lesson.id}>
+                    <li
+                      style={{
+                        padding: '16px',
+                        border: '2.5px solid #000000',
+                        borderRadius: '12px',
+                        cursor: 'pointer',
+                        transition: 'all 0.15s ease',
+                        background: '#ffffff',
+                        boxShadow: '4px 4px 0px 0px #000000',
+                      }}
+                      onClick={() => router.push(`/lesson/${lesson.id}`)}
+                      onMouseEnter={(e: any) => {
+                        e.currentTarget.style.background = 'var(--neo-yellow)';
+                        e.currentTarget.style.transform = 'translate(2px, 2px)';
+                        e.currentTarget.style.boxShadow = '2px 2px 0px 0px #000000';
+                      }}
+                      onMouseLeave={(e: any) => {
+                        e.currentTarget.style.background = '#ffffff';
+                        e.currentTarget.style.transform = 'none';
+                        e.currentTarget.style.boxShadow = '4px 4px 0px 0px #000000';
+                      }}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
+                        <div>
+                          <span style={{
+                            fontSize: '0.68rem',
+                            color: '#000000',
+                            fontWeight: 900,
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.04em',
+                            display: 'inline-block',
+                            marginBottom: '4px',
+                            background: 'var(--neo-green)',
+                            border: '1.5px solid #000000',
+                            borderRadius: '4px',
+                            padding: '1px 7px',
+                            boxShadow: '1px 1px 0px 0px #000000'
+                          }}>
+                            Lekcja {index + 1}
+                          </span>
+                          <h4 style={{ margin: 0, color: '#000000', fontSize: '0.98rem', fontWeight: 800, lineHeight: '1.25' }}>
+                            {lesson.title}
+                          </h4>
+                        </div>
+                        <span style={{ fontSize: '1.1rem', fontWeight: 900 }}>&rarr;</span>
+                      </div>
+                    </li>
+
+                    {index < sidebarLessons.length - 1 && (
+                      <div style={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        margin: '8px 0',
                       }}>
-                        Ważność: {lesson.importance} / 5
-                      </span>
+                        <div style={{
+                          width: '26px',
+                          height: '26px',
+                          borderRadius: '8px',
+                          background: 'var(--neo-yellow)',
+                          border: '2px solid #000000',
+                          boxShadow: '2px 2px 0px 0px #000000',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: '#000000',
+                        }}>
+                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                            <line x1="12" y1="5" x2="12" y2="19" />
+                            <polyline points="19 12 12 19 5 12" />
+                          </svg>
+                        </div>
+                      </div>
                     )}
-                  </li>
+                  </Fragment>
                 ))}
               </ul>
             ) : (
