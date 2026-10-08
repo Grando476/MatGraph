@@ -22,12 +22,13 @@ INSPIRATIONS_LIST = [
     "Oprzyj problem na poszukiwaniu kontrprzykładu. Podaj fałszywą tezę i poproś ucznia o wskazanie w opcjach wariantu (danych), który tę tezę jednoznacznie obala.",
     "Główną pułapką zadania uczyń założenia i dziedzinę. Dystraktory muszą być wynikami, które wychodzą z mechanicznych obliczeń, ale należy je odrzucić z powodu naturalnych ograniczeń matematycznych.",
     "Skonstruuj dystraktory w taki sposób, aby odzwierciedlały wykonanie innej, sąsiadującej operacji logicznej (np. opcje będą wynikami dodawania tam, gdzie należało mnożyć, lub odwrócenia kolejności).",
-    "Wykorzystaj regułę przechodniości relacji. Podaj zależność między zmienną $X$ i $Y$ oraz między $Y$ i $Z$, a następnie zapytaj wprost o relację między skrajnymi zmiennymi $X$ i $Z$."
+    "Wykorzystaj regułę przechodniości relacji. Podaj zależność między zmienną $X$ i $Y$ oraz między $Y$ i $Z$, a następnie zapytaj wprost o relację między skrajnymi zmiennymi $X$ i $Z$.",
+    "Przedstaw dane zadania w formie zwięzłej tabeli (np. zestawienie dwóch cech, wartości i liczebności, argumentów i wartości lub podziału danych), z której uczeń musi samodzielnie odczytać i wyselekcjonować informacje potrzebne do wykonania obliczeń."
 ]
 
 def get_generation_params() -> dict:
     """
-    Zwraca słownik z unikalnym seedem i wylosowaną jedną z 20 uniwersalnych instrukcji
+    Zwraca słownik z unikalnym seedem i wylosowaną jedną z uniwersalnych instrukcji
     skupiających AI na różnorodności formy i pułapek matematycznych.
     """
     return {
