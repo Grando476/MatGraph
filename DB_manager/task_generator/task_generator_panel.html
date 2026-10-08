@@ -2,345 +2,920 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <title>AI Task Generator - Piaskownica</title>
-    
+    <title>AI Task Generator</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
-
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; display: flex; flex-direction: column; height: 100vh; color: #333; }
-        .header { background: #2c3e50; color: white; padding: 15px 30px; display: flex; gap: 20px; align-items: center; flex-wrap: wrap; }
-        .header select, .header input { padding: 8px; border-radius: 4px; border: none; }
-        .header input { width: 60px; text-align: center; }
-        .btn { padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; color: white; transition: 0.2s; }
-        .btn-generate { background: #8e44ad; } .btn-generate:hover { background: #9b59b6; }
-        .btn-save { background: #2ecc71; } .btn-save:hover { background: #27ae60; }
-        .btn-delete { background: #e74c3c; padding: 5px 10px; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f0f2f5; display: flex; height: 100vh; color: #333; }
+
+        /* SIDEBAR */
+        .sidebar { width: 380px; background: #ffffff; display: flex; flex-direction: column; border-right: 1px solid #ddd; flex-shrink: 0; }
+        .sidebar-header { background: #2c3e50; color: #ffffff; padding: 15px 16px; border-bottom: 1px solid #2c3e50; }
+        .sidebar-header h2 { font-size: 16px; font-weight: bold; margin: 0; }
+
+        .gen-config { padding: 12px 14px; border-bottom: 1px solid #e2e8f0; background: #fafafa; }
+        .gen-config label { font-weight: bold; font-size: 11px; color: #555; display: block; margin-bottom: 4px; text-transform: uppercase; }
+        .config-row { display: flex; gap: 6px; margin-bottom: 6px; }
+        .config-row .field { flex: 1; }
+        .config-row .field .lbl { font-size: 10px; color: #777; margin-bottom: 2px; }
+        .config-row input, .gen-config select { width: 100%; padding: 6px 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 12px; background: #ffffff; color: #333; }
+
+        .tree-wrap { flex: 1; overflow-y: auto; padding: 10px; }
+        ul.tree { list-style-type: none; padding-left: 20px; margin: 0; }
+        ul.tree-root { padding-left: 0; }
+        .tree-node { display: flex; align-items: center; padding: 6px 4px; border-radius: 4px; transition: background 0.2s; position: relative; }
+        .tree-node:hover { background: #e9ecef; }
         
-        .main-content { flex: 1; padding: 30px; overflow-y: auto; display: flex; flex-direction: column; align-items: center; gap: 20px; }
-        .task-card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); width: 100%; max-width: 1400px; position: relative; border-left: 5px solid #3498db; }
-        .task-card.Easy { border-left-color: #2ecc71; }
-        .task-card.Medium { border-left-color: #f1c40f; }
-        .task-card.Hard { border-left-color: #e67e22; }
-        .task-card.Very.Hard { border-left-color: #e74c3c; }
+        .caret { cursor: pointer; width: 20px; text-align: center; display: inline-block; font-size: 12px; color: #7f8c8d; transition: transform 0.2s; user-select: none; }
+        .caret.caret-down { transform: rotate(90deg); }
+        .caret.empty { color: transparent; cursor: default; }
         
-        .form-group { margin-bottom: 10px; }
-        label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 13px; color: #555; }
-        textarea, input[type="text"] { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-family: inherit; }
-        textarea { resize: vertical; min-height: 60px; }
-        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .node-title { flex: 1; cursor: pointer; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 10px; transition: background-color 0.3s; border-radius: 3px; padding-left: 2px; }
+        .node-title:hover { color: #3498db; }
         
-        .card-header { display: flex; justify-content: space-between; margin-bottom: 15px; font-weight: bold; border-bottom: 1px solid #eee; padding-bottom: 10px; }
-        .latex-preview { font-size: 15px; line-height: 1.5; }
+        .task-count-badge { font-size: 11px; color: #7f8c8d; background: #e9ecef; padding: 1px 6px; border-radius: 10px; margin-right: 6px; font-weight: 600; flex-shrink: 0; }
         
-        .split-view { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .edit-side { display: flex; flex-direction: column; }
-        .preview-side { background: #fafafa; border: 1px solid #e0e0e0; padding: 15px; border-radius: 6px; }
+        .nested { display: none; }
+        .nested.active { display: block; }
+
+        .sidebar-foot { padding: 12px 14px; border-top: 1px solid #ddd; background: #ffffff; }
+        .sidebar-foot .info { font-size: 11px; color: #666; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+        .sidebar-foot .info a { color: #3498db; text-decoration: none; font-size: 11px; font-weight: bold; }
+        .sidebar-foot .info a:hover { text-decoration: underline; }
+
+        /* BUTTONS */
+        .btn { padding: 7px 12px; border: 1px solid transparent; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px; transition: .15s; display: inline-flex; align-items: center; justify-content: center; gap: 4px; }
+        .btn:disabled { background: #bbb !important; color: #fff !important; border-color: #bbb !important; cursor: not-allowed; }
+        .btn-gen { background: #2c3e50; color: #ffffff; width: 100%; border-color: #2c3e50; } 
+        .btn-gen:hover:not(:disabled) { background: #34495e; }
         
-        #loading { display: none; font-size: 18px; font-weight: bold; color: #8e44ad; }
+        .btn-primary { background: #3498db; color: #ffffff; border-color: #3498db; }
+        .btn-primary:hover { background: #2980b9; }
         
+        .btn-secondary { background: #ffffff; color: #333; border-color: #ccc; }
+        .btn-secondary:hover { background: #f8fafc; border-color: #999; }
+        
+        .btn-danger { background: #e74c3c; color: #ffffff; border-color: #e74c3c; }
+        .btn-danger:hover { background: #c0392b; border-color: #c0392b; }
+        
+        .btn-sm { padding: 4px 8px; font-size: 11px; }
+
+        /* MAIN */
+        .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: #f0f2f5; }
+        .tabs { display: flex; background: #2c3e50; padding: 0 16px; }
+        .tab { padding: 12px 18px; color: #95a5a6; cursor: pointer; font-size: 12px; font-weight: bold; border-bottom: 3px solid transparent; }
+        .tab:hover { color: #ecf0f1; } 
+        .tab.active { color: #ffffff; border-bottom-color: #3498db; }
+        
+        .panel { flex: 1; overflow-y: auto; padding: 20px; display: none; } 
+        .panel.active { display: block; }
+        #p-staging { background: #e9ecef; }
+        
+        .status-bar { padding: 8px 16px; background: #ffffff; border-top: 1px solid #e2e8f0; font-size: 11px; color: #64748b; display: flex; justify-content: space-between; }
+        .status-bar .prog { color: #0f172a; font-weight: 600; }
+
+        /* TASK CARDS */
+        .card { background: #ffffff; padding: 16px; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,.05); max-width: 1300px; margin: 0 auto 14px; border: 1px solid #e2e8f0; border-left: 6px solid #cbd5e1; position: relative; }
+        .card.card-valid { border-left-color: #27ae60; }
+        .card.card-invalid { border-left-color: #e74c3c; }
+
+        .card-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid #f1f5f9; gap: 12px; }
+        .card-head .left { flex: 1; }
+
+        .tg-badge { display: inline-block; padding: 2px 7px; background: #f1f5f9; color: #1e293b; border: 1px solid #cbd5e1; border-radius: 3px; font-size: 11px; font-weight: 600; }
+        .tg-path { font-size: 11px; color: #64748b; margin-bottom: 4px; }
+        .tg-path .sep { color: #cbd5e1; margin: 0 4px; }
+        
+        .meta-line { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #334155; margin-top: 2px; }
+        
+        /* Wyraziste statusy walidacji */
+        .val-badge { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 3px; font-size: 11px; font-weight: bold; }
+        .val-ok { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .val-err { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+
+        .split { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .fg { margin-bottom: 8px; }
+        .fg label { display: block; font-weight: 600; font-size: 11px; color: #475569; margin-bottom: 3px; }
+        textarea, input[type="text"] { width: 100%; padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 3px; font-family: inherit; font-size: 13px; color: #0f172a; }
+        textarea { resize: vertical; min-height: 50px; }
+        .opts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        
+        .prev-side { background: #f8fafc; border: 1px solid #e2e8f0; padding: 12px; border-radius: 4px; }
+        .prev-title { font-weight: 600; margin-bottom: 8px; font-size: 12px; color: #475569; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px; }
+        .lp { font-size: 13px; line-height: 1.5; white-space: pre-wrap; color: #0f172a; }
+
+        .loading { display: none; text-align: center; padding: 24px; font-size: 14px; font-weight: 600; color: #475569; }
+        .loading.on { display: block; }
+        .empty-msg { text-align: center; color: #64748b; margin-top: 60px; }
+
+        /* Staging action bar */
+        .stage-bar { display: flex; gap: 8px; margin-bottom: 14px; padding: 10px 14px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px; align-items: center; flex-wrap: wrap; box-shadow: 0 1px 2px rgba(0,0,0,.03); }
+        .stage-bar .fill { flex: 1; font-size: 12px; color: #475569; display: flex; align-items: center; gap: 6px; }
+
+        .debug-panel { display: none; margin: 8px 0; padding: 10px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; font-size: 11px; font-family: monospace; }
+        .debug-panel.open { display: block; }
+        .debug-panel details { margin-bottom: 4px; cursor: pointer; }
+        .debug-panel details > div { padding: 8px; background: #ffffff; margin-top: 4px; border: 1px solid #e2e8f0; border-radius: 3px; white-space: pre-wrap; overflow-x: auto; }
+        
+        .insp { padding: 8px 10px; background: #f8fafc; border: 1px solid #e2e8f0; border-left: 3px solid #64748b; border-radius: 3px; font-size: 11px; color: #334155; margin-bottom: 8px; }
     </style>
 </head>
 <body>
 
-<div class="header">
-    <h2>AI Generator</h2>
-    <select id="tg-select"><option value="">Wybierz Task Group...</option></select>
-    
-    <div style="display: flex; gap: 15px; margin-left: 15px; align-items: center; border-left: 2px solid rgba(255,255,255,0.2); padding-left: 15px;">
-        <label>Easy: <input type="number" id="count-Easy" value="2" min="0" style="width: 50px; text-align: center; border-radius: 4px; border: none; padding: 5px;"></label>
-        <label>Medium: <input type="number" id="count-Medium" value="2" min="0" style="width: 50px; text-align: center; border-radius: 4px; border: none; padding: 5px;"></label>
-        <label>Hard: <input type="number" id="count-Hard" value="0" min="0" style="width: 50px; text-align: center; border-radius: 4px; border: none; padding: 5px;"></label>
-        <label>Very Hard: <input type="number" id="count-VeryHard" value="0" min="0" style="width: 50px; text-align: center; border-radius: 4px; border: none; padding: 5px;"></label>
+<!-- SIDEBAR -->
+<div class="sidebar">
+    <div class="sidebar-header">
+        <h2>AI Task Generator</h2>
     </div>
-    
-    <button class="btn btn-generate" onclick="generateTasks()" style="margin-left: auto;">✨ Generuj AI</button>
-    <button class="btn btn-save" onclick="saveAllToDB()" id="save-btn" style="display:none;">💾 Zapisz wszystko do bazy</button>
+    <div class="gen-config">
+        <label>Typ zadania</label>
+        <select id="task-type" style="margin-bottom:8px;">
+            <option value="MCQ">MCQ – Zamknięte (jednokrotny wybór)</option>
+            <option value="OPEN">OPEN – Otwarte (odpowiedź liczbowa)</option>
+            <option value="TRUE_FALSE">TRUE_FALSE – Prawda / Fałsz (maturalne)</option>
+        </select>
+        <label>Ilość per grupa</label>
+        <div class="config-row">
+            <div class="field"><div class="lbl">Easy</div><input type="number" id="cnt-e" value="2" min="0"></div>
+            <div class="field"><div class="lbl">Medium</div><input type="number" id="cnt-m" value="2" min="0"></div>
+            <div class="field"><div class="lbl">Hard</div><input type="number" id="cnt-h" value="0" min="0"></div>
+            <div class="field"><div class="lbl">V.Hard</div><input type="number" id="cnt-vh" value="0" min="0"></div>
+        </div>
+    </div>
+    <div class="tree-wrap" id="tree-wrap"><p style="color:#64748b;text-align:center;margin-top:30px">Ładowanie struktury...</p></div>
+    <div class="sidebar-foot">
+        <div class="info">
+            <span>Wybrano grup: <b id="sel-cnt" style="color:#0f172a">0</b></span>
+            <a href="#" onclick="clearSel();return false">Odznacz</a>
+        </div>
+        <button class="btn btn-gen" id="gen-btn" onclick="startGen()" disabled>Generuj zadania</button>
+    </div>
 </div>
 
-<div class="main-content">
-    <div id="loading">Generowanie w toku (może potrwać kilka minut)...</div>
-    <div id="tasks-container" style="width: 100%; display: flex; flex-direction: column; align-items: center; gap: 20px;"></div>
+<!-- MAIN -->
+<div class="main">
+    <div class="tabs">
+        <div class="tab active" data-t="live" onclick="switchTab('live')">Generowanie na żywo</div>
+        <div class="tab" data-t="staging" onclick="switchTab('staging')">Staging (bufor)</div>
+    </div>
+
+    <div class="panel active" id="p-live">
+        <div class="loading" id="loading">Generowanie zadań... nowe zadania pojawiają się na bieżąco</div>
+        <div id="live-box"></div>
+        <div class="empty-msg" id="live-empty">
+            <h3 style="font-size:15px;color:#475569;margin-bottom:4px">Wybierz grupy zadań w panelu bocznym i kliknij „Generuj zadania"</h3>
+            <p style="font-size:12px;color:#94a3b8">Każde wygenerowane zadanie od razu trafia do bufora stagingu.</p>
+        </div>
+    </div>
+
+    <div class="panel" id="p-staging">
+        <div class="stage-bar" id="st-bar" style="display:none">
+            <button class="btn btn-secondary btn-sm" onclick="selectAllSt()">Zaznacz wszystko</button>
+            <button class="btn btn-secondary btn-sm" onclick="selectValidSt()">Zaznacz wszystkie poprawne</button>
+            <button class="btn btn-secondary btn-sm" onclick="selectInvalidSt()">Zaznacz wszystkie niepoprawne</button>
+            <button class="btn btn-secondary btn-sm" onclick="clearSelectionSt()">Odznacz</button>
+            <div style="height:20px;width:1px;background:#e2e8f0;margin:0 4px"></div>
+            <button class="btn btn-primary btn-sm" onclick="promoteSelected()" title="Przenieś zaznaczone zadania do bazy produkcyjnej">Przenieś zaznaczone</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteSelected()" title="Usuń zaznaczone zadania ze stagingu">Usuń zaznaczone</button>
+            <button class="btn btn-secondary btn-sm" onclick="loadStaging()">Odśwież</button>
+            <div style="margin-left:auto;font-size:12px;color:#475569">
+                Wybrano: <b id="st-sel-info">0</b> <span id="st-total-info" style="color:#7f8c8d"></span>
+            </div>
+        </div>
+        <div id="st-box"></div>
+        <div class="empty-msg" id="st-empty">
+            <h3 style="font-size:14px;color:#475569;margin-bottom:4px">Brak oczekujących zadań w buforze stagingu</h3>
+            <p style="font-size:12px;color:#94a3b8">Wygenerowane zadania pojawią się tutaj do weryfikacji przed przeniesieniem na produkcję.</p>
+        </div>
+    </div>
+
+    <div class="status-bar">
+        <span id="st-text">Gotowy</span>
+        <span class="prog" id="st-prog"></span>
+    </div>
 </div>
 
 <script>
-    const API_URL = 'http://localhost:5000/api';
-    let generatedTasks = [];
+const API = 'http://localhost:5000/api';
+const GEN = 'http://localhost:5001/api';
+let db = null, taskCounts = {}, live = [], staging = [], generating = false;
 
-    async function init() {
+// ---- INIT ----
+async function init() {
+    try {
         try {
-            const res = await fetch(`${API_URL}/data`);
-            const db = await res.json();
-            const select = document.getElementById('tg-select');
-            
-            db.task_groups.forEach(tg => {
-                const subtopic = db.subtopics.find(s => s.id === tg.subtopic_id);
-                const topic = db.topics.find(t => t.id === subtopic?.topic_id);
-                const path = `${topic?.name || '?'} > ${subtopic?.name || '?'} > ${tg.name}`;
-                select.innerHTML += `<option value="${tg.id}">${path}</option>`;
-            });
-            // Pobranie ID z URLa
-            const urlParams = new URLSearchParams(window.location.search);
-            const tgIdFromUrl = urlParams.get('tg_id');
-            if (tgIdFromUrl) {
-                document.getElementById('tg-select').value = tgIdFromUrl;
+            db = await (await fetch(`${API}/data`)).json();
+            if (!db || !db.chapters) throw new Error();
+        } catch(e) {
+            db = await (await fetch(`${GEN}/tree-data`)).json();
+        }
+        calculateTaskCounts();
+        buildTree();
+        const tg = new URLSearchParams(location.search).get('tg_id');
+        if (tg) { preselectTg(tg); }
+    } catch(e) { 
+        document.getElementById('tree-wrap').innerHTML = '<p style="color:#64748b;text-align:center;margin-top:30px">Nie udało się pobrać danych (uruchom backend)</p>'; 
+    }
+}
+
+function calculateTaskCounts() {
+    taskCounts = {};
+    if (db && Array.isArray(db.tasks)) {
+        for (const t of db.tasks) {
+            if (t.task_group_id) {
+                taskCounts[t.task_group_id] = (taskCounts[t.task_group_id] || 0) + 1;
             }
-        } catch (e) {
-            alert("Błąd połączenia z API.");
         }
     }
+}
 
-    async function generateTasks() {
-        const tgId = document.getElementById('tg-select').value;
-        const counts = {
-            'Easy': parseInt(document.getElementById('count-Easy').value) || 0,
-            'Medium': parseInt(document.getElementById('count-Medium').value) || 0,
-            'Hard': parseInt(document.getElementById('count-Hard').value) || 0,
-            'Very Hard': parseInt(document.getElementById('count-VeryHard').value) || 0
-        };
-        const totalTasks = Object.values(counts).reduce((a, b) => a + b, 0);
-
-        if (!tgId || totalTasks < 1) return alert("Wybierz grupę zadaniową i podaj liczbę zadań (min. 1)!");
-
-        document.getElementById('loading').style.display = 'block';
-        document.getElementById('tasks-container').innerHTML = '';
-        document.getElementById('save-btn').style.display = 'none';
-        generatedTasks = [];
-
-        try {
-            const res = await fetch(`http://localhost:5001/api/generate/${tgId}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(counts)
-            });
-
-            // Odbieranie streamingu
-            const reader = res.body.getReader();
-            const decoder = new TextDecoder();
-            let partialData = '';
-
-            while (true) {
-                const { value, done } = await reader.read();
-                if (done) break;
-                
-                partialData += decoder.decode(value, { stream: true });
-                const lines = partialData.split('\n');
-                partialData = lines.pop(); // Zostawia niepełną linię na kolejny cykl
-
-                for (const line of lines) {
-                    if (line.trim()) {
-                        const task = JSON.parse(line);
-                        generatedTasks.push(task);
-                        renderSingleTask(task, generatedTasks.length - 1);
-                        document.getElementById('save-btn').style.display = 'block';
-                    }
-                }
-            }
-        } catch (e) {
-            alert("Błąd API.");
-            console.error(e);
-        } finally {
-            document.getElementById('loading').style.display = 'none';
+async function refreshTreeCounts() {
+    try {
+        let res;
+        try { res = await (await fetch(`${API}/data`)).json(); }
+        catch(e) { res = await (await fetch(`${GEN}/tree-data`)).json(); }
+        if (res?.tasks) {
+            db.tasks = res.tasks;
+            calculateTaskCounts();
+            buildTree();
         }
+    } catch(e) {}
+}
+
+let expandedNodes = new Set();
+
+function preselectTg(id) {
+    const cb = document.querySelector(`input[data-tg="${id}"]`);
+    if (!cb) return;
+    cb.checked = true;
+    let el = cb.closest('li');
+    while (el) { 
+        const nested = el.querySelector(':scope > .nested');
+        const caret = el.querySelector(':scope > .tree-node > .caret');
+        if (nested) nested.classList.add('active');
+        if (caret) caret.classList.add('caret-down');
+        const idAttr = el.querySelector(':scope > .tree-node > input')?.dataset?.id;
+        if (idAttr) expandedNodes.add(idAttr);
+        el = el.parentElement?.closest('li'); 
+    }
+    updParents(cb);
+    updCnt();
+}
+
+// ---- TREE (Styl identyczny jak w Main Panel) ----
+function buildTree() {
+    const w = document.getElementById('tree-wrap');
+    if (!db?.chapters?.length) { 
+        w.innerHTML = '<p style="color:#7f8c8d;text-align:center;margin-top:30px">Brak danych</p>'; 
+        return; 
+    }
+    
+    const selected = new Set(getSelIds());
+    w.innerHTML = '';
+    
+    const ul = document.createElement('ul');
+    ul.className = 'tree tree-root';
+    
+    for (const ch of db.chapters) {
+        ul.appendChild(createTreeNode(ch, 'chapters', selected));
+    }
+    w.appendChild(ul);
+}
+
+function createTreeNode(item, table, selected) {
+    const li = document.createElement('li');
+    
+    let childTable = null;
+    let children = [];
+    if (table === 'chapters') {
+        childTable = 'topics';
+        children = (db.topics || []).filter(t => t.chapter_id === item.id);
+    } else if (table === 'topics') {
+        childTable = 'subtopics';
+        children = (db.subtopics || []).filter(s => s.topic_id === item.id);
+        children.sort((a,b) => (a.sort_order || 0) - (b.sort_order || 0));
+    } else if (table === 'subtopics') {
+        childTable = 'task_groups';
+        children = (db.task_groups || []).filter(g => g.subtopic_id === item.id);
     }
 
-    function renderSingleTask(task, index) {
-        const container = document.getElementById('tasks-container');
-        const safeClass = task.difficulty_level.replace(' ', '.');
-        
-        // Czerwony/Zielony border na podstawie walidacji
-        const validationStyle = task.validation?.is_perfect ? 'border: 3px solid #2ecc71;' : 'border: 3px solid #e74c3c;';
-        const feedbackStr = task.validation?.is_perfect ? '✅ Valid' : `❌ ${task.validation?.feedback || 'Błąd'}`;
-
-        const html = `
-            <div class="task-card ${safeClass}" id="task-${index}" style="${validationStyle}">
-                <div class="card-header">
-                    <span>Zadanie ${index + 1} - ${task.difficulty_level} (${feedbackStr})</span>
-                    <button class="btn btn-delete" onclick="removeTask(${index})">X Usuń</button>
-                </div>
-                
-                ${task.inspiration ? `
-                <div style="margin-bottom: 15px; padding: 10px; background: #fff3cd; border-left: 4px solid #ffc107; border-radius: 4px; font-size: 13px; color: #856404;">
-                    <strong>Użyta inspiracja:</strong> <span>${task.inspiration}</span>
-                </div>
-                ` : ''}
-                
-                <div class="split-view">
-                    <div class="edit-side">
-                        <div class="form-group">
-                            <label>Pytanie (LaTeX):</label>
-                            <textarea id="q-${index}" oninput="updatePreview('q-${index}', 'prev-q-${index}')">${task.content.question}</textarea>
-                        </div>
-
-                        <div class="options-grid">
-                            ${task.content.options.map((opt, i) => `
-                                <div class="form-group">
-                                    <label>Opcja ${['A','B','C','D'][i]}: ${i === task.content.correct_index ? '(POPRAWNA ✅)' : ''}</label>
-                                    <input type="text" id="opt-${index}-${i}" value="${opt}" oninput="updatePreview('opt-${index}-${i}', 'prev-opt-${index}-${i}')">
-                                </div>
-                            `).join('')}
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>Index poprawnej odp. (0=A, 1=B, 2=C, 3=D):</label>
-                            <input type="number" id="corr-${index}" value="${task.content.correct_index}" min="0" max="3">
-                        </div>
-
-                        <div class="form-group">
-                            <label>Rozwiązanie:</label>
-                            <textarea id="sol-${index}" oninput="updatePreview('sol-${index}', 'prev-sol-${index}')">${task.exemplary_solution || ''}</textarea>
-                        </div>
-
-                        <div class="form-group" style="margin-top: 15px; padding: 10px; background: ${task.validation?.is_perfect ? '#f9f9f9' : '#fdedec'}; border-radius: 4px; border: 1px solid ${task.validation?.is_perfect ? '#ddd' : '#e74c3c'};">
-                            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; margin-bottom: 0;">
-                                <input type="checkbox" id="skip-save-${index}" ${!task.validation?.is_perfect ? 'checked' : ''} style="width: 18px; height: 18px;"> 
-                                <span style="font-size: 14px; color: ${task.validation?.is_perfect ? '#555' : '#c0392b'};">🚫 Pomiń przy zapisie ${!task.validation?.is_perfect ? '(automatycznie z powodu błędu)' : ''}</span>
-                            </label>
-                        </div>
-
-                        <div class="form-group" style="margin-top: 10px; padding: 10px; background: #e8f8f5; border-radius: 4px; border: 1px solid #1abc9c;">
-                            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; margin-bottom: 0;">
-                                <input type="checkbox" id="human-val-${index}" ${task.human_validated ? 'checked' : ''} style="width: 18px; height: 18px;"> 
-                                <span style="font-size: 14px; color: #16a085;">✅ Zatwierdzone przez człowieka (human_validated)</span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <div class="preview-side">
-                        <div style="font-weight: bold; margin-bottom: 10px; border-bottom: 1px solid #ddd; padding-bottom: 5px;">Podgląd Zadania</div>
-                        <div id="prev-q-${index}" class="latex-preview" style="margin-bottom: 15px;"></div>
-                        <ul style="list-style-type: none; padding-left: 0; margin-top: 0;">
-                            ${task.content.options.map((opt, i) => `
-                                <li style="margin-bottom: 8px; display: flex; gap: 10px;">
-                                    <strong style="min-width: 20px;">${['A','B','C','D'][i]})</strong>
-                                    <div id="prev-opt-${index}-${i}" class="latex-preview" style="display: inline-block;"></div>
-                                </li>
-                            `).join('')}
-                        </ul>
-                        <div style="font-weight: bold; margin-top: 20px; font-size: 13px; color: #555; border-bottom: 1px solid #ddd; padding-bottom: 5px;">Podgląd Rozwiązania:</div>
-                        <div id="prev-sol-${index}" class="latex-preview" style="margin-top: 10px;"></div>
-                    </div>
-                </div>
-            </div>
-        `;
-        container.insertAdjacentHTML('beforeend', html);
-        
-        setTimeout(() => {
-            updatePreview(`q-${index}`, `prev-q-${index}`);
-            [0,1,2,3].forEach(i => updatePreview(`opt-${index}-${i}`, `prev-opt-${index}-${i}`));
-            updatePreview(`sol-${index}`, `prev-sol-${index}`);
-        }, 50);
+    const hasChildren = children.length > 0;
+    const isExpanded = expandedNodes.has(item.id);
+    const displayName = item.name || 'Bez nazwy';
+    const isChecked = selected.has(item.id) ? 'checked' : '';
+    
+    let countBadge = '';
+    if (table === 'task_groups') {
+        const count = taskCounts[item.id] || 0;
+        countBadge = `<span class="task-count-badge" title="Liczba zadań w bazie produkcyjnej">${count}</span>`;
     }
 
-    function renderTasks() {
-        const container = document.getElementById('tasks-container');
-        container.innerHTML = '';
+    const lvMap = { 'chapters': 'ch', 'topics': 'tp', 'subtopics': 'st', 'task_groups': 'tg' };
+    const lv = lvMap[table] || table;
 
-        generatedTasks.forEach((task, index) => {
-            if (task !== null) {
-                renderSingleTask(task, index);
-            }
+    li.innerHTML = `
+        <div class="tree-node">
+            <span class="caret ${hasChildren ? '' : 'empty'} ${isExpanded ? 'caret-down' : ''}" onclick="toggleNode(this, '${item.id}')">${hasChildren ? '▶' : '•'}</span>
+            <input type="checkbox" data-lv="${lv}" data-id="${item.id}" ${table === 'task_groups' ? `data-tg="${item.id}"` : ''} ${isChecked} onclick="event.stopPropagation();onCb(this)" style="margin-right:6px;cursor:pointer;width:14px;height:14px;accent-color:#3498db;">
+            <span class="node-title" data-id="${item.id}" onclick="toggleNodeByTitle(this, '${item.id}')" title="${esc(displayName)}">${esc(displayName)}</span>
+            ${countBadge}
+        </div>
+        ${hasChildren ? `<ul class="tree nested ${isExpanded ? 'active' : ''}"></ul>` : ''}
+    `;
+
+    if (hasChildren) {
+        const ulNested = li.querySelector('.nested');
+        children.forEach(child => {
+            ulNested.appendChild(createTreeNode(child, childTable, selected));
         });
     }
 
-    function syncDOMToGeneratedTasks() {
-        for (let i = 0; i < generatedTasks.length; i++) {
-            if (generatedTasks[i] === null) continue;
-            const qEl = document.getElementById(`q-${i}`);
-            if (qEl) {
-                generatedTasks[i].content.question = qEl.value;
-                generatedTasks[i].content.options[0] = document.getElementById(`opt-${i}-0`).value;
-                generatedTasks[i].content.options[1] = document.getElementById(`opt-${i}-1`).value;
-                generatedTasks[i].content.options[2] = document.getElementById(`opt-${i}-2`).value;
-                generatedTasks[i].content.options[3] = document.getElementById(`opt-${i}-3`).value;
-                generatedTasks[i].content.correct_index = parseInt(document.getElementById(`corr-${i}`).value);
-                generatedTasks[i].exemplary_solution = document.getElementById(`sol-${i}`).value;
-                generatedTasks[i].human_validated = document.getElementById(`human-val-${i}`).checked;
-            }
+    return li;
+}
+
+function toggleNode(caretElement, id) {
+    if (caretElement.classList.contains('empty')) return;
+    const nestedList = caretElement.closest('li').querySelector(':scope > .nested');
+    if (nestedList) {
+        const isActive = nestedList.classList.toggle('active');
+        caretElement.classList.toggle('caret-down');
+        if (isActive) expandedNodes.add(id); else expandedNodes.delete(id);
+    }
+}
+
+function toggleNodeByTitle(titleElement, id) {
+    const caret = titleElement.closest('.tree-node').querySelector('.caret');
+    if (caret && !caret.classList.contains('empty')) {
+        toggleNode(caret, id);
+    }
+}
+
+// ---- CHECKBOXES ----
+function onCb(cb) {
+    const ch = cb.checked, item = cb.closest('li');
+    item.querySelectorAll('.nested input[type="checkbox"]').forEach(x => x.checked = ch);
+    if (ch) {
+        const nested = item.querySelector(':scope > .nested');
+        const caret = item.querySelector(':scope > .tree-node > .caret');
+        if (nested && !nested.classList.contains('active')) {
+            nested.classList.add('active');
+            if (caret) caret.classList.add('caret-down');
+            if (cb.dataset.id) expandedNodes.add(cb.dataset.id);
         }
     }
+    updParents(cb); 
+    updCnt();
+}
 
-    function removeTask(index) {
-        generatedTasks[index] = null;
-        
-        const taskEl = document.getElementById(`task-${index}`);
-        if (taskEl) taskEl.remove();
-
-        const activeCount = generatedTasks.filter(t => t !== null).length;
-        if (activeCount === 0) document.getElementById('save-btn').style.display = 'none';
+function updParents(cb) {
+    let it = cb.closest('li')?.parentElement?.closest('li');
+    while (it) { 
+        const p = it.querySelector(':scope > .tree-node > input[type="checkbox"]');
+        const kids = it.querySelectorAll('.nested input[type="checkbox"]');
+        if (p && kids.length) {
+            const all = [...kids].every(c => c.checked);
+            const some = [...kids].some(c => c.checked);
+            p.checked = all; 
+            p.indeterminate = some && !all;
+        }
+        it = it.parentElement?.closest('li'); 
     }
+}
 
-    function updatePreview(inputId, previewId) {
-        const text = document.getElementById(inputId).value;
-        const el = document.getElementById(previewId);
-        el.innerText = text;
-        renderMathInElement(el, { delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}], throwOnError: false });
-    }
+function getSelIds() { return [...document.querySelectorAll('input[data-lv="tg"]:checked')].map(c => c.dataset.id); }
+function updCnt() { const n = getSelIds().length; document.getElementById('sel-cnt').textContent = n; document.getElementById('gen-btn').disabled = n === 0; }
+function clearSel() { document.querySelectorAll('#tree-wrap input[type="checkbox"]').forEach(c => { c.checked = false; c.indeterminate = false; }); updCnt(); }
 
-    async function saveAllToDB() {
-        const tgId = document.getElementById('tg-select').value;
-        const activeTasksCount = generatedTasks.filter(t => t !== null).length;
-        
-        let toSaveCount = 0;
-        let toSkipCount = 0;
-        for (let i = 0; i < generatedTasks.length; i++) {
-            if (generatedTasks[i] === null) continue;
-            const skipSaveCheckbox = document.getElementById(`skip-save-${i}`);
-            if (skipSaveCheckbox && skipSaveCheckbox.checked) {
-                toSkipCount++;
-            } else {
-                toSaveCount++;
+// ---- GENERATE ----
+async function startGen() {
+    const ids = getSelIds(), type = document.getElementById('task-type').value;
+    const counts = {
+        'Easy': +document.getElementById('cnt-e').value || 0,
+        'Medium': +document.getElementById('cnt-m').value || 0,
+        'Hard': +document.getElementById('cnt-h').value || 0,
+        'Very Hard': +document.getElementById('cnt-vh').value || 0
+    };
+    const tot = Object.values(counts).reduce((a, b) => a + b, 0);
+    if (!ids.length || tot < 1) return alert('Wybierz grupy zadań i ustaw przynajmniej jedno zadanie.');
+    if (!confirm(`Generujesz zadania dla ${ids.length} grup × ${tot} = ${ids.length * tot} zadań. Kontynuować?`)) return;
+
+    switchTab('live'); 
+    generating = true; 
+    live = []; 
+    document.getElementById('live-box').innerHTML = '';
+    document.getElementById('live-empty').style.display = 'none'; 
+    document.getElementById('loading').classList.add('on');
+    document.getElementById('gen-btn').disabled = true; 
+    setSt(`Generowanie dla ${ids.length} grup...`, '0');
+
+    try {
+        const res = await fetch(`${GEN}/generate`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({task_group_ids: ids, task_type: type, counts})
+        });
+        const reader = res.body.getReader(), dec = new TextDecoder(); 
+        let buf = '';
+        while (true) { 
+            const {value, done} = await reader.read(); 
+            if (done) break; 
+            buf += dec.decode(value, {stream: true});
+            const lines = buf.split('\n'); 
+            buf = lines.pop();
+            for (const ln of lines) {
+                if (!ln.trim()) continue; 
+                try {
+                    const t = JSON.parse(ln);
+                    if (t.error) { console.error(t.message); continue; } 
+                    live.push(t);
+                    renderLive(t, live.length - 1);
+                    setSt('Generowanie w toku...', `${live.length} zadań`);
+                } catch(e) {}
             }
         }
+    } catch(e) { 
+        alert('Błąd połączenia z backendem generatora'); 
+        console.error(e); 
+    } finally { 
+        generating = false; 
+        document.getElementById('loading').classList.remove('on'); 
+        document.getElementById('gen-btn').disabled = false; 
+        setSt('Generowanie zakończone', `${live.length} zadań zapisano w stagingu`); 
+        updCnt(); 
+    }
+}
+
+// ---- RENDER LIVE TASK ----
+function renderLive(t, i) {
+    const ok = t.validation?.is_perfect === true;
+    const cardClass = ok ? 'card-valid' : 'card-invalid';
+    const valClass = ok ? 'val-ok' : 'val-err';
+    const valText = ok ? 'Walidacja: Poprawna' : 'Walidacja: Błąd – ' + (t.validation?.feedback || 'Błąd walidacji');
+    const path = t._context_path || '', grp = path.split(' > ').pop() || '';
+    const box = document.getElementById('live-box');
+    
+    box.insertAdjacentHTML('beforeend', `
+    <div class="card ${cardClass}" id="lt-${i}">
+        <div class="card-head">
+            <div class="left">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+                    <div class="tg-badge">${esc(grp)}</div>
+                    <span class="val-badge ${valClass}">${esc(valText)}</span>
+                </div>
+                <div class="tg-path">${pathHtml(path)}</div>
+                <div class="meta-line">
+                    <strong>Poziom: ${t.difficulty_level} | Typ: ${t.task_type || 'MCQ'}</strong>
+                </div>
+            </div>
+            <div style="display:flex;gap:6px">
+                ${t.debug_info ? `<button class="btn btn-secondary btn-sm" onclick="togDbg('l',${i})" title="Debug promptów">Debug</button>` : ''} 
+                <button class="btn btn-danger btn-sm" onclick="document.getElementById('lt-${i}')?.remove()">Usuń z widoku</button>
+            </div>
+        </div>
+        ${t.inspiration ? `<div class="insp"><b>Inspiracja:</b> ${esc(t.inspiration)}</div>` : ''}
+        ${t.debug_info ? dbgPanel('l', i, t.debug_info) : ''}
+        ${taskBody('l', i, t)}
+    </div>`);
+    setTimeout(() => renderPreviews('l', i), 50);
+}
+
+// ---- STAGING ----
+async function loadStaging() {
+    setSt('Ładowanie stagingu...');
+    try { 
+        staging = await (await fetch(`${GEN}/staging`)).json(); 
+        renderStaging(); 
+        setSt('Staging gotowy', `${staging.length} zadań oczekujących`); 
+    } catch(e) { 
+        setSt('Błąd pobierania stagingu'); 
+        console.error(e); 
+    }
+}
+
+function renderStaging() {
+    const box = document.getElementById('st-box'), emp = document.getElementById('st-empty'), bar = document.getElementById('st-bar');
+    const tot = document.getElementById('st-total-info');
+    if (!staging.length) {
+        box.innerHTML = '';
+        emp.style.display = 'block';
+        bar.style.display = 'none';
+        return;
+    }
+    emp.style.display = 'none'; 
+    bar.style.display = 'flex';
+    if (tot) tot.textContent = `(Łącznie w buforze: ${staging.length})`;
+    updStInfo();
+
+    box.innerHTML = staging.map((t, i) => {
+        const ok = t.validation?.is_perfect === true;
+        const cardClass = ok ? 'card-valid' : 'card-invalid';
+        const valClass = ok ? 'val-ok' : 'val-err';
+        const valText = ok ? 'Walidacja: Poprawna' : 'Walidacja: Błąd – ' + (t.validation?.feedback || 'Błąd walidacji');
+        const tg = t.task_groups, st = tg?.subtopics, tp = st?.topics, ch = tp?.chapters;
+        const grpName = tg?.name || '?', path = `${ch?.name || '?'} > ${tp?.name || '?'} > ${st?.name || '?'} > ${grpName}`;
+        const prodCount = taskCounts[t.task_group_id] || 0;
         
-        if (!confirm(`Zapiszesz ${toSaveCount} zadań do bazy (pominięte: ${toSkipCount}). Kontynuować?`)) return;
+        return `
+        <div class="card ${cardClass}" id="st-${i}">
+            <div class="card-head">
+                <div class="left">
+                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+                        <input type="checkbox" class="st-cb" data-sid="${t.id}" data-valid="${ok ? 1 : 0}" onchange="updStInfo()" style="width:16px;height:16px;cursor:pointer;accent-color:#3498db">
+                        <div class="tg-badge">${esc(grpName)}</div>
+                        <span class="task-count-badge" title="Liczba zadań na produkcji w tej grupie">prod: ${prodCount}</span>
+                        <span class="val-badge ${valClass}">${esc(valText)}</span>
+                    </div>
+                    <div class="tg-path">${pathHtml(path)}</div>
+                    <div class="meta-line">
+                        <strong>Poziom: ${t.difficulty_level} | Typ: ${t.task_type}</strong>
+                        <span style="font-size:11px;color:#7f8c8d;margin-left:8px">${new Date(t.created_at).toLocaleString('pl-PL')}</span>
+                    </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:6px">
+                    <button class="btn btn-primary btn-sm" onclick="promoteSingle('${t.id}',${i})" title="Przenieś to zadanie do bazy produkcyjnej">Na produkcję</button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteSingle('${t.id}')" title="Usuń ze stagingu">Usuń</button>
+                    ${t.debug_info ? `<button class="btn btn-secondary btn-sm" onclick="togDbg('s',${i})" title="Podgląd promptów debugowania">Debug</button>` : ''}
+                </div>
+            </div>
+            ${t.inspiration ? `<div class="insp"><b>Inspiracja:</b> ${esc(t.inspiration)}</div>` : ''}
+            ${t.debug_info ? dbgPanel('s', i, t.debug_info) : ''}
+            ${taskBody('s', i, t)}
+            <div style="margin-top:10px;padding:6px 10px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:4px;display:flex;align-items:center;gap:8px">
+                <input type="checkbox" id="s-hv-${i}" ${t.human_validated ? 'checked' : ''} style="width:14px;height:14px;accent-color:#3498db">
+                <span style="font-size:12px;color:#475569">Zweryfikowane ręcznie</span>
+            </div>
+        </div>`;
+    }).join('');
+    setTimeout(() => staging.forEach((_, i) => renderPreviews('s', i)), 100);
+}
 
-        let successCount = 0;
-        
-        for (let i = 0; i < generatedTasks.length; i++) {
-            if (generatedTasks[i] === null) continue;
+function getSelSt() { 
+    return [...document.querySelectorAll('.st-cb:checked')].map(c => c.dataset.sid); 
+}
 
-            const skipSaveCheckbox = document.getElementById(`skip-save-${i}`);
-            if (skipSaveCheckbox && skipSaveCheckbox.checked) {
-                continue;
-            }
+function updStInfo() { 
+    const el = document.getElementById('st-sel-info');
+    if (el) el.textContent = getSelSt().length; 
+}
 
-            const q = document.getElementById(`q-${i}`).value;
-            const opts = [
-                document.getElementById(`opt-${i}-0`).value,
-                document.getElementById(`opt-${i}-1`).value,
-                document.getElementById(`opt-${i}-2`).value,
-                document.getElementById(`opt-${i}-3`).value
-            ];
-            const corr = parseInt(document.getElementById(`corr-${i}`).value);
-            const diff = generatedTasks[i].difficulty_level;
+function selectAllSt() { 
+    document.querySelectorAll('.st-cb').forEach(c => c.checked = true); 
+    updStInfo(); 
+}
 
-            const payload = {
-                task_group_id: tgId,
-                task_type: 'MCQ',
-                difficulty_level: diff,
-                content: { question: q, options: opts, correct_index: corr },
-                exemplary_solution: document.getElementById(`sol-${i}`).value,
-                human_validated: document.getElementById(`human-val-${i}`).checked
+function selectValidSt() { 
+    document.querySelectorAll('.st-cb').forEach(c => { 
+        c.checked = c.dataset.valid === '1'; 
+    }); 
+    updStInfo(); 
+}
+
+function selectInvalidSt() { 
+    document.querySelectorAll('.st-cb').forEach(c => { 
+        c.checked = c.dataset.valid === '0'; 
+    }); 
+    updStInfo(); 
+}
+
+function clearSelectionSt() { 
+    document.querySelectorAll('.st-cb').forEach(c => c.checked = false); 
+    updStInfo(); 
+}
+
+async function promoteSingle(id, idx) {
+    const t = staging.find(x => x.id === id);
+    if (t && !t.validation?.is_perfect) {
+        const fb = t.validation?.feedback || 'Walidacja wykryła błędy lub nie powiodła się.';
+        const msg = `OSTRZEŻENIE: To zadanie NIE przeszło pomyślnie walidacji!\n\nPowód / uwagi walidatora:\n${fb}\n\nCzy mimo to na pewno chcesz przenieść to zadanie do bazy produkcyjnej?`;
+        if (!confirm(msg)) return;
+    }
+
+    await saveStEdits([id]);
+    try {
+        const r = await (await fetch(`${GEN}/staging/promote`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({staging_ids: [id]})
+        })).json();
+        if (r.promoted) {
+            loadStaging();
+            refreshTreeCounts();
+        } else {
+            alert('Błąd przenoszenia: ' + JSON.stringify(r.errors));
+        }
+    } catch(e) { alert('Błąd komunikacji z serwerem'); console.error(e); }
+}
+
+async function deleteSingle(id) {
+    if (!confirm('Czy na pewno chcesz usunąć to zadanie z bufora stagingu?')) return;
+    try {
+        await fetch(`${GEN}/staging/delete`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({staging_ids: [id]})
+        });
+        loadStaging();
+    } catch(e) { alert('Błąd'); console.error(e); }
+}
+
+async function promoteAllValid() {
+    const validIds = staging.filter(t => t.validation?.is_perfect).map(t => t.id);
+    if (!validIds.length) return alert('Brak zadań oznaczonych jako poprawne przez walidator.');
+
+    await saveStEdits(validIds);
+
+    if (!confirm(`Przenieść ${validIds.length} poprawnych zadań do bazy produkcyjnej? Zadania zostaną usunięte z bufora stagingu.`)) return;
+    try {
+        const r = await (await fetch(`${GEN}/staging/promote`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({staging_ids: validIds})
+        })).json();
+        alert(`Przeniesiono do bazy produkcyjnej: ${r.promoted} z ${r.total_requested}`); 
+        loadStaging();
+        refreshTreeCounts();
+    } catch(e) { alert('Błąd przenoszenia'); console.error(e); }
+}
+
+async function promoteSelected() {
+    const ids = getSelSt(); 
+    if (!ids.length) return alert('Zaznacz zadania checkboxem.');
+
+    const invalidCount = staging.filter(t => ids.includes(t.id) && !t.validation?.is_perfect).length;
+    if (invalidCount > 0) {
+        const msg = `OSTRZEŻENIE: Wśród zaznaczonych zadań (${ids.length}) znajduje się ${invalidCount} zadań, które NIE PRZESZŁY walidacji!\n\nCzy na pewno chcesz przenieść wszystkie zaznaczone zadania (w tym błędne) do bazy produkcyjnej?`;
+        if (!confirm(msg)) return;
+    } else {
+        if (!confirm(`Przenieść ${ids.length} zadań do bazy produkcyjnej? Zadania zostaną usunięte z bufora stagingu.`)) return;
+    }
+
+    await saveStEdits(ids);
+    try { 
+        const r = await (await fetch(`${GEN}/staging/promote`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({staging_ids: ids})
+        })).json(); 
+        alert(`Przeniesiono do bazy produkcyjnej: ${r.promoted}/${r.total_requested}`); 
+        loadStaging(); 
+        refreshTreeCounts();
+    } catch(e) { alert('Błąd'); console.error(e); }
+}
+
+async function deleteSelected() {
+    const ids = getSelSt(); 
+    if (!ids.length) return alert('Zaznacz zadania do usunięcia.'); 
+    if (!confirm(`Trwale usunąć z bufora stagingu ${ids.length} zadań?`)) return;
+    try {
+        await fetch(`${GEN}/staging/delete`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({staging_ids: ids})
+        }); 
+        loadStaging();
+    } catch(e) { alert('Błąd'); console.error(e); }
+}
+
+async function saveStEdits(ids) {
+    for (let i = 0; i < staging.length; i++) {
+        const item = staging[i];
+        if (!ids.includes(item.id)) continue;
+        const q = document.getElementById(`s-q-${i}`); 
+        if (!q) continue;
+
+        const taskType = item.task_type || 'MCQ';
+        let newContent = {};
+
+        if (taskType === 'OPEN') {
+            const ansEl = document.getElementById(`s-ans-${i}`);
+            const tolEl = document.getElementById(`s-tol-${i}`);
+            newContent = {
+                question: q.value,
+                correct_answer: ansEl ? ansEl.value : (item.content?.correct_answer || ''),
+                tolerance: tolEl ? parseFloat(tolEl.value) || 0 : 0
             };
-
-            const res = await fetch(`${API_URL}/create/tasks`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-
-            if (res.ok) successCount++;
+        } else if (taskType === 'TRUE_FALSE') {
+            const origStatements = item.content?.statements || [];
+            const statements = [];
+            let j = 0;
+            while (document.getElementById(`s-st-txt-${i}-${j}`)) {
+                const origId = origStatements[j]?.id ?? (j + 1);
+                statements.push({
+                    id: origId,
+                    text: document.getElementById(`s-st-txt-${i}-${j}`).value,
+                    correct: document.getElementById(`s-st-val-${i}-${j}`).value === 'true'
+                });
+                j++;
+            }
+            newContent = {
+                question: q.value,
+                statements: statements.length ? statements : origStatements
+            };
+        } else {
+            // MCQ
+            newContent = {
+                question: q.value,
+                options: [0, 1, 2, 3].map(j => document.getElementById(`s-o-${i}-${j}`)?.value || ''),
+                correct_index: +(document.getElementById(`s-ci-${i}`)?.value || 0)
+            };
         }
 
-        alert(`Zapisano ${successCount} z ${toSaveCount} zadań!`);
-        generatedTasks = [];
-        renderTasks();
-        document.getElementById('save-btn').style.display = 'none';
+        const u = {
+            content: newContent,
+            exemplary_solution: document.getElementById(`s-sol-${i}`)?.value || '', 
+            human_validated: document.getElementById(`s-hv-${i}`)?.checked || false
+        };
+        try {
+            await fetch(`${GEN}/staging/${item.id}`, {
+                method: 'PATCH',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(u)
+            });
+        } catch(e) { console.error(e); }
+    }
+}
+
+// ---- SHARED RENDERERS ----
+function taskBody(pfx, i, t) {
+    const c = t.content || {};
+    const taskType = t.task_type || 'MCQ';
+
+    if (taskType === 'OPEN') {
+        const correctAns = c.correct_answer ?? '';
+        const tol = c.tolerance ?? 0;
+        return `<div class="split">
+        <div>
+            <div class="fg"><label>Treść zadania (LaTeX):</label><textarea id="${pfx}-q-${i}" oninput="updP('${pfx}-q-${i}','${pfx}-pq-${i}')">${c.question || ''}</textarea></div>
+            <div class="fg"><label>Poprawna odpowiedź (liczba / LaTeX, np. 17 lub \\frac{1}{2}):</label><input type="text" id="${pfx}-ans-${i}" value="${esc(String(correctAns))}" oninput="updP('${pfx}-ans-${i}','${pfx}-pans-${i}')"></div>
+            <div class="fg"><label>Tolerancja błędu (domyślnie 0):</label><input type="number" step="any" id="${pfx}-tol-${i}" value="${tol}" style="width:100px"></div>
+            <div class="fg"><label>Wzorcowe rozwiązanie:</label><textarea id="${pfx}-sol-${i}" oninput="updP('${pfx}-sol-${i}','${pfx}-ps-${i}')">${t.exemplary_solution || ''}</textarea></div>
+        </div>
+        <div class="prev-side">
+            <div class="prev-title">Podgląd pytania</div>
+            <div id="${pfx}-pq-${i}" class="lp" style="margin-bottom:12px"></div>
+            <div class="prev-title">Oczekiwana odpowiedź</div>
+            <div style="margin-bottom:12px;padding:8px 12px;background:#eef2ff;border-radius:4px;border:1px solid #c7d2fe;display:flex;align-items:center;gap:8px">
+                <span style="font-size:12px;color:#4338ca;font-weight:600">Wynik:</span>
+                <span id="${pfx}-pans-${i}" class="lp" style="font-weight:bold;font-size:14px"></span>
+            </div>
+            <div class="prev-title" style="margin-top:14px">Podgląd rozwiązania</div>
+            <div id="${pfx}-ps-${i}" class="lp" style="margin-top:6px"></div>
+        </div>
+    </div>`;
     }
 
-    init();
+    if (taskType === 'TRUE_FALSE') {
+        const statements = c.statements || [];
+        return `<div class="split">
+        <div>
+            <div class="fg"><label>Wprowadzenie / treść kontekstu (LaTeX):</label><textarea id="${pfx}-q-${i}" oninput="updP('${pfx}-q-${i}','${pfx}-pq-${i}')">${c.question || ''}</textarea></div>
+            <div style="margin-bottom:8px">
+                <label style="font-size:11px;font-weight:600;color:#475569;display:block;margin-bottom:4px">Stwierdzenia (Prawda / Fałsz):</label>
+                ${statements.map((s, j) => `
+                <div class="fg" style="margin-bottom:6px">
+                    <div style="display:flex;gap:6px;align-items:center">
+                        <span style="font-size:12px;font-weight:bold;color:#475569;width:18px">${s.id ?? j+1}.</span>
+                        <input type="text" id="${pfx}-st-txt-${i}-${j}" value="${esc(s.text || '')}" oninput="updP('${pfx}-st-txt-${i}-${j}','${pfx}-pst-${i}-${j}')" style="flex:1" placeholder="Treść stwierdzenia...">
+                        <select id="${pfx}-st-val-${i}-${j}" onchange="updStfBadge('${pfx}',${i},${j})" style="width:105px;padding:6px;border:1px solid #cbd5e1;border-radius:3px;font-weight:bold;font-size:11px;color:${s.correct ? '#166534' : '#991b1b'}">
+                            <option value="true" ${s.correct ? 'selected' : ''}>PRAWDA</option>
+                            <option value="false" ${!s.correct ? 'selected' : ''}>FAŁSZ</option>
+                        </select>
+                    </div>
+                </div>`).join('')}
+            </div>
+            <div class="fg"><label>Wzorcowe rozwiązanie (uzasadnienie):</label><textarea id="${pfx}-sol-${i}" oninput="updP('${pfx}-sol-${i}','${pfx}-ps-${i}')">${t.exemplary_solution || ''}</textarea></div>
+        </div>
+        <div class="prev-side">
+            <div class="prev-title">Podgląd treści zadania</div>
+            <div id="${pfx}-pq-${i}" class="lp" style="margin-bottom:12px"></div>
+            <div class="prev-title">Podgląd stwierdzeń</div>
+            <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px">
+                ${statements.map((s, j) => `
+                <div style="display:flex;align-items:flex-start;gap:8px;padding:6px 8px;background:#ffffff;border:1px solid #e2e8f0;border-radius:4px">
+                    <span style="font-size:12px;font-weight:bold;color:#475569">${s.id ?? j+1}.</span>
+                    <div id="${pfx}-pst-${i}-${j}" class="lp" style="flex:1;font-size:12px"></div>
+                    <span id="${pfx}-pst-badge-${i}-${j}" style="padding:2px 6px;border-radius:3px;font-size:10px;font-weight:bold;background:${s.correct ? '#dcfce7' : '#fee2e2'};color:${s.correct ? '#166534' : '#991b1b'};flex-shrink:0">${s.correct ? 'PRAWDA' : 'FAŁSZ'}</span>
+                </div>`).join('')}
+            </div>
+            <div class="prev-title" style="margin-top:14px">Podgląd rozwiązania</div>
+            <div id="${pfx}-ps-${i}" class="lp" style="margin-top:6px"></div>
+        </div>
+    </div>`;
+    }
+
+    // Domyślnie MCQ
+    const opts = c.options || [];
+    return `<div class="split">
+        <div>
+            <div class="fg"><label>Pytanie (LaTeX):</label><textarea id="${pfx}-q-${i}" oninput="updP('${pfx}-q-${i}','${pfx}-pq-${i}')">${c.question || ''}</textarea></div>
+            <div class="opts">${opts.map((o, j) => `<div class="fg"><label>${['A','B','C','D'][j]}${j === c.correct_index ? ' [poprawna]' : ''}</label><input type="text" id="${pfx}-o-${i}-${j}" value="${esc(o)}" oninput="updP('${pfx}-o-${i}-${j}','${pfx}-po-${i}-${j}')"></div>`).join('')}</div>
+            <div class="fg"><label>Poprawna odpowiedź (0-3):</label><input type="number" id="${pfx}-ci-${i}" value="${c.correct_index ?? 0}" min="0" max="3" style="width:70px"></div>
+            <div class="fg"><label>Wzorcowe rozwiązanie:</label><textarea id="${pfx}-sol-${i}" oninput="updP('${pfx}-sol-${i}','${pfx}-ps-${i}')">${t.exemplary_solution || ''}</textarea></div>
+        </div>
+        <div class="prev-side">
+            <div class="prev-title">Podgląd pytania</div>
+            <div id="${pfx}-pq-${i}" class="lp" style="margin-bottom:12px"></div>
+            <ul style="list-style:none;padding:0">${opts.map((_, j) => `<li style="margin-bottom:6px;display:flex;gap:8px"><b>${['A','B','C','D'][j]})</b><div id="${pfx}-po-${i}-${j}" class="lp"></div></li>`).join('')}</ul>
+            <div class="prev-title" style="margin-top:14px">Podgląd rozwiązania</div>
+            <div id="${pfx}-ps-${i}" class="lp" style="margin-top:6px"></div>
+        </div>
+    </div>`;
+}
+
+function renderPreviews(pfx, i) {
+    updP(`${pfx}-q-${i}`, `${pfx}-pq-${i}`);
+
+    // MCQ opcje (jeśli istnieją)
+    for (let j = 0; j < 4; j++) {
+        if (document.getElementById(`${pfx}-o-${i}-${j}`)) {
+            updP(`${pfx}-o-${i}-${j}`, `${pfx}-po-${i}-${j}`);
+        }
+    }
+
+    // OPEN odpowiedź (jeśli istnieje)
+    if (document.getElementById(`${pfx}-ans-${i}`)) {
+        updP(`${pfx}-ans-${i}`, `${pfx}-pans-${i}`);
+    }
+
+    // TRUE_FALSE stwierdzenia (jeśli istnieją)
+    let j = 0;
+    while (document.getElementById(`${pfx}-st-txt-${i}-${j}`)) {
+        updP(`${pfx}-st-txt-${i}-${j}`, `${pfx}-pst-${i}-${j}`);
+        updStfBadge(pfx, i, j);
+        j++;
+    }
+
+    updP(`${pfx}-sol-${i}`, `${pfx}-ps-${i}`);
+}
+
+function updStfBadge(pfx, i, j) {
+    const sel = document.getElementById(`${pfx}-st-val-${i}-${j}`);
+    const badge = document.getElementById(`${pfx}-pst-badge-${i}-${j}`);
+    if (sel && badge) {
+        const isTrue = sel.value === 'true';
+        badge.textContent = isTrue ? 'PRAWDA' : 'FAŁSZ';
+        badge.style.background = isTrue ? '#dcfce7' : '#fee2e2';
+        badge.style.color = isTrue ? '#166534' : '#991b1b';
+        sel.style.color = isTrue ? '#166534' : '#991b1b';
+    }
+}
+
+function updP(srcId, dstId) {
+    const s = document.getElementById(srcId), d = document.getElementById(dstId); 
+    if (!s || !d) return;
+    d.textContent = s.value;
+    if (typeof renderMathInElement === 'function') {
+        renderMathInElement(d, {
+            delimiters: [
+                {left: '$$', right: '$$', display: true},
+                {left: '$', right: '$', display: false}
+            ],
+            throwOnError: false
+        });
+    }
+}
+
+function togDbg(pfx, i) { document.getElementById(`${pfx}-dbg-${i}`)?.classList.toggle('open'); }
+
+function dbgPanel(pfx, i, info) {
+    if (!info) return '';
+    const secs = [
+        ['planner', '1. Planer', 'planner_input', 'planner_output'],
+        ['generator', '2. Generator', 'generator_input', 'generator_output'],
+        ['solver', '3. Solver', 'solver_input', 'solver_output'],
+        ['formatter', '4. Formatter', 'formatter_input', 'formatter_output'],
+        ['validator', '5. Validator', 'validator_input', 'validator_output']
+    ];
+    return `<div class="debug-panel" id="${pfx}-dbg-${i}">
+        <div style="font-weight:600;margin-bottom:6px">Przebieg pipeline AI (prompty wejściowe / wyjściowe):</div>
+        ${secs.map(([, label, ik, ok]) => `<details style="margin-bottom:4px">
+            <summary style="font-weight:600;color:#334155">${label}</summary>
+            <div>
+                <b style="color:#475569">INPUT:</b><br>${JSON.stringify(info[ik], null, 2) || '-'}<hr style="border:0;border-top:1px solid #e2e8f0;margin:6px 0">
+                <b style="color:#475569">OUTPUT:</b><br>${JSON.stringify(info[ok], null, 2) || '-'}
+            </div>
+        </details>`).join('')}
+    </div>`;
+}
+
+function pathHtml(path) {
+    return path.split(' > ').map((p, i, a) => i < a.length - 1 ? `<span>${esc(p)}</span><span class="sep">›</span>` : `<span style="font-weight:600;color:#0f172a">${esc(p)}</span>`).join('');
+}
+
+function esc(s) { const d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
+function switchTab(t) { 
+    document.querySelectorAll('.tab').forEach(x => x.classList.toggle('active', x.dataset.t === t)); 
+    document.querySelectorAll('.panel').forEach(x => x.classList.toggle('active', x.id === `p-${t}`)); 
+    if (t === 'staging') loadStaging(); 
+}
+function setSt(t, p) { 
+    document.getElementById('st-text').textContent = t; 
+    document.getElementById('st-prog').textContent = p || ''; 
+}
+
+init();
 </script>
 </body>
 </html>
