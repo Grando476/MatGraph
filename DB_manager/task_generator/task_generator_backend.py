@@ -100,8 +100,13 @@ def generate_tasks_batch():
 # Stary endpoint (kompatybilność wsteczna z obecnym panelem)
 @app.route('/api/generate/<tg_id>', methods=['POST'])
 def generate_tasks_single(tg_id):
-    counts = request.json
-    task_type = 'MCQ'
+    req_data = request.json or {}
+    if isinstance(req_data, dict) and 'counts' in req_data:
+        counts = req_data.get('counts', {})
+        task_type = req_data.get('task_type', request.args.get('task_type', 'MCQ'))
+    else:
+        counts = req_data
+        task_type = request.args.get('task_type', 'MCQ')
     batch_id = str(uuid.uuid4())
 
     context = _build_context(tg_id)

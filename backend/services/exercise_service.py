@@ -17,7 +17,7 @@ class ExerciseService:
                 return {"error": "Task group not found"}
 
             cur.execute(
-                "SELECT id, content, exemplary_solution FROM public.tasks WHERE task_group_id = %s ORDER BY created_at ASC;",
+                "SELECT id, task_type, content, exemplary_solution FROM public.tasks WHERE task_group_id = %s ORDER BY created_at ASC;",
                 (task_group_id,)
             )
             tasks = cur.fetchall()

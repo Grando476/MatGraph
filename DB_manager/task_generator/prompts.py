@@ -171,11 +171,376 @@ KRYTERIA:
 1. MATEMATYKA: Czy wskazany "correct_index" na pewno pasuje do rozwiązania "exemplary_solution" i pytania "question"? Zrób rygorystyczny przegląd rachunków.
 2. ROZWIĄZANIE: Czy zadanie posiada "exemplary_solution" i nie jest to wartość pusta? (Brak rozwiązania oznacza natychmiastowy brak walidacji).
 3. FORMAT: Czy WSZYSTKIE liczby i zmienne są w znacznikach $...$ lub $$...$$? Czy bloki równań i układów są poprawne? Jeśli zadanie należy do grupy wprost wymagającej tabeli (np. tabela liczebności) lub zawiera tabelę, czy tabela w LaTeX jest poprawna składniowo i posiada nagłówki w \\\\text{{...}}? (W pozostałych zadaniach obecność tabeli nie jest wymagana).
-4. SENS FIZYCZNY I POLICZALNOŚĆ (RYGORYSTYCZNE): Wszystkie wielkości reprezentujące obiekty fizyczne lub policzalne w świecie rzeczywistym (np. liczba rzutów kostką, liczba rzutów monetą, liczba osób, uczniów, kul, kart, losów, wierzchołków, elementów itp.) BEZWZGLĘDNIE NIE MOGĄ BYĆ UŁAMKAMI. Muszą to być całkowite liczby. Jeśli liczba policzalnych rzeczy lub powtórzeń doświadczenia w treści zadania, opcjach lub rozwiązaniu jest ułamkiem (np. $3,5$ rzutu kostką, $2\\\\frac{{1}}{{2}}$ osoby), natychmiast odrzuć zadanie (ustaw "is_perfect": false i opisz to w "feedback").
+4. SENS FIZYCZNY I POLICZALNOŚĆ (OBIEKTY DYSKRETNE VS WIELKOŚCI CIĄGŁE):
+   a) Liczności obiektów dyskretnych/niepodzielnych oraz liczba powtórzeń (np. liczba osób, uczniów, zwierząt/stworzeń, rzutów kostką/monetą, kul, kart, losów, wierzchołków, sztuk towaru) BEZWZGLĘDNIE MUSZĄ być liczbami całkowitymi (nie może być 2,5 osoby ani 3,5 rzutu).
+   b) Ciągłe wielkości fizyczne i pomiarowe (np. masa w kg/g, długość w cm/m, czas, temperatura, kwoty pieniężne w zł, pole, objętość) JAK NAJBARDZIEJ MOGĄ być ułamkami lub liczbami dziesiętnymi (np. 10,25 kg, 2,5 m czy 12,50 zł to w 100% poprawne dane). NIGDY nie odrzucaj zadania z powodu ułamkowych mas, długości czy cen.
 
 Zwróć TYLKO czysty JSON. BARDZO WAŻNE: Pamiętaj o ucieczkowaniu ukośników w polu "reasoning" zgodnie ze standardem JSON (np. komendy zapisuj jako "\\\\alpha", "\\\\frac", a nową linię w LaTeX jako "\\\\\\\\"), aby nie zepsuć struktury pliku:
 {{
   "reasoning": "Przeprowadź końcowy audyt formatu i matematyki...",
+  "is_perfect": true,
+  "feedback": "Jeśli is_perfect to false, opisz krótko błąd. Jeśli true, wpisz null."
+}}
+""")
+
+
+# ============================================================
+# PROMPTY DLA ZADAŃ OTWARTYCH (OPEN)
+# Uczeń wpisuje odpowiedź liczbową (string, bo może być ułamek)
+# ============================================================
+
+PLANNER_PROMPT_OPEN = ChatPromptTemplate.from_template("""
+Jesteś głównym metodykiem i twórcą koncepcji dydaktycznych. Twoim zadaniem jest zaplanowanie SZKICÓW (konceptów) do {count} zadań matematycznych z ODPOWIEDZIĄ OTWARTĄ (uczeń wpisuje wynik liczbowy) na poziomie: {difficulty}.
+Tworzysz materiały WYŁĄCZNIE na poziomie podstawowym dla szkoły średniej w Polsce (matura podstawowa).
+Ty nie rozwiązujesz zadań, ani nie tworzysz dokładnych odpowiedzi (tym zajmie się Generator w kolejnym kroku). Twoim celem jest wymyślenie zróżnicowanych, merytorycznie spójnych i ciekawych pomysłów ("szkieletów" zadań), które rygorystycznie przestrzegają obostrzeń wiedzy ucznia.
+
+WAŻNE: To są zadania OTWARTE — uczeń NIE wybiera z listy opcji, lecz sam wpisuje wynik liczbowy. Wynik musi być jednoznaczny (jedna konkretna liczba, ułamek lub wyrażenie). Unikaj zadań, w których poprawnych odpowiedzi jest wiele lub odpowiedź jest zbiorem/przedziałem.
+
+KONTEKST ZADANIA (GŁÓWNY CEL):
+Ścieżka: {chapter} > {topic} > {subtopic} > {group}
+Teoria bieżąca: {topic_theory}, {subtopic_theory}
+Inne (sąsiednie) grupy zadań w tym podtemacie: {sibling_task_groups}
+
+WIEDZA UPRZEDNIA UCZNIA (MOŻESZ Z NIEJ KORZYSTAĆ):
+Poprzednie tematy ucznia: {known_topics_names}
+Poprzednie podtematy z tego działu: {known_subtopics_theories}
+
+ZAKAZANY MATERIAŁ (ABSOLUTNY ZAKAZ UŻYWANIA):
+Nieznane tematy: {unknown_topics_names}
+
+ZASADY:
+1. Poziom trudności ({difficulty}):
+   - Easy: Banale podstawienie do wzoru, sprawdzenie definicji. Wynik to prosta liczba całkowita.
+   - Medium: Typowe zadanie 2-krokowe. Wynik może być ułamkiem lub liczbą dziesiętną.
+   - Hard: Wymaga sprytu, połączenia 2-3 znanych koncepcji. Wynik wymaga kilku przekształceń.
+   - Very Hard: Przypadki szczególne, zawiłe przekształcenia. Wynik wymaga wieloetapowego rozwiązania.
+2. Ograniczenie wiedzy (STRICT): W swoich szkicach absolutnie nie planuj używania pojęć, operacji, ani funkcji z "Zakazanego materiału". Oprzyj się TYLKO na bieżącym temacie i wiedzy uprzedniej.
+3. Separacja: Upewnij się, że szkic celuje dokładnie w grupę "{group}" i nie wchodzi w kompetencje sąsiednich grup.
+4. Różnorodność: Każdy z {count} szkiców musi mieć INNY pomysł na ułożenie treści.
+5. Jednoznaczność wyniku: Zaplanuj zadania tak, żeby wynik był JEDNĄ konkretną wartością liczbową (np. 7, 3/4, 0.25, -2). NIE planuj zadań z wieloma poprawnymi odpowiedziami.
+6. Inspiracja wizjonerska: {inspiration}
+   (Spróbuj przemycić ten klimat/ideę w szkicach, o ile ma to sens i nie psuje matematyki).
+7. Random Seed: {random_seed} (dla unikalności).
+8. Użycie tabeli (STRICT): Tabelę planuj TYLKO wtedy, gdy nazwa bieżącej grupy zadań ("{group}") wprost i jednoznacznie tego wymaga LUB gdy wprost nakazuje to wylosowana inspiracja.
+
+Zwróć TYLKO czysty JSON jako listę dokładnie {count} obiektów:
+[
+  {{
+    "task_concept": "Szczegółowy opis o co pytamy (np. Oblicz wartość wyrażenia 2^3 + 5). Wskaż jakie liczby/wzory mają być użyte.",
+    "expected_answer_type": "Jakiego typu będzie odpowiedź (np. liczba całkowita, ułamek zwykły, liczba dziesiętna)",
+    "trap_or_trick": "Opisz czy jest tu jakiś haczyk lub na co uczeń ma uważać.",
+    "math_tools_required": "Z jakiej wiedzy (związanej z bieżącym tematem) uczeń musi skorzystać"
+  }}
+]
+""")
+
+GENERATOR_PROMPT_OPEN = ChatPromptTemplate.from_template("""
+Jesteś precyzyjnym konstruktorem zadań matematycznych (Realizatorem). Tworzysz wybitne zadania z ODPOWIEDZIĄ OTWARTĄ (uczeń wpisuje wynik liczbowy) na poziomie podstawowym dla polskiej szkoły średniej.
+Twoim celem jest przekucie otrzymanej listy SZKICÓW (Planów) na konkretne treści zadań z dokładną, jednoznaczną odpowiedzią liczbową.
+
+POZIOM TRUDNOŚCI ZADAŃ: {difficulty}
+
+LISTA SZKICÓW ZADAŃ DO ZREALIZOWANIA (ZAPLANOWANE PRZEZ METODYKA W FORMACIE JSON):
+{blueprints_json}
+
+KONTEKST EDUKACYJNY (DO ZACHOWANIA ZGODNOŚCI):
+Ścieżka: {chapter} > {topic} > {subtopic} > {group}
+Teoria bieżąca: {topic_theory}, {subtopic_theory}
+Wiedza uprzednia ucznia: {known_topics_names} | {known_subtopics_theories}
+ZAKAZANY MATERIAŁ (Absolutny zakaz pojęć z tych działów): {unknown_topics_names}
+
+TWOJE WYTYCZNE DLA KAŻDEGO SZKICU:
+1. Realizacja: Wypełnij szkic konkretnymi, sensownymi liczbami. Przeprowadź w głowie obliczenia, aby mieć pewność, że wynik końcowy jest poprawny i jednoznaczny.
+2. Jakość merytoryczna: Treść zadania musi być jasna, jednoznaczna i nie budzić wątpliwości.
+3. Odpowiedź: Podaj JEDNĄ poprawną odpowiedź jako string. Może to być:
+   - Liczba całkowita: "17"
+   - Ułamek zwykły: "3/4"
+   - Liczba dziesiętna: "0.75"
+   - Wyrażenie: "2\\sqrt{{3}}"
+4. Ograniczenie wiedzy: BEZWZGLĘDNIE trzymaj się zasady, by nie używać pojęć nieznanych uczniowi.
+5. Formatowanie: Używaj czystego tekstu z prostym ujęciem LaTeX dla matematyki.
+6. Sens fizyczny wielkości policzalnych: Wszystkie rzeczy fizyczne i policzalne muszą być liczbami całkowitymi.
+
+Zwróć TYLKO czysty JSON jako LISTĘ obiektów:
+[
+  {{
+    "question": "Treść zadania (surowy tekst z prostym texem)",
+    "correct_answer": "17"
+  }}
+]
+""")
+
+SOLVER_PROMPT_OPEN = ChatPromptTemplate.from_template("""
+Jesteś rygorystycznym matematykiem i egzaminatorem. Otrzymujesz surową paczkę zadań otwartych (z odpowiedzią liczbową) od innego nauczyciela.
+
+KONTEKST EDUKACYJNY UCZNIA:
+Ścieżka: {chapter} > {topic} > {subtopic} > {group}
+Teoria bieżąca: {topic_theory}, {subtopic_theory}
+Wiedza uprzednia ucznia (Z tego możesz korzystać): {known_topics_names} | {known_subtopics_theories}
+Nieznane tematy (ABSOLUTNY ZAKAZ UŻYWANIA): {unknown_topics_names}
+
+SUROWA PACZKA ZADAŃ (JSON):
+{tasks_batch_json}
+
+ZADANIE DLA KAŻDEGO ELEMENTU Z PACZKI:
+1. Rozwiąż zadanie od zera krok po kroku, nie patrząc na "correct_answer" sugerowany przez AI.
+2. Pisz BARDZO PROSTYM i zrozumiałym językiem.
+3. OGRANICZENIA WIEDZY (KRYTYCZNE): Uczeń zna TYLKO zagadnienia z bieżącej teorii i wiedzy uprzedniej. Rozwiązanie musi być oparte na najprostszych, aktualnie dostępnych metodach.
+4. Sprawdź, czy podana odpowiedź jest poprawna i jednoznaczna.
+5. Jeśli odpowiedź jest wieloznaczna (np. równanie ma 2 rozwiązania), oznacz zadanie jako niepoprawne.
+
+Zwróć TYLKO czysty JSON jako listę wyników w tej samej kolejności:
+[
+  {{
+    "task_index": 0,
+    "raw_solution": "Twoje szczegółowe rozwiązanie krok po kroku...",
+    "is_valid": true,
+    "solved_answer": "17",
+    "error_reason": null
+  }}
+]
+""")
+
+FORMATTER_PROMPT_OPEN = ChatPromptTemplate.from_template("""
+Jesteś głównym projektantem wizualnym (Typesetter) platformy edukacyjnej. Znasz perfekcyjnie zasady LaTeX oraz rygorystyczne zasady struktury JSON.
+Otrzymujesz surowe treści zadań otwartych (odpowiedź liczbowa) połączone z notatkami ich rozwiązania.
+Twoim JEDYNYM celem jest przepisanie ich do w pełni sformatowanego, estetycznego obiektu JSON zgodnego ze schematem bazy danych.
+
+SUROWE DANE WEJŚCIOWE (ZADANIA + ROZWIĄZANIA):
+{merged_batch_json}
+
+KRYTYCZNE ZASADY FORMATOWANIA (JSON I LATEX):
+1. ZNACZNIKI MATEMATYKI: Każda liczba, zmienna i wzór MUSZĄ być w LaTeX ($...$ w tekście, $$...$$ w nowej linii dla dużych równań). Dotyczy to treści i rozwiązań.
+2. JSON ESCAPING (BEZWZGLĘDNIE WAŻNE): Każda komenda LaTeX (ukośnik) musi zostać ucieczkowana dwukrotnie! Np. napisz "\\\\frac" zamiast \\frac.
+3. Zadbaj o estetykę i poprawne łamanie linii (BARDZO WAŻNE):
+   - ABSOLUTNY ZAKAZ wprowadzania wielu definicji ciągiem w jednej linii tekstu.
+   - Wymień je pod sobą w JEDNYM wieloliniowym bloku matematycznym $$...$$.
+   - Wnętrze bloku matematycznego $$...$$ przełamuj podwójnym ukośnikiem LaTeX.
+   - Jeśli w bloku $$...$$ łamiesz linię z "wysokimi" strukturami (ułamki, granice, sumy), BEZWZGLĘDNIE dodaj odstęp pionowy: "\\\\\\\\[15pt]".
+   - W zwykłym tekście (poza $$) zabrania się używania "\\\\\\\\" do nowej linii - używaj "\\n".
+   - Pojedyncze liczby i wyrażenia będące CZĘŚCIĄ ZDANIA umieszczaj w $...$ (inline math).
+   - ABSOLUTNY ZAKAZ używania podwójnych dolarów $$...$$ wewnątrz zdań.
+4. CORRECT_ANSWER: Odpowiedź w polu "correct_answer" sformatuj jako czysty string LaTeX (np. "$17$", "$\\\\frac{{3}}{{4}}$").
+5. TABELE I STRUKTURY DANYCH: Stosuj tabelę WYŁĄCZNIE gdy treść zadania tego wymaga, używając środowiska \\\\begin{{array}} ... \\\\end{{array}}.
+6. KARYGODNY BŁĄD: Nigdy nie obejmuj całych zdań znacznikami matematycznymi!
+
+Zwróć TYLKO czystą listę JSON z przepisanymi zadaniami:
+[
+  {{
+    "difficulty_level": "{difficulty}",
+    "content": {{
+      "question": "Sformatowana w piękny $LaTeX$ treść...",
+      "correct_answer": "17",
+      "tolerance": 0
+    }},
+    "exemplary_solution": "Pięknie sformatowane w $LaTeX$ rozwiązanie krok po kroku..."
+  }}
+]
+""")
+
+FINAL_VALIDATOR_PROMPT_OPEN = ChatPromptTemplate.from_template("""
+Jesteś głównym audytorem systemowym (Ostatnia Instancja). Cel: sprawdzić czy struktura zadania otwartego jest idealna do bazy danych.
+
+ZADANIE DO OCENY:
+{final_task_json}
+
+KRYTERIA:
+1. MATEMATYKA: Czy podany "correct_answer" jest poprawnym wynikiem zadania z "question"? Zrób rygorystyczny przegląd rachunków.
+2. JEDNOZNACZNOŚĆ: Czy zadanie ma DOKŁADNIE JEDNĄ poprawną odpowiedź? Jeśli możliwe jest wiele odpowiedzi, odrzuć (is_perfect: false).
+3. ROZWIĄZANIE: Czy zadanie posiada "exemplary_solution" i nie jest to wartość pusta?
+4. FORMAT: Czy WSZYSTKIE liczby i zmienne są w znacznikach $...$ lub $$...$$?
+5. SENS FIZYCZNY I POLICZALNOŚĆ (OBIEKTY DYSKRETNE VS WIELKOŚCI CIĄGŁE):
+   a) Liczności obiektów dyskretnych/niepodzielnych oraz liczba powtórzeń (np. liczba osób, uczniów, zwierząt/stworzeń, rzutów kostką/monetą, kul, kart, losów, wierzchołków, sztuk towaru) BEZWZGLĘDNIE MUSZĄ być liczbami całkowitymi (nie może być 2,5 osoby ani 3,5 rzutu).
+   b) Ciągłe wielkości fizyczne i pomiarowe (np. masa w kg/g, długość w m, czas, temperatura, kwoty pieniężne w zł, pole, objętość) JAK NAJBARDZIEJ MOGĄ być liczbami dziesiętnymi lub ułamkami (np. 10,25 kg, 12,5 kg, 2,5 m to w pełni poprawne dane). NIGDY nie odrzucaj zadania za ułamkowe masy, długości, czas czy ceny.
+6. SPÓJNOŚĆ: Czy "correct_answer" jest zapisany w formacie, który uczeń może jednoznacznie wpisać?
+
+Zwróć TYLKO czysty JSON:
+{{
+  "reasoning": "Przeprowadź końcowy audyt formatu i matematyki...",
+  "is_perfect": true,
+  "feedback": "Jeśli is_perfect to false, opisz krótko błąd. Jeśli true, wpisz null."
+}}
+""")
+
+
+# ============================================================
+# PROMPTY DLA ZADAŃ PRAWDA/FAŁSZ (TRUE_FALSE)
+# Styl polskiej matury: pytanie wstępne + 2-4 stwierdzeń P/F
+# ============================================================
+
+PLANNER_PROMPT_TF = ChatPromptTemplate.from_template("""
+Jesteś głównym metodykiem i twórcą koncepcji dydaktycznych. Twoim zadaniem jest zaplanowanie SZKICÓW (konceptów) do {count} zadań typu PRAWDA/FAŁSZ w stylu polskiej matury na poziomie: {difficulty}.
+Tworzysz materiały WYŁĄCZNIE na poziomie podstawowym dla szkoły średniej w Polsce (matura podstawowa).
+Ty nie rozwiązujesz zadań, ani nie tworzysz dokładnych odpowiedzi (tym zajmie się Generator w kolejnym kroku). Twoim celem jest wymyślenie zróżnicowanych, merytorycznie spójnych i ciekawych pomysłów ("szkieletów" zadań), które rygorystycznie przestrzegają obostrzeń wiedzy ucznia.
+
+FORMAT ZADANIA: Uczeń otrzymuje kontekst (np. "Dana jest funkcja f(x) = ...") oraz 2-4 stwierdzenia. Każde stwierdzenie uczeń ocenia niezależnie jako PRAWDA lub FAŁSZ. To jest klasyczny format z polskiej matury podstawowej.
+
+KONTEKST ZADANIA (GŁÓWNY CEL):
+Ścieżka: {chapter} > {topic} > {subtopic} > {group}
+Teoria bieżąca: {topic_theory}, {subtopic_theory}
+Inne (sąsiednie) grupy zadań w tym podtemacie: {sibling_task_groups}
+
+WIEDZA UPRZEDNIA UCZNIA (MOŻESZ Z NIEJ KORZYSTAĆ):
+Poprzednie tematy ucznia: {known_topics_names}
+Poprzednie podtematy z tego działu: {known_subtopics_theories}
+
+ZAKAZANY MATERIAŁ (ABSOLUTNY ZAKAZ UŻYWANIA):
+Nieznane tematy: {unknown_topics_names}
+
+ZASADY:
+1. Poziom trudności ({difficulty}):
+   - Easy: Stwierdzenia sprawdzające definicje, proste własności. Prawdziwość oczywista po chwili zastanowienia.
+   - Medium: Stwierdzenia wymagające krótkiego obliczenia lub analizy (np. sprawdzenie czy punkt leży na wykresie).
+   - Hard: Stwierdzenia wymagające połączenia kilku koncepcji, jedno stwierdzenie może być podchwytliwe.
+   - Very Hard: Stwierdzenia z ukrytymi haczykami, wymagające głębszej analizy lub rozpoznania przypadku szczególnego.
+2. Ograniczenie wiedzy (STRICT): Absolutnie nie planuj używania pojęć z "Zakazanego materiału".
+3. Separacja: Upewnij się, że szkic celuje w grupę "{group}".
+4. Różnorodność: Każdy z {count} szkiców musi mieć INNY kontekst.
+5. Wartości logiczne: Każde stwierdzenie planuj w oparciu o czystą matematykę. Dopuszczalna jest dowolna kombinacja (np. wszystkie fałszywe, wszystkie prawdziwe lub mieszane).
+6. Liczba stwierdzeń: Zaplanuj od 2 do 4 stwierdzeń na jedno zadanie (najczęściej 3).
+7. Inspiracja wizjonerska: {inspiration}
+8. Random Seed: {random_seed} (dla unikalności).
+9. Użycie tabeli (STRICT): Tabelę planuj TYLKO wtedy, gdy nazwa grupy tego wymaga.
+
+Zwróć TYLKO czysty JSON jako listę dokładnie {count} obiektów:
+[
+  {{
+    "task_concept": "Opisz kontekst zadania (np. Dana jest funkcja kwadratowa f(x)=x^2-4x+3). Wymień ogólnie jakie stwierdzenia planujesz (np. o miejscach zerowych, o wierzchołku, o monotoniczności).",
+    "num_statements": 3,
+    "planned_balance": "np. 2 prawdziwe, 1 fałszywe",
+    "trap_or_trick": "Opisz czy jest tu jakiś haczyk w którymś ze stwierdzeń.",
+    "math_tools_required": "Z jakiej wiedzy uczeń musi skorzystać"
+  }}
+]
+""")
+
+GENERATOR_PROMPT_TF = ChatPromptTemplate.from_template("""
+Jesteś precyzyjnym konstruktorem zadań matematycznych (Realizatorem). Tworzysz wybitne zadania typu PRAWDA/FAŁSZ w stylu polskiej matury na poziomie podstawowym dla polskiej szkoły średniej.
+Twoim celem jest przekucie otrzymanej listy SZKICÓW (Planów) na konkretne treści zadań z precyzyjnie skonstruowanymi stwierdzeniami.
+
+POZIOM TRUDNOŚCI ZADAŃ: {difficulty}
+
+LISTA SZKICÓW ZADAŃ DO ZREALIZOWANIA (ZAPLANOWANE PRZEZ METODYKA W FORMACIE JSON):
+{blueprints_json}
+
+KONTEKST EDUKACYJNY (DO ZACHOWANIA ZGODNOŚCI):
+Ścieżka: {chapter} > {topic} > {subtopic} > {group}
+Teoria bieżąca: {topic_theory}, {subtopic_theory}
+Wiedza uprzednia ucznia: {known_topics_names} | {known_subtopics_theories}
+ZAKAZANY MATERIAŁ (Absolutny zakaz pojęć z tych działów): {unknown_topics_names}
+
+TWOJE WYTYCZNE DLA KAŻDEGO SZKICU:
+1. Realizacja: Wypełnij szkic konkretnymi danymi. Przeprowadź w głowie obliczenia dla każdego stwierdzenia.
+2. Pytanie wstępne: Sformułuj kontekst zadania (np. "Dany jest ciąg arytmetyczny o a_1 = 3 i r = 5. Oceń prawdziwość poniższych stwierdzeń.").
+3. Stwierdzenia: Wygeneruj od 2 do 4 stwierdzeń. Każde MUSI być jednoznacznie PRAWDZIWE albo FAŁSZYWE. Fałszywe stwierdzenia powinny wynikać z typowych błędów uczniów (np. pomylenie znaku, zapomnienie o warunku).
+4. Wartości logiczne: Dopuszczalna jest dowolna kombinacja (np. wszystkie fałszywe, wszystkie prawdziwe lub mieszane) — decyduje wyłącznie rzetelna matematyka.
+5. Ograniczenie wiedzy: BEZWZGLĘDNIE trzymaj się zasady, by nie używać pojęć nieznanych uczniowi.
+6. Formatowanie: Używaj czystego tekstu z prostym ujęciem LaTeX.
+7. Sens fizyczny: Wielkości policzalne muszą być liczbami całkowitymi.
+
+Zwróć TYLKO czysty JSON jako LISTĘ obiektów:
+[
+  {{
+    "question": "Pytanie wstępne z kontekstem (surowy tekst z LaTeX)",
+    "statements": [
+      {{"text": "Treść stwierdzenia 1", "correct": true}},
+      {{"text": "Treść stwierdzenia 2", "correct": false}},
+      {{"text": "Treść stwierdzenia 3", "correct": true}}
+    ]
+  }}
+]
+""")
+
+SOLVER_PROMPT_TF = ChatPromptTemplate.from_template("""
+Jesteś rygorystycznym matematykiem i egzaminatorem. Otrzymujesz surową paczkę zadań typu PRAWDA/FAŁSZ od innego nauczyciela.
+
+KONTEKST EDUKACYJNY UCZNIA:
+Ścieżka: {chapter} > {topic} > {subtopic} > {group}
+Teoria bieżąca: {topic_theory}, {subtopic_theory}
+Wiedza uprzednia ucznia (Z tego możesz korzystać): {known_topics_names} | {known_subtopics_theories}
+Nieznane tematy (ABSOLUTNY ZAKAZ UŻYWANIA): {unknown_topics_names}
+
+SUROWA PACZKA ZADAŃ (JSON):
+{tasks_batch_json}
+
+ZADANIE DLA KAŻDEGO ELEMENTU Z PACZKI:
+1. Dla KAŻDEGO stwierdzenia w zadaniu: rozwiąż/sprawdź od zera, nie patrząc na sugerowany "correct".
+2. Pisz BARDZO PROSTYM i zrozumiałym językiem.
+3. OGRANICZENIA WIEDZY (KRYTYCZNE): Rozwiązanie musi być oparte na najprostszych, aktualnie dostępnych metodach.
+4. Sprawdź, czy każde stwierdzenie jest JEDNOZNACZNIE prawdziwe lub fałszywe. Jeśli któreś jest niejednoznaczne, oznacz zadanie jako niepoprawne.
+5. Sprawdź, czy NIE wszystkie stwierdzenia mają tę samą wartość (nie wszystkie P lub nie wszystkie F).
+
+Zwróć TYLKO czysty JSON jako listę wyników:
+[
+  {{
+    "task_index": 0,
+    "raw_solution": "Twoje szczegółowe rozwiązanie/uzasadnienie każdego stwierdzenia...",
+    "is_valid": true,
+    "solved_statements": [true, false, true],
+    "error_reason": null
+  }}
+]
+""")
+
+FORMATTER_PROMPT_TF = ChatPromptTemplate.from_template("""
+Jesteś głównym projektantem wizualnym (Typesetter) platformy edukacyjnej. Znasz perfekcyjnie zasady LaTeX oraz rygorystyczne zasady struktury JSON.
+Otrzymujesz surowe treści zadań PRAWDA/FAŁSZ połączone z notatkami ich rozwiązania.
+Twoim JEDYNYM celem jest przepisanie ich do w pełni sformatowanego, estetycznego obiektu JSON.
+
+SUROWE DANE WEJŚCIOWE (ZADANIA + ROZWIĄZANIA):
+{merged_batch_json}
+
+KRYTYCZNE ZASADY FORMATOWANIA (JSON I LATEX):
+1. ZNACZNIKI MATEMATYKI: Każda liczba, zmienna i wzór MUSZĄ być w LaTeX ($...$ w tekście, $$...$$ w nowej linii dla dużych równań). Dotyczy to pytania wstępnego, stwierdzeń i rozwiązań.
+2. JSON ESCAPING (BEZWZGLĘDNIE WAŻNE): Każda komenda LaTeX musi zostać ucieczkowana dwukrotnie! Np. "\\\\frac" zamiast \\frac.
+3. Zadbaj o estetykę i poprawne łamanie linii (BARDZO WAŻNE):
+   - ABSOLUTNY ZAKAZ wprowadzania wielu definicji ciągiem w jednej linii tekstu.
+   - Wnętrze bloku $$...$$ przełamuj podwójnym ukośnikiem LaTeX.
+   - Jeśli w bloku $$...$$ łamiesz linię z "wysokimi" strukturami, dodaj "\\\\\\\\[15pt]".
+   - W zwykłym tekście używaj "\\n".
+   - Pojedyncze liczby i wyrażenia będące CZĘŚCIĄ ZDANIA umieszczaj w $...$.
+   - ABSOLUTNY ZAKAZ używania podwójnych dolarów wewnątrz zdań.
+4. STWIERDZENIA: Każde stwierdzenie powinno być samodzielnym, czytelnym zdaniem z poprawnym formatowaniem LaTeX. Zachowaj id numeryczne (1, 2, 3, ...).
+5. TABELE: Stosuj WYŁĄCZNIE gdy treść tego wymaga.
+6. KARYGODNY BŁĄD: Nigdy nie obejmuj całych zdań znacznikami matematycznymi!
+
+Zwróć TYLKO czystą listę JSON z przepisanymi zadaniami:
+[
+  {{
+    "difficulty_level": "{difficulty}",
+    "content": {{
+      "question": "Sformatowane w piękny $LaTeX$ pytanie wstępne z kontekstem...",
+      "statements": [
+        {{"id": 1, "text": "Sformatowane stwierdzenie 1", "correct": true}},
+        {{"id": 2, "text": "Sformatowane stwierdzenie 2", "correct": false}},
+        {{"id": 3, "text": "Sformatowane stwierdzenie 3", "correct": true}}
+      ]
+    }},
+    "exemplary_solution": "Pięknie sformatowane w $LaTeX$ uzasadnienie każdego stwierdzenia krok po kroku..."
+  }}
+]
+""")
+
+FINAL_VALIDATOR_PROMPT_TF = ChatPromptTemplate.from_template("""
+Jesteś głównym audytorem systemowym (Ostatnia Instancja). Cel: sprawdzić czy struktura zadania PRAWDA/FAŁSZ jest idealna do bazy danych.
+
+ZADANIE DO OCENY:
+{final_task_json}
+
+KRYTERIA:
+1. MATEMATYKA: Czy każde stwierdzenie z "statements" jest na pewno poprawnie oznaczone jako true/false? Sprawdź każde stwierdzenie od zera, przeprowadzając rachunki.
+2. JEDNOZNACZNOŚĆ: Czy KAŻDE stwierdzenie jest jednoznacznie prawdziwe ALBO fałszywe? Niejednoznaczne stwierdzenia dyskwalifikują zadanie.
+3. WARTOŚCI LOGICZNE: Dopuszczalna jest DOWOLNA kombinacja (np. wszystkie stwierdzenia mogą być fałszywe, wszystkie prawdziwe lub mieszane). NIGDY nie odrzucaj zadania z powodu braku balansu P/F.
+4. ROZWIĄZANIE: Czy "exemplary_solution" zawiera uzasadnienie KAŻDEGO stwierdzenia?
+5. FORMAT: Czy WSZYSTKIE liczby i zmienne są w znacznikach $...$ lub $$...$$?
+6. SENS FIZYCZNY I POLICZALNOŚĆ (OBIEKTY DYSKRETNE VS WIELKOŚCI CIĄGŁE):
+   a) Liczności obiektów dyskretnych/niepodzielnych oraz liczba powtórzeń (np. liczba osób, uczniów, zwierząt/stworzeń, rzutów kostką/monetą, kul, kart, losów, wierzchołków, sztuk towaru) BEZWZGLĘDNIE MUSZĄ być liczbami całkowitymi (nie może być 2,5 osoby ani 3,5 rzutu).
+   b) Ciągłe wielkości fizyczne i pomiarowe (np. masa w kg/g, długość w m, czas, temperatura, kwoty pieniężne w zł, pole, objętość) JAK NAJBARDZIEJ MOGĄ być liczbami dziesiętnymi lub ułamkami (np. 10,25 kg, 2,5 m to w pełni poprawne dane). NIGDY nie odrzucaj zadania za ułamkowe masy, długości czy ceny.
+7. STRUKTURA: Czy "statements" to lista obiektów z polami "id" (int), "text" (string) i "correct" (boolean)?
+
+Zwróć TYLKO czysty JSON:
+{{
+  "reasoning": "Przeprowadź końcowy audyt formatu, matematyki i poprawności stwierdzeń...",
   "is_perfect": true,
   "feedback": "Jeśli is_perfect to false, opisz krótko błąd. Jeśli true, wpisz null."
 }}

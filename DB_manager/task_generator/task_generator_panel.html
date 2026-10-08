@@ -132,7 +132,9 @@
     <div class="gen-config">
         <label>Typ zadania</label>
         <select id="task-type" style="margin-bottom:8px;">
-            <option value="MCQ">MCQ – Wielokrotny wybór</option>
+            <option value="MCQ">MCQ – Zamknięte (jednokrotny wybór)</option>
+            <option value="OPEN">OPEN – Otwarte (odpowiedź liczbowa)</option>
+            <option value="TRUE_FALSE">TRUE_FALSE – Prawda / Fałsz (maturalne)</option>
         </select>
         <label>Ilość per grupa</label>
         <div class="config-row">
@@ -678,20 +680,55 @@ async function deleteSelected() {
 
 async function saveStEdits(ids) {
     for (let i = 0; i < staging.length; i++) {
-        if (!ids.includes(staging[i].id)) continue;
+        const item = staging[i];
+        if (!ids.includes(item.id)) continue;
         const q = document.getElementById(`s-q-${i}`); 
         if (!q) continue;
-        const u = {
-            content: {
+
+        const taskType = item.task_type || 'MCQ';
+        let newContent = {};
+
+        if (taskType === 'OPEN') {
+            const ansEl = document.getElementById(`s-ans-${i}`);
+            const tolEl = document.getElementById(`s-tol-${i}`);
+            newContent = {
                 question: q.value,
-                options: [0, 1, 2, 3].map(j => document.getElementById(`s-o-${i}-${j}`).value),
-                correct_index: +document.getElementById(`s-ci-${i}`).value
-            },
-            exemplary_solution: document.getElementById(`s-sol-${i}`).value, 
-            human_validated: document.getElementById(`s-hv-${i}`).checked
+                correct_answer: ansEl ? ansEl.value : (item.content?.correct_answer || ''),
+                tolerance: tolEl ? parseFloat(tolEl.value) || 0 : 0
+            };
+        } else if (taskType === 'TRUE_FALSE') {
+            const origStatements = item.content?.statements || [];
+            const statements = [];
+            let j = 0;
+            while (document.getElementById(`s-st-txt-${i}-${j}`)) {
+                const origId = origStatements[j]?.id ?? (j + 1);
+                statements.push({
+                    id: origId,
+                    text: document.getElementById(`s-st-txt-${i}-${j}`).value,
+                    correct: document.getElementById(`s-st-val-${i}-${j}`).value === 'true'
+                });
+                j++;
+            }
+            newContent = {
+                question: q.value,
+                statements: statements.length ? statements : origStatements
+            };
+        } else {
+            // MCQ
+            newContent = {
+                question: q.value,
+                options: [0, 1, 2, 3].map(j => document.getElementById(`s-o-${i}-${j}`)?.value || ''),
+                correct_index: +(document.getElementById(`s-ci-${i}`)?.value || 0)
+            };
+        }
+
+        const u = {
+            content: newContent,
+            exemplary_solution: document.getElementById(`s-sol-${i}`)?.value || '', 
+            human_validated: document.getElementById(`s-hv-${i}`)?.checked || false
         };
         try {
-            await fetch(`${GEN}/staging/${staging[i].id}`, {
+            await fetch(`${GEN}/staging/${item.id}`, {
                 method: 'PATCH',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify(u)
@@ -702,7 +739,74 @@ async function saveStEdits(ids) {
 
 // ---- SHARED RENDERERS ----
 function taskBody(pfx, i, t) {
-    const c = t.content || {}, opts = c.options || [];
+    const c = t.content || {};
+    const taskType = t.task_type || 'MCQ';
+
+    if (taskType === 'OPEN') {
+        const correctAns = c.correct_answer ?? '';
+        const tol = c.tolerance ?? 0;
+        return `<div class="split">
+        <div>
+            <div class="fg"><label>Treść zadania (LaTeX):</label><textarea id="${pfx}-q-${i}" oninput="updP('${pfx}-q-${i}','${pfx}-pq-${i}')">${c.question || ''}</textarea></div>
+            <div class="fg"><label>Poprawna odpowiedź (liczba / LaTeX, np. 17 lub \\frac{1}{2}):</label><input type="text" id="${pfx}-ans-${i}" value="${esc(String(correctAns))}" oninput="updP('${pfx}-ans-${i}','${pfx}-pans-${i}')"></div>
+            <div class="fg"><label>Tolerancja błędu (domyślnie 0):</label><input type="number" step="any" id="${pfx}-tol-${i}" value="${tol}" style="width:100px"></div>
+            <div class="fg"><label>Wzorcowe rozwiązanie:</label><textarea id="${pfx}-sol-${i}" oninput="updP('${pfx}-sol-${i}','${pfx}-ps-${i}')">${t.exemplary_solution || ''}</textarea></div>
+        </div>
+        <div class="prev-side">
+            <div class="prev-title">Podgląd pytania</div>
+            <div id="${pfx}-pq-${i}" class="lp" style="margin-bottom:12px"></div>
+            <div class="prev-title">Oczekiwana odpowiedź</div>
+            <div style="margin-bottom:12px;padding:8px 12px;background:#eef2ff;border-radius:4px;border:1px solid #c7d2fe;display:flex;align-items:center;gap:8px">
+                <span style="font-size:12px;color:#4338ca;font-weight:600">Wynik:</span>
+                <span id="${pfx}-pans-${i}" class="lp" style="font-weight:bold;font-size:14px"></span>
+            </div>
+            <div class="prev-title" style="margin-top:14px">Podgląd rozwiązania</div>
+            <div id="${pfx}-ps-${i}" class="lp" style="margin-top:6px"></div>
+        </div>
+    </div>`;
+    }
+
+    if (taskType === 'TRUE_FALSE') {
+        const statements = c.statements || [];
+        return `<div class="split">
+        <div>
+            <div class="fg"><label>Wprowadzenie / treść kontekstu (LaTeX):</label><textarea id="${pfx}-q-${i}" oninput="updP('${pfx}-q-${i}','${pfx}-pq-${i}')">${c.question || ''}</textarea></div>
+            <div style="margin-bottom:8px">
+                <label style="font-size:11px;font-weight:600;color:#475569;display:block;margin-bottom:4px">Stwierdzenia (Prawda / Fałsz):</label>
+                ${statements.map((s, j) => `
+                <div class="fg" style="margin-bottom:6px">
+                    <div style="display:flex;gap:6px;align-items:center">
+                        <span style="font-size:12px;font-weight:bold;color:#475569;width:18px">${s.id ?? j+1}.</span>
+                        <input type="text" id="${pfx}-st-txt-${i}-${j}" value="${esc(s.text || '')}" oninput="updP('${pfx}-st-txt-${i}-${j}','${pfx}-pst-${i}-${j}')" style="flex:1" placeholder="Treść stwierdzenia...">
+                        <select id="${pfx}-st-val-${i}-${j}" onchange="updStfBadge('${pfx}',${i},${j})" style="width:105px;padding:6px;border:1px solid #cbd5e1;border-radius:3px;font-weight:bold;font-size:11px;color:${s.correct ? '#166534' : '#991b1b'}">
+                            <option value="true" ${s.correct ? 'selected' : ''}>PRAWDA</option>
+                            <option value="false" ${!s.correct ? 'selected' : ''}>FAŁSZ</option>
+                        </select>
+                    </div>
+                </div>`).join('')}
+            </div>
+            <div class="fg"><label>Wzorcowe rozwiązanie (uzasadnienie):</label><textarea id="${pfx}-sol-${i}" oninput="updP('${pfx}-sol-${i}','${pfx}-ps-${i}')">${t.exemplary_solution || ''}</textarea></div>
+        </div>
+        <div class="prev-side">
+            <div class="prev-title">Podgląd treści zadania</div>
+            <div id="${pfx}-pq-${i}" class="lp" style="margin-bottom:12px"></div>
+            <div class="prev-title">Podgląd stwierdzeń</div>
+            <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px">
+                ${statements.map((s, j) => `
+                <div style="display:flex;align-items:flex-start;gap:8px;padding:6px 8px;background:#ffffff;border:1px solid #e2e8f0;border-radius:4px">
+                    <span style="font-size:12px;font-weight:bold;color:#475569">${s.id ?? j+1}.</span>
+                    <div id="${pfx}-pst-${i}-${j}" class="lp" style="flex:1;font-size:12px"></div>
+                    <span id="${pfx}-pst-badge-${i}-${j}" style="padding:2px 6px;border-radius:3px;font-size:10px;font-weight:bold;background:${s.correct ? '#dcfce7' : '#fee2e2'};color:${s.correct ? '#166534' : '#991b1b'};flex-shrink:0">${s.correct ? 'PRAWDA' : 'FAŁSZ'}</span>
+                </div>`).join('')}
+            </div>
+            <div class="prev-title" style="margin-top:14px">Podgląd rozwiązania</div>
+            <div id="${pfx}-ps-${i}" class="lp" style="margin-top:6px"></div>
+        </div>
+    </div>`;
+    }
+
+    // Domyślnie MCQ
+    const opts = c.options || [];
     return `<div class="split">
         <div>
             <div class="fg"><label>Pytanie (LaTeX):</label><textarea id="${pfx}-q-${i}" oninput="updP('${pfx}-q-${i}','${pfx}-pq-${i}')">${c.question || ''}</textarea></div>
@@ -722,8 +826,40 @@ function taskBody(pfx, i, t) {
 
 function renderPreviews(pfx, i) {
     updP(`${pfx}-q-${i}`, `${pfx}-pq-${i}`);
-    [0, 1, 2, 3].forEach(j => updP(`${pfx}-o-${i}-${j}`, `${pfx}-po-${i}-${j}`));
+
+    // MCQ opcje (jeśli istnieją)
+    for (let j = 0; j < 4; j++) {
+        if (document.getElementById(`${pfx}-o-${i}-${j}`)) {
+            updP(`${pfx}-o-${i}-${j}`, `${pfx}-po-${i}-${j}`);
+        }
+    }
+
+    // OPEN odpowiedź (jeśli istnieje)
+    if (document.getElementById(`${pfx}-ans-${i}`)) {
+        updP(`${pfx}-ans-${i}`, `${pfx}-pans-${i}`);
+    }
+
+    // TRUE_FALSE stwierdzenia (jeśli istnieją)
+    let j = 0;
+    while (document.getElementById(`${pfx}-st-txt-${i}-${j}`)) {
+        updP(`${pfx}-st-txt-${i}-${j}`, `${pfx}-pst-${i}-${j}`);
+        updStfBadge(pfx, i, j);
+        j++;
+    }
+
     updP(`${pfx}-sol-${i}`, `${pfx}-ps-${i}`);
+}
+
+function updStfBadge(pfx, i, j) {
+    const sel = document.getElementById(`${pfx}-st-val-${i}-${j}`);
+    const badge = document.getElementById(`${pfx}-pst-badge-${i}-${j}`);
+    if (sel && badge) {
+        const isTrue = sel.value === 'true';
+        badge.textContent = isTrue ? 'PRAWDA' : 'FAŁSZ';
+        badge.style.background = isTrue ? '#dcfce7' : '#fee2e2';
+        badge.style.color = isTrue ? '#166534' : '#991b1b';
+        sel.style.color = isTrue ? '#166534' : '#991b1b';
+    }
 }
 
 function updP(srcId, dstId) {

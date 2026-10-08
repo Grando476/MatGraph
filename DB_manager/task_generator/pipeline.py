@@ -1,7 +1,11 @@
 import json
 import time
 from langchain_core.output_parsers import JsonOutputParser
-from prompts import PLANNER_PROMPT, GENERATOR_PROMPT, SOLVER_PROMPT, FORMATTER_PROMPT, FINAL_VALIDATOR_PROMPT
+from prompts import (
+    PLANNER_PROMPT, GENERATOR_PROMPT, SOLVER_PROMPT, FORMATTER_PROMPT, FINAL_VALIDATOR_PROMPT,
+    PLANNER_PROMPT_OPEN, GENERATOR_PROMPT_OPEN, SOLVER_PROMPT_OPEN, FORMATTER_PROMPT_OPEN, FINAL_VALIDATOR_PROMPT_OPEN,
+    PLANNER_PROMPT_TF, GENERATOR_PROMPT_TF, SOLVER_PROMPT_TF, FORMATTER_PROMPT_TF, FINAL_VALIDATOR_PROMPT_TF,
+)
 from inspirations import get_generation_params
 
 def invoke_with_retry(chain, params, max_retries=5, delay=10):
@@ -13,8 +17,36 @@ def invoke_with_retry(chain, params, max_retries=5, delay=10):
             time.sleep(delay)
     return None
 
+# Mapowanie promptów na podstawie task_type
+PROMPT_SETS = {
+    "MCQ": {
+        "planner": PLANNER_PROMPT,
+        "generator": GENERATOR_PROMPT,
+        "solver": SOLVER_PROMPT,
+        "formatter": FORMATTER_PROMPT,
+        "validator": FINAL_VALIDATOR_PROMPT,
+    },
+    "OPEN": {
+        "planner": PLANNER_PROMPT_OPEN,
+        "generator": GENERATOR_PROMPT_OPEN,
+        "solver": SOLVER_PROMPT_OPEN,
+        "formatter": FORMATTER_PROMPT_OPEN,
+        "validator": FINAL_VALIDATOR_PROMPT_OPEN,
+    },
+    "TRUE_FALSE": {
+        "planner": PLANNER_PROMPT_TF,
+        "generator": GENERATOR_PROMPT_TF,
+        "solver": SOLVER_PROMPT_TF,
+        "formatter": FORMATTER_PROMPT_TF,
+        "validator": FINAL_VALIDATOR_PROMPT_TF,
+    },
+}
+
 def run_generation_pipeline(llm, context, counts, task_type="MCQ"):
     parser = JsonOutputParser()
+
+    # Wybór zestawu promptów na podstawie task_type
+    prompts = PROMPT_SETS.get(task_type, PROMPT_SETS["MCQ"])
 
     BATCH_SIZES = {
         "Easy": 8,
@@ -40,7 +72,7 @@ def run_generation_pipeline(llm, context, counts, task_type="MCQ"):
                 **gen_params, 
                 **context
             }
-            plan_chain = PLANNER_PROMPT | llm | parser
+            plan_chain = prompts["planner"] | llm | parser
             blueprints = invoke_with_retry(plan_chain, planner_input)
             
             if not blueprints: continue
@@ -52,7 +84,7 @@ def run_generation_pipeline(llm, context, counts, task_type="MCQ"):
                 "difficulty": diff, 
                 **context
             }
-            gen_chain = GENERATOR_PROMPT | llm | parser
+            gen_chain = prompts["generator"] | llm | parser
             raw_batch = invoke_with_retry(gen_chain, generator_input)
             
             if not raw_batch: continue
@@ -63,7 +95,7 @@ def run_generation_pipeline(llm, context, counts, task_type="MCQ"):
                 "tasks_batch_json": json.dumps(raw_batch, ensure_ascii=False),
                 **context
             }
-            solv_chain = SOLVER_PROMPT | llm | parser
+            solv_chain = prompts["solver"] | llm | parser
             solver_results = invoke_with_retry(solv_chain, solver_input)
             if not solver_results: continue
             if isinstance(solver_results, dict): solver_results = [solver_results]
@@ -74,11 +106,19 @@ def run_generation_pipeline(llm, context, counts, task_type="MCQ"):
             for i, task in enumerate(raw_batch):
                 s_res = next((r for r in solver_results if r.get("task_index") == i), None)
                 if s_res and s_res.get("is_valid"):
-                    merged_for_formatter.append({
+                    merge_entry = {
                         "raw_task": task,
                         "raw_solution": s_res.get("raw_solution", ""),
-                        "solved_index": s_res.get("solved_index", 0)
-                    })
+                    }
+                    # Dodaj specyficzne pole per typ
+                    if task_type == "MCQ":
+                        merge_entry["solved_index"] = s_res.get("solved_index", 0)
+                    elif task_type == "OPEN":
+                        merge_entry["solved_answer"] = s_res.get("solved_answer", "")
+                    elif task_type == "TRUE_FALSE":
+                        merge_entry["solved_statements"] = s_res.get("solved_statements", [])
+                    
+                    merged_for_formatter.append(merge_entry)
                     debug_info_list.append({
                         "planner_input": planner_input,
                         "planner_output": blueprints,
@@ -95,7 +135,7 @@ def run_generation_pipeline(llm, context, counts, task_type="MCQ"):
                 "merged_batch_json": json.dumps(merged_for_formatter, ensure_ascii=False),
                 "difficulty": diff
             }
-            form_chain = FORMATTER_PROMPT | llm | parser
+            form_chain = prompts["formatter"] | llm | parser
             formatted_batch = invoke_with_retry(form_chain, formatter_input)
             if not formatted_batch: continue
             if isinstance(formatted_batch, dict): formatted_batch = [formatted_batch]
@@ -105,8 +145,9 @@ def run_generation_pipeline(llm, context, counts, task_type="MCQ"):
 
             # FAZA IV: BEZWZGLĘDNY WALIDATOR (Sprawdzanie każdego sformatowanego zadania z osobna)
             for i, formatted_task in enumerate(formatted_batch):
-                # Twarde wymuszenie żądanego poziomu trudności (zapobiega halucynacjom modelu)
+                # Twarde wymuszenie żądanego poziomu trudności i typu zadania
                 formatted_task["difficulty_level"] = diff
+                formatted_task["task_type"] = task_type
                 
                 # Przekazanie użytej inspiracji do panelu (tylko do podglądu UI)
                 formatted_task["inspiration"] = gen_params.get("inspiration")
@@ -124,7 +165,7 @@ def run_generation_pipeline(llm, context, counts, task_type="MCQ"):
                 validator_input = {
                     "final_task_json": json.dumps(task_for_validation, ensure_ascii=False)
                 }
-                val_chain = FINAL_VALIDATOR_PROMPT | llm | parser
+                val_chain = prompts["validator"] | llm | parser
                 val_res = invoke_with_retry(val_chain, validator_input)
                 
                 if val_res:
