@@ -4,9 +4,11 @@ import Link from "next/link";
 import 'katex/dist/katex.min.css';
 import { BlockMath } from 'react-katex';
 import { useEffect, useState } from "react";
+import { FileText, Download, ExternalLink, Eye, EyeOff, AlertCircle, Loader2 } from "lucide-react";
 import Footer from "@/components/Footer";
 import Logo from "@/components/Logo";
 import Scratchpad from "@/components/Scratchpad";
+import { createClient } from "@/utils/supabase/client";
 
 interface LessonViewProps {
   lessonId: string;
@@ -16,6 +18,11 @@ export default function LessonView({ lessonId }: LessonViewProps) {
   const [lesson, setLesson] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const [pdfLoading, setPdfLoading] = useState(false);
+  const [pdfError, setPdfError] = useState<string | null>(null);
+  const [showPdfPreview, setShowPdfPreview] = useState(false);
 
   useEffect(() => {
     const fetchLesson = async () => {
@@ -38,6 +45,46 @@ export default function LessonView({ lessonId }: LessonViewProps) {
     };
     fetchLesson();
   }, [lessonId]);
+
+  useEffect(() => {
+    if (!lesson?.pdf_path) {
+      setPdfUrl(null);
+      setPdfError(null);
+      return;
+    }
+
+    // Direct HTTP(S) URL support for testing/local setups
+    if (lesson.pdf_path.startsWith("http://") || lesson.pdf_path.startsWith("https://")) {
+      setPdfUrl(lesson.pdf_path);
+      return;
+    }
+
+    const fetchSignedUrl = async () => {
+      setPdfLoading(true);
+      setPdfError(null);
+      try {
+        const supabase = createClient();
+        const { data, error: storageError } = await supabase.storage
+          .from("edu_pdfs")
+          .createSignedUrl(lesson.pdf_path, 3600); // 1-hour presigned URL
+
+        if (storageError) {
+          throw new Error(storageError.message);
+        }
+        if (!data?.signedUrl) {
+          throw new Error("Nie udało się wygenerować linku do pliku.");
+        }
+        setPdfUrl(data.signedUrl);
+      } catch (err: any) {
+        console.error("Supabase Storage error:", err);
+        setPdfError(err?.message || "Błąd generowania presigned URL");
+      } finally {
+        setPdfLoading(false);
+      }
+    };
+
+    fetchSignedUrl();
+  }, [lesson?.pdf_path]);
 
   if (loading) {
     return (
@@ -101,15 +148,6 @@ export default function LessonView({ lessonId }: LessonViewProps) {
             {lesson.title}
           </h1>
 
-          {lesson.video_url && (
-            <div className="aspect-video bg-[var(--bg-surface)] border-2.5 border-[var(--border-dark)] mb-8 flex items-center justify-center rounded-xl overflow-hidden shadow-[4px_4px_0px_0px_#000]">
-              <iframe
-                src={lesson.video_url}
-                className="w-full h-full"
-                allowFullScreen
-              />
-            </div>
-          )}
 
           <div>
             <div className="inline-block bg-[var(--neo-yellow)] px-3 py-1 border-2 border-black rounded-md font-black text-xs uppercase tracking-wider mb-4 shadow-[2px_2px_0px_0px_#000]">
@@ -123,6 +161,103 @@ export default function LessonView({ lessonId }: LessonViewProps) {
               )}
             </div>
           </div>
+
+          {/* PDF Materials Section */}
+          {lesson.pdf_path && (
+            <div className="mt-8 p-6 bg-[var(--bg-deep)] border-2.5 border-[var(--border-dark)] rounded-xl shadow-[4px_4px_0px_0px_#000]">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 bg-[var(--neo-yellow)] border-2 border-black rounded-lg flex items-center justify-center shadow-[2px_2px_0px_0px_#000] shrink-0">
+                    <FileText className="w-6 h-6 text-black" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="bg-black text-white text-[10px] font-black uppercase px-2 py-0.5 rounded tracking-wider">
+                        PDF
+                      </span>
+                      <span className="text-xs font-bold text-[var(--text-muted)] uppercase">
+                        Materiały do lekcji
+                      </span>
+                    </div>
+                    <h3 className="text-base font-black text-[var(--text-main)] mt-0.5 break-all">
+                      {lesson.pdf_path.split('/').pop()}
+                    </h3>
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div className="flex flex-wrap items-center gap-2.5">
+                  {pdfLoading && (
+                    <div className="flex items-center gap-2 text-xs font-black uppercase px-3 py-2 bg-white border-2 border-black rounded-lg shadow-[2px_2px_0px_0px_#000]">
+                      <Loader2 className="w-4 h-4 animate-spin text-black" />
+                      <span>Generowanie linku...</span>
+                    </div>
+                  )}
+
+                  {pdfUrl && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => setShowPdfPreview(!showPdfPreview)}
+                        className="flex items-center gap-2 bg-white hover:bg-[var(--neo-yellow)] text-black font-black text-xs uppercase tracking-wider px-3.5 py-2.5 rounded-xl border-2 border-black shadow-[3px_3px_0px_0px_#000] hover:shadow-[1px_1px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] transition-all cursor-pointer"
+                      >
+                        {showPdfPreview ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        <span>{showPdfPreview ? "Ukryj podgląd" : "Podgląd"}</span>
+                      </button>
+
+                      <a
+                        href={pdfUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 bg-white hover:bg-[var(--neo-blue)] text-black font-black text-xs uppercase tracking-wider px-3.5 py-2.5 rounded-xl border-2 border-black shadow-[3px_3px_0px_0px_#000] hover:shadow-[1px_1px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] transition-all cursor-pointer"
+                      >
+                        <ExternalLink className="w-4 h-4" />
+                        <span className="hidden sm:inline">Nowa karta</span>
+                      </a>
+
+                      <a
+                        href={pdfUrl}
+                        download={lesson.pdf_path.split('/').pop()}
+                        className="flex items-center gap-2 bg-[var(--neo-green)] hover:bg-[#16a34a] hover:text-white text-black font-black text-xs uppercase tracking-wider px-4 py-2.5 rounded-xl border-2 border-black shadow-[3px_3px_0px_0px_#000] hover:shadow-[1px_1px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] transition-all cursor-pointer"
+                      >
+                        <Download className="w-4 h-4" />
+                        <span>Pobierz</span>
+                      </a>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              {/* Error Notice */}
+              {pdfError && (
+                <div className="mt-4 p-3 bg-red-100 border-2 border-red-500 rounded-lg text-xs font-bold text-red-800 flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
+                  <span>Błąd pobierania pliku PDF: {pdfError}</span>
+                </div>
+              )}
+
+              {/* Embedded Viewer */}
+              {showPdfPreview && pdfUrl && (
+                <div className="mt-5 border-2.5 border-black rounded-xl overflow-hidden shadow-[4px_4px_0px_0px_#000] bg-white">
+                  <div className="bg-black text-white text-xs font-black uppercase px-4 py-2 flex items-center justify-between">
+                    <span>Podgląd dokumentu: {lesson.pdf_path.split('/').pop()}</span>
+                    <button
+                      type="button"
+                      onClick={() => setShowPdfPreview(false)}
+                      className="text-white hover:text-[var(--neo-yellow)] font-bold text-xs uppercase"
+                    >
+                      Zamknij &times;
+                    </button>
+                  </div>
+                  <iframe
+                    src={`${pdfUrl}#toolbar=1`}
+                    className="w-full h-[650px] border-none"
+                    title={`Podgląd PDF: ${lesson.title}`}
+                  />
+                </div>
+              )}
+            </div>
+          )}
 
           {lesson.task_groups && lesson.task_groups.length > 0 && (
             <div className="mt-12 border-t-2 border-[var(--border-dark)] pt-8">

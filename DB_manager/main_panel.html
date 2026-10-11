@@ -387,7 +387,7 @@
         conf.fields.forEach(f => {
             let html = `<div class="form-group"><label>${f.label}:</label>`;
             if (f.type === 'text' || f.type === 'number') {
-                html += `<input type="${f.type}" id="field-${f.name}" ${f.name==='video_url'?'':'required'}>`;
+                html += `<input type="${f.type}" id="field-${f.name}" ${(f.name==='video_url' || f.name==='pdf_path')?'':'required'}>`;
             } else if (f.type === 'select') {
                 html += `<select id="field-${f.name}" required><option value="">Select...</option>`;
                 DB[f.source].forEach(opt => {

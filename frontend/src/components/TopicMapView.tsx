@@ -854,22 +854,39 @@ export default function TopicMapView() {
                     >
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
                         <div>
-                          <span style={{
-                            fontSize: '0.68rem',
-                            color: '#000000',
-                            fontWeight: 900,
-                            textTransform: 'uppercase',
-                            letterSpacing: '0.04em',
-                            display: 'inline-block',
-                            marginBottom: '4px',
-                            background: 'var(--neo-green)',
-                            border: '1.5px solid #000000',
-                            borderRadius: '4px',
-                            padding: '1px 7px',
-                            boxShadow: '1px 1px 0px 0px #000000'
-                          }}>
-                            Lekcja {index + 1}
-                          </span>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+                            <span style={{
+                              fontSize: '0.68rem',
+                              color: '#000000',
+                              fontWeight: 900,
+                              textTransform: 'uppercase',
+                              letterSpacing: '0.04em',
+                              display: 'inline-block',
+                              background: 'var(--neo-green)',
+                              border: '1.5px solid #000000',
+                              borderRadius: '4px',
+                              padding: '1px 7px',
+                              boxShadow: '1px 1px 0px 0px #000000'
+                            }}>
+                              Lekcja {index + 1}
+                            </span>
+                            {lesson.pdf_path && (
+                              <span style={{
+                                fontSize: '0.65rem',
+                                color: '#000000',
+                                fontWeight: 900,
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.04em',
+                                background: 'var(--neo-yellow)',
+                                border: '1.5px solid #000000',
+                                borderRadius: '4px',
+                                padding: '1px 6px',
+                                boxShadow: '1px 1px 0px 0px #000000'
+                              }}>
+                                PDF
+                              </span>
+                            )}
+                          </div>
                           <h4 style={{ margin: 0, color: '#000000', fontSize: '0.98rem', fontWeight: 800, lineHeight: '1.25' }}>
                             {lesson.title}
                           </h4>

@@ -33,7 +33,7 @@ class NodeService:
         cur = conn.cursor(cursor_factory=RealDictCursor)
         try:
             cur.execute(
-                "SELECT id, name as title, importance FROM public.subtopics WHERE topic_id = %s ORDER BY created_at ASC;",
+                "SELECT id, name as title, importance, pdf_path FROM public.subtopics WHERE topic_id = %s ORDER BY created_at ASC;",
                 (node_id,)
             )
             lessons = cur.fetchall()
