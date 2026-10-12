@@ -5,30 +5,55 @@ from typing import Optional, Dict, Any
 logger = logging.getLogger(__name__)
 
 # Supabase Storage Configuration
-SUPABASE_URL = os.getenv("SUPABASE_URL")
-SUPABASE_KEY = os.getenv("SUPABASE_KEY") or os.getenv("SUPABASE_SERVICE_ROLE_KEY") or os.getenv("SUPABASE_ANON_KEY")
-DEFAULT_BUCKET = os.getenv("SUPABASE_STORAGE_BUCKET", "edu_pdfs")
-
+DEFAULT_BUCKET = "edu_pdfs"
 _supabase_client = None
 
 def get_supabase_client():
     """
-    Returns an initialized Supabase client singleton, or None if credentials are missing.
+    Returns (client, error_message).
+    Initializes Supabase client singleton, or returns detailed error message if initialization fails.
     """
     global _supabase_client
     if _supabase_client is not None:
-        return _supabase_client
+        return _supabase_client, None
 
-    if not SUPABASE_URL or not SUPABASE_KEY:
-        return None
+    # Load .env if present (useful for local development)
+    try:
+        from dotenv import load_dotenv
+        load_dotenv()
+    except Exception:
+        pass
+
+    url = (
+        os.getenv("SUPABASE_URL")
+        or os.getenv("NEXT_PUBLIC_SUPABASE_URL")
+        or os.getenv("SUPABASE_PROJECT_URL")
+        or ""
+    ).strip().strip('"').strip("'")
+
+    key = (
+        os.getenv("SUPABASE_KEY")
+        or os.getenv("SUPABASE_SERVICE_ROLE_KEY")
+        or os.getenv("SUPABASE_ANON_KEY")
+        or os.getenv("NEXT_PUBLIC_SUPABASE_ANON_KEY")
+        or ""
+    ).strip().strip('"').strip("'")
+
+    if not url and not key:
+        return None, "Brak zmiennych SUPABASE_URL i SUPABASE_KEY w środowisku backendu."
+    if not url:
+        return None, "Brak zmiennej SUPABASE_URL w środowisku backendu."
+    if not key:
+        return None, "Brak zmiennej SUPABASE_KEY (lub SUPABASE_ANON_KEY) w środowisku backendu."
 
     try:
         from supabase import create_client
-        _supabase_client = create_client(SUPABASE_URL, SUPABASE_KEY)
-        return _supabase_client
+        _supabase_client = create_client(url, key)
+        return _supabase_client, None
     except Exception as e:
-        logger.error(f"Failed to initialize Supabase client: {e}")
-        return None
+        err_msg = f"Błąd inicjalizacji klienta Supabase: {str(e)}"
+        logger.error(err_msg)
+        return None, err_msg
 
 
 class StorageService:
@@ -50,16 +75,14 @@ class StorageService:
         if file_path.startswith("http://") or file_path.startswith("https://"):
             return {"url": file_path, "error": None}
 
-        target_bucket = bucket or DEFAULT_BUCKET
+        configured_bucket = (os.getenv("SUPABASE_STORAGE_BUCKET") or DEFAULT_BUCKET).strip().strip('"').strip("'")
+        target_bucket = bucket or configured_bucket
 
         # Check for Supabase credentials
-        client = get_supabase_client()
+        client, init_error = get_supabase_client()
         if not client:
-            warning_msg = (
-                "Brak konfiguracji Supabase Storage w backendzie (wymagane SUPABASE_URL i SUPABASE_KEY w .env)."
-            )
-            logger.warning(warning_msg)
-            return {"url": None, "error": warning_msg}
+            logger.warning(init_error)
+            return {"url": None, "error": init_error}
 
         try:
             # Clean file path (strip leading slashes or bucket name if mistakenly prefixed)
