@@ -8,7 +8,6 @@ import { FileText, Download, ExternalLink, Eye, EyeOff, AlertCircle, Loader2 } f
 import Footer from "@/components/Footer";
 import Logo from "@/components/Logo";
 import Scratchpad from "@/components/Scratchpad";
-import { createClient } from "@/utils/supabase/client";
 
 interface LessonViewProps {
   lessonId: string;
@@ -24,67 +23,55 @@ export default function LessonView({ lessonId }: LessonViewProps) {
   const [pdfError, setPdfError] = useState<string | null>(null);
   const [showPdfPreview, setShowPdfPreview] = useState(false);
 
-  useEffect(() => {
-    const fetchLesson = async () => {
-      try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
-        const res = await fetch(`${apiUrl}/api/v1/lessons/${lessonId}`);
-        if (!res.ok) {
-          throw new Error("Failed to fetch lesson");
-        }
-        const data = await res.json();
-        if (data.error) {
-          throw new Error(data.error);
-        }
-        setLesson(data.lesson);
-      } catch (err: any) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
+  const fetchLesson = async () => {
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+      const res = await fetch(`${apiUrl}/api/v1/lessons/${lessonId}`);
+      if (!res.ok) {
+        throw new Error("Failed to fetch lesson");
       }
-    };
+      const data = await res.json();
+      if (data.error) {
+        throw new Error(data.error);
+      }
+      setLesson(data.lesson);
+      setPdfUrl(data.lesson?.pdf_url || null);
+      setPdfError(data.lesson?.pdf_error || null);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchLesson();
   }, [lessonId]);
 
-  useEffect(() => {
-    if (!lesson?.pdf_path) {
-      setPdfUrl(null);
-      setPdfError(null);
-      return;
-    }
-
-    // Direct HTTP(S) URL support for testing/local setups
-    if (lesson.pdf_path.startsWith("http://") || lesson.pdf_path.startsWith("https://")) {
-      setPdfUrl(lesson.pdf_path);
-      return;
-    }
-
-    const fetchSignedUrl = async () => {
-      setPdfLoading(true);
-      setPdfError(null);
-      try {
-        const supabase = createClient();
-        const { data, error: storageError } = await supabase.storage
-          .from("edu_pdfs")
-          .createSignedUrl(lesson.pdf_path, 3600); // 1-hour presigned URL
-
-        if (storageError) {
-          throw new Error(storageError.message);
-        }
-        if (!data?.signedUrl) {
-          throw new Error("Nie udało się wygenerować linku do pliku.");
-        }
-        setPdfUrl(data.signedUrl);
-      } catch (err: any) {
-        console.error("Supabase Storage error:", err);
-        setPdfError(err?.message || "Błąd generowania presigned URL");
-      } finally {
-        setPdfLoading(false);
+  const refreshPdfUrl = async () => {
+    if (!lessonId) return;
+    setPdfLoading(true);
+    setPdfError(null);
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+      const res = await fetch(`${apiUrl}/api/v1/lessons/${lessonId}/pdf-url`);
+      const data = await res.json();
+      if (data.error) {
+        throw new Error(data.error);
       }
-    };
+      if (data.pdf_url) {
+        setPdfUrl(data.pdf_url);
+      } else {
+        throw new Error(data.error || "Nie udało się wygenerować linku do pliku.");
+      }
+    } catch (err: any) {
+      console.error("PDF refresh error:", err);
+      setPdfError(err?.message || "Błąd pobierania presigned URL");
+    } finally {
+      setPdfLoading(false);
+    }
+  };
 
-    fetchSignedUrl();
-  }, [lesson?.pdf_path]);
 
   if (loading) {
     return (
@@ -230,11 +217,22 @@ export default function LessonView({ lessonId }: LessonViewProps) {
 
               {/* Error Notice */}
               {pdfError && (
-                <div className="mt-4 p-3 bg-red-100 border-2 border-red-500 rounded-lg text-xs font-bold text-red-800 flex items-center gap-2">
-                  <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
-                  <span>Błąd pobierania pliku PDF: {pdfError}</span>
+                <div className="mt-4 p-3 bg-red-100 border-2 border-red-500 rounded-lg text-xs font-bold text-red-800 flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
+                    <span>Błąd pobierania pliku PDF: {pdfError}</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={refreshPdfUrl}
+                    disabled={pdfLoading}
+                    className="bg-white hover:bg-black hover:text-white text-black px-2.5 py-1 rounded border border-black shadow-[1px_1px_0px_0px_#000] text-[11px] font-black uppercase transition-all shrink-0 cursor-pointer"
+                  >
+                    Spróbuj ponownie
+                  </button>
                 </div>
               )}
+
 
               {/* Embedded Viewer */}
               {showPdfPreview && pdfUrl && (
