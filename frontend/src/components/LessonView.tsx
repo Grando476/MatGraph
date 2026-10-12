@@ -22,6 +22,7 @@ export default function LessonView({ lessonId }: LessonViewProps) {
   const [pdfLoading, setPdfLoading] = useState(false);
   const [pdfError, setPdfError] = useState<string | null>(null);
   const [showPdfPreview, setShowPdfPreview] = useState(false);
+  const [downloading, setDownloading] = useState(false);
 
   const fetchLesson = async () => {
     try {
@@ -71,6 +72,31 @@ export default function LessonView({ lessonId }: LessonViewProps) {
       setPdfLoading(false);
     }
   };
+
+  const handleDownload = async () => {
+    if (!pdfUrl) return;
+    const filename = lesson?.pdf_path?.split('/').pop() || 'materialy.pdf';
+    setDownloading(true);
+    try {
+      const response = await fetch(pdfUrl);
+      if (!response.ok) throw new Error("Błąd sieci podczas pobierania pliku.");
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (err: any) {
+      console.error("Direct download failed, falling back to new window:", err);
+      window.open(pdfUrl, '_blank');
+    } finally {
+      setDownloading(false);
+    }
+  };
+
 
 
   if (loading) {
@@ -123,11 +149,11 @@ export default function LessonView({ lessonId }: LessonViewProps) {
 
       <div className="p-6 sm:p-10 flex-1">
         <div className="max-w-3xl mx-auto bg-[var(--bg-card)] border-3 border-[var(--border-dark)] p-6 sm:p-10 rounded-2xl shadow-[8px_8px_0px_0px_#000]">
-          
+
           {/* Importance / Category Tag */}
           <div className="flex items-center gap-2 mb-4">
             <span className="bg-[var(--neo-blue)] text-black font-extrabold text-xs px-3 py-1 border-2 border-black rounded-md shadow-[2px_2px_0px_0px_#000] uppercase">
-              ★ Zagadnienie
+              Zagadnienie
             </span>
           </div>
 
@@ -202,14 +228,19 @@ export default function LessonView({ lessonId }: LessonViewProps) {
                         <span className="hidden sm:inline">Nowa karta</span>
                       </a>
 
-                      <a
-                        href={pdfUrl}
-                        download={lesson.pdf_path.split('/').pop()}
-                        className="flex items-center gap-2 bg-[var(--neo-green)] hover:bg-[#16a34a] hover:text-white text-black font-black text-xs uppercase tracking-wider px-4 py-2.5 rounded-xl border-2 border-black shadow-[3px_3px_0px_0px_#000] hover:shadow-[1px_1px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] transition-all cursor-pointer"
+                      <button
+                        type="button"
+                        onClick={handleDownload}
+                        disabled={downloading}
+                        className="flex items-center gap-2 bg-[var(--neo-green)] hover:bg-[#16a34a] hover:text-white text-black font-black text-xs uppercase tracking-wider px-4 py-2.5 rounded-xl border-2 border-black shadow-[3px_3px_0px_0px_#000] hover:shadow-[1px_1px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] transition-all cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                       >
-                        <Download className="w-4 h-4" />
-                        <span>Pobierz</span>
-                      </a>
+                        {downloading ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <Download className="w-4 h-4" />
+                        )}
+                        <span>{downloading ? "Pobieranie..." : "Pobierz"}</span>
+                      </button>
                     </>
                   )}
                 </div>
