@@ -4,7 +4,7 @@ import Link from "next/link";
 import 'katex/dist/katex.min.css';
 import { BlockMath } from 'react-katex';
 import { useEffect, useState } from "react";
-import { FileText, Download, ExternalLink, Eye, EyeOff, AlertCircle, Loader2 } from "lucide-react";
+import { FileText, Download, ExternalLink, Eye, EyeOff, AlertCircle, Loader2, Maximize2, Minimize2 } from "lucide-react";
 import Footer from "@/components/Footer";
 import Logo from "@/components/Logo";
 import Scratchpad from "@/components/Scratchpad";
@@ -22,6 +22,7 @@ export default function LessonView({ lessonId }: LessonViewProps) {
   const [pdfLoading, setPdfLoading] = useState(false);
   const [pdfError, setPdfError] = useState<string | null>(null);
   const [showPdfPreview, setShowPdfPreview] = useState(false);
+  const [isPdfExpanded, setIsPdfExpanded] = useState(false);
   const [downloading, setDownloading] = useState(false);
 
   const fetchLesson = async () => {
@@ -148,7 +149,9 @@ export default function LessonView({ lessonId }: LessonViewProps) {
       </header>
 
       <div className="p-6 sm:p-10 flex-1">
-        <div className="max-w-3xl mx-auto bg-[var(--bg-card)] border-3 border-[var(--border-dark)] p-6 sm:p-10 rounded-2xl shadow-[8px_8px_0px_0px_#000]">
+        <div className={`mx-auto bg-[var(--bg-card)] border-3 border-[var(--border-dark)] p-6 sm:p-10 rounded-2xl shadow-[8px_8px_0px_0px_#000] transition-all duration-300 ${
+          isPdfExpanded ? "max-w-7xl" : showPdfPreview ? "max-w-5xl" : "max-w-3xl"
+        }`}>
 
           {/* Importance / Category Tag */}
           <div className="flex items-center gap-2 mb-4">
@@ -161,19 +164,17 @@ export default function LessonView({ lessonId }: LessonViewProps) {
             {lesson.title}
           </h1>
 
-
-          <div>
-            <div className="inline-block bg-[var(--neo-yellow)] px-3 py-1 border-2 border-black rounded-md font-black text-xs uppercase tracking-wider mb-4 shadow-[2px_2px_0px_0px_#000]">
-              Treść lekcji
-            </div>
-            <div className="p-6 bg-[var(--bg-deep)] border-2.5 border-[var(--border-dark)] rounded-xl text-center overflow-x-auto text-[var(--text-main)] shadow-[4px_4px_0px_0px_#000] font-medium">
-              {lesson.content_tex ? (
+          {/* Theoretical Content (LaTeX) - only displayed if present */}
+          {lesson.content_tex && (
+            <div className="mb-8">
+              <div className="inline-block bg-[var(--neo-yellow)] px-3 py-1 border-2 border-black rounded-md font-black text-xs uppercase tracking-wider mb-4 shadow-[2px_2px_0px_0px_#000]">
+                Treść lekcji
+              </div>
+              <div className="p-6 bg-[var(--bg-deep)] border-2.5 border-[var(--border-dark)] rounded-xl text-center overflow-x-auto text-[var(--text-main)] shadow-[4px_4px_0px_0px_#000] font-medium">
                 <BlockMath math={lesson.content_tex} />
-              ) : (
-                <p className="text-[var(--text-muted)] italic font-medium">Brak treści teoretycznej.</p>
-              )}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* PDF Materials Section */}
           {lesson.pdf_path && (
@@ -268,19 +269,30 @@ export default function LessonView({ lessonId }: LessonViewProps) {
               {/* Embedded Viewer */}
               {showPdfPreview && pdfUrl && (
                 <div className="mt-5 border-2.5 border-black rounded-xl overflow-hidden shadow-[4px_4px_0px_0px_#000] bg-white">
-                  <div className="bg-black text-white text-xs font-black uppercase px-4 py-2 flex items-center justify-between">
-                    <span>Podgląd dokumentu: {lesson.pdf_path.split('/').pop()}</span>
-                    <button
-                      type="button"
-                      onClick={() => setShowPdfPreview(false)}
-                      className="text-white hover:text-[var(--neo-yellow)] font-bold text-xs uppercase"
-                    >
-                      Zamknij &times;
-                    </button>
+                  <div className="bg-black text-white text-xs font-black uppercase px-4 py-2.5 flex items-center justify-between gap-4">
+                    <span className="truncate">Podgląd: {lesson.pdf_path.split('/').pop()}</span>
+                    <div className="flex items-center gap-3 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => setIsPdfExpanded(!isPdfExpanded)}
+                        className="text-white hover:text-[var(--neo-yellow)] font-black text-xs uppercase flex items-center gap-1.5 transition-colors cursor-pointer"
+                        title={isPdfExpanded ? "Standardowa szerokość" : "Pełna szerokość"}
+                      >
+                        {isPdfExpanded ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
+                        <span className="hidden sm:inline">{isPdfExpanded ? "Zwęż" : "Rozszerz"}</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setShowPdfPreview(false)}
+                        className="text-white hover:text-[var(--neo-yellow)] font-black text-xs uppercase transition-colors cursor-pointer"
+                      >
+                        Zamknij &times;
+                      </button>
+                    </div>
                   </div>
                   <iframe
-                    src={`${pdfUrl}#toolbar=1`}
-                    className="w-full h-[650px] border-none"
+                    src={`${pdfUrl}#toolbar=1&view=FitH`}
+                    className="w-full h-[750px] sm:h-[850px] border-none"
                     title={`Podgląd PDF: ${lesson.title}`}
                   />
                 </div>
