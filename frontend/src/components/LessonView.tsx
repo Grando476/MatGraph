@@ -271,7 +271,10 @@ export default function LessonView({ lessonId }: LessonViewProps) {
 
               {/* Embedded Viewer */}
               {showPdfPreview && pdfUrl && (
-                <div className="mt-5 border-2.5 border-black rounded-xl overflow-hidden shadow-[4px_4px_0px_0px_#000] bg-white">
+                <div 
+                  className="mt-5 border-2.5 border-black rounded-xl overflow-hidden shadow-[4px_4px_0px_0px_#000] bg-white select-none"
+                  onContextMenu={(e) => e.preventDefault()}
+                >
                   <div className="bg-black text-white text-xs font-black uppercase px-4 py-2.5 flex items-center justify-between gap-4">
                     <span className="truncate">Podgląd: {lesson.pdf_path.split('/').pop()}</span>
                     <div className="flex items-center gap-3 shrink-0">
@@ -294,7 +297,7 @@ export default function LessonView({ lessonId }: LessonViewProps) {
                     </div>
                   </div>
                   <iframe
-                    src={`${pdfUrl}#toolbar=1&view=FitH`}
+                    src={`${pdfUrl}#toolbar=0&navpanes=0&view=FitH`}
                     className="w-full h-[750px] sm:h-[850px] border-none"
                     title={`Podgląd PDF: ${lesson.title}`}
                   />
