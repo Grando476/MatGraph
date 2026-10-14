@@ -571,13 +571,13 @@ export default function TopicMapView() {
                               textTransform: 'uppercase',
                               padding: '2px 8px',
                               borderRadius: '4px',
-                              background: currentUser.role === 'admin' ? 'var(--neo-yellow)' : 'var(--neo-green)',
+                              background: currentUser.role === 'admin' ? 'var(--neo-yellow)' : currentUser.role === 'tutor' ? 'var(--neo-blue)' : 'var(--neo-green)',
                               color: '#000000',
                               border: '1.5px solid #000000',
                               boxShadow: '1px 1px 0px 0px #000000',
                             }}
                           >
-                            {currentUser.role === 'admin' ? 'Admin' : 'Uczeń'}
+                            {currentUser.role === 'admin' ? 'Admin' : currentUser.role === 'tutor' ? 'Korepetytor' : 'Uczeń'}
                           </span>
                         </div>
                         <span style={{ fontSize: '0.75rem', color: '#4b5563', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: 600 }}>

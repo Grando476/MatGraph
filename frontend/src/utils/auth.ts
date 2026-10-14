@@ -62,8 +62,9 @@ export async function authRegister(params: {
   password: string;
   firstName: string;
   lastName: string;
+  role?: string;
 }): Promise<{ success: boolean; error?: string }> {
-  const { email, password, firstName, lastName } = params;
+  const { email, password, firstName, lastName, role = 'student' } = params;
 
   if (isLocalAuth()) {
     try {
@@ -75,7 +76,7 @@ export async function authRegister(params: {
           password,
           first_name: firstName,
           last_name: lastName,
-          role: 'student',
+          role,
         }),
       });
       const data = await res.json();
@@ -96,7 +97,7 @@ export async function authRegister(params: {
           data: {
             first_name: firstName,
             last_name: lastName,
-            role: 'student',
+            role,
           },
         },
       });

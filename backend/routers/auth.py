@@ -133,7 +133,9 @@ async def register(body: RegisterRequest):
     email = body.email.strip().lower()
     first_name = body.first_name.strip()
     last_name = body.last_name.strip()
-    role = body.role if body.role in ("student", "admin") else "student"
+    role = body.role.strip().lower() if body.role else "student"
+    if role not in ("student", "tutor", "admin"):
+        role = "student"
 
     if len(body.password) < 6:
         raise HTTPException(

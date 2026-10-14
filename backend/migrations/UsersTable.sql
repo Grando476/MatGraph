@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
     first_name TEXT DEFAULT '',
     last_name TEXT DEFAULT '',
-    role TEXT CHECK (role IN ('student', 'admin')) DEFAULT 'student' NOT NULL,
+    role TEXT CHECK (role IN ('student', 'tutor', 'admin')) DEFAULT 'student' NOT NULL,
     created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
