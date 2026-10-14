@@ -187,7 +187,7 @@ export default function ExerciseView({ exerciseId }: ExerciseViewProps) {
 
       <div className="p-6 sm:p-10 flex-1">
         <div className="max-w-3xl mx-auto bg-[var(--bg-card)] border-3 border-[var(--border-dark)] p-6 sm:p-10 rounded-2xl shadow-[8px_8px_0px_0px_#000]">
-          
+
           <div className="flex items-center gap-2 mb-4">
             <span className="bg-[var(--neo-pink)] text-black font-black text-xs px-3 py-1 border-2 border-black rounded-md shadow-[2px_2px_0px_0px_#000] uppercase">
               ★ Grupa Zadań
@@ -321,19 +321,18 @@ export default function ExerciseView({ exerciseId }: ExerciseViewProps) {
                                     type="button"
                                     onClick={() => handleTfSelect(task.id, stmt.id, true)}
                                     disabled={isStatementChecked || isTfVerifying}
-                                    className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all border-2 border-black ${
-                                      isStatementChecked
-                                        ? stmtResult?.correct_answer === true
-                                          ? userChoice === true
-                                            ? 'bg-[var(--neo-green)] text-black shadow-[2px_2px_0px_0px_#000] cursor-default'
-                                            : 'bg-green-100 text-green-900 border-green-600 shadow-none cursor-default font-black'
-                                          : userChoice === true
-                                            ? 'bg-[var(--neo-pink)] text-black line-through opacity-70 shadow-none cursor-default'
-                                            : 'bg-gray-100 text-gray-400 border-gray-300 opacity-40 shadow-none cursor-default'
+                                    className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all border-2 border-black ${isStatementChecked
+                                      ? stmtResult?.correct_answer === true
+                                        ? userChoice === true
+                                          ? 'bg-[var(--neo-green)] text-black shadow-[2px_2px_0px_0px_#000] cursor-default'
+                                          : 'bg-green-100 text-green-900 border-green-600 shadow-none cursor-default font-black'
                                         : userChoice === true
-                                          ? 'bg-[var(--neo-green)] text-black shadow-[2px_2px_0px_0px_#000] translate-x-[1px] translate-y-[1px]'
-                                          : 'bg-white hover:bg-green-50 text-black shadow-[3px_3px_0px_0px_#000] hover:shadow-[1px_1px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] cursor-pointer'
-                                    }`}
+                                          ? 'bg-[var(--neo-pink)] text-black line-through opacity-70 shadow-none cursor-default'
+                                          : 'bg-gray-100 text-gray-400 border-gray-300 opacity-40 shadow-none cursor-default'
+                                      : userChoice === true
+                                        ? 'bg-[var(--neo-green)] text-black shadow-[2px_2px_0px_0px_#000] translate-x-[1px] translate-y-[1px]'
+                                        : 'bg-white hover:bg-green-50 text-black shadow-[3px_3px_0px_0px_#000] hover:shadow-[1px_1px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] cursor-pointer'
+                                      }`}
                                   >
                                     PRAWDA {isStatementChecked && stmtResult?.correct_answer === true && '✓'}
                                   </button>
@@ -343,19 +342,18 @@ export default function ExerciseView({ exerciseId }: ExerciseViewProps) {
                                     type="button"
                                     onClick={() => handleTfSelect(task.id, stmt.id, false)}
                                     disabled={isStatementChecked || isTfVerifying}
-                                    className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all border-2 border-black ${
-                                      isStatementChecked
-                                        ? stmtResult?.correct_answer === false
-                                          ? userChoice === false
-                                            ? 'bg-[var(--neo-green)] text-black shadow-[2px_2px_0px_0px_#000] cursor-default'
-                                            : 'bg-green-100 text-green-900 border-green-600 shadow-none cursor-default font-black'
-                                          : userChoice === false
-                                            ? 'bg-[var(--neo-pink)] text-black line-through opacity-70 shadow-none cursor-default'
-                                            : 'bg-gray-100 text-gray-400 border-gray-300 opacity-40 shadow-none cursor-default'
+                                    className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all border-2 border-black ${isStatementChecked
+                                      ? stmtResult?.correct_answer === false
+                                        ? userChoice === false
+                                          ? 'bg-[var(--neo-green)] text-black shadow-[2px_2px_0px_0px_#000] cursor-default'
+                                          : 'bg-green-100 text-green-900 border-green-600 shadow-none cursor-default font-black'
                                         : userChoice === false
-                                          ? 'bg-[var(--neo-pink)] text-black shadow-[2px_2px_0px_0px_#000] translate-x-[1px] translate-y-[1px]'
-                                          : 'bg-white hover:bg-pink-50 text-black shadow-[3px_3px_0px_0px_#000] hover:shadow-[1px_1px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] cursor-pointer'
-                                    }`}
+                                          ? 'bg-[var(--neo-pink)] text-black line-through opacity-70 shadow-none cursor-default'
+                                          : 'bg-gray-100 text-gray-400 border-gray-300 opacity-40 shadow-none cursor-default'
+                                      : userChoice === false
+                                        ? 'bg-[var(--neo-pink)] text-black shadow-[2px_2px_0px_0px_#000] translate-x-[1px] translate-y-[1px]'
+                                        : 'bg-white hover:bg-pink-50 text-black shadow-[3px_3px_0px_0px_#000] hover:shadow-[1px_1px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] cursor-pointer'
+                                      }`}
                                   >
                                     FAŁSZ {isStatementChecked && stmtResult?.correct_answer === false && '✓'}
                                   </button>
@@ -377,11 +375,10 @@ export default function ExerciseView({ exerciseId }: ExerciseViewProps) {
                             <button
                               onClick={() => handleTfCheck(task.id)}
                               disabled={!allAnswered || isTfVerifying}
-                              className={`px-8 py-3.5 rounded-xl font-black uppercase text-xs tracking-wider transition-all border-2.5 border-[var(--border-dark)] ${
-                                !allAnswered || isTfVerifying
-                                  ? 'bg-gray-200 text-gray-500 cursor-not-allowed opacity-60 shadow-none'
-                                  : 'bg-[var(--neo-yellow)] hover:bg-[#fde047] text-black shadow-[4px_4px_0px_0px_#000] hover:shadow-[2px_2px_0px_0px_#000] hover:translate-x-[2px] hover:translate-y-[2px] active:translate-x-[4px] active:translate-y-[4px] cursor-pointer'
-                              }`}
+                              className={`px-8 py-3.5 rounded-xl font-black uppercase text-xs tracking-wider transition-all border-2.5 border-[var(--border-dark)] ${!allAnswered || isTfVerifying
+                                ? 'bg-gray-200 text-gray-500 cursor-not-allowed opacity-60 shadow-none'
+                                : 'bg-[var(--neo-yellow)] hover:bg-[#fde047] text-black shadow-[4px_4px_0px_0px_#000] hover:shadow-[2px_2px_0px_0px_#000] hover:translate-x-[2px] hover:translate-y-[2px] active:translate-x-[4px] active:translate-y-[4px] cursor-pointer'
+                                }`}
                             >
                               {isTfVerifying ? (
                                 <span className="flex items-center gap-2">
@@ -389,7 +386,7 @@ export default function ExerciseView({ exerciseId }: ExerciseViewProps) {
                                   Weryfikacja w backendzie...
                                 </span>
                               ) : allAnswered ? (
-                                "Sprawdź odpowiedzi &rarr;"
+                                "Sprawdź odpowiedzi;"
                               ) : (
                                 `Zaznacz wszystkie zdania (${answeredCount}/${totalStatements})`
                               )}
@@ -398,9 +395,8 @@ export default function ExerciseView({ exerciseId }: ExerciseViewProps) {
 
                           {/* TRUE_FALSE Verified Feedback Box */}
                           {currentTfResult && (
-                            <div className={`mt-4 p-6 w-full rounded-xl border-3 border-[var(--border-dark)] shadow-[6px_6px_0px_0px_#000] ${
-                              currentTfResult.is_correct ? 'bg-[var(--success-bg)]' : 'bg-[var(--error-bg)]'
-                            }`}>
+                            <div className={`mt-4 p-6 w-full rounded-xl border-3 border-[var(--border-dark)] shadow-[6px_6px_0px_0px_#000] ${currentTfResult.is_correct ? 'bg-[var(--success-bg)]' : 'bg-[var(--error-bg)]'
+                              }`}>
                               <div className="flex items-center gap-3 mb-2">
                                 <span className="text-2xl">
                                   {currentTfResult.is_correct ? "🎉" : "💡"}
@@ -455,15 +451,14 @@ export default function ExerciseView({ exerciseId }: ExerciseViewProps) {
                               disabled={!openAnswers[task.id]?.trim() || openVerifying[task.id]}
                               className="px-6 py-3.5 bg-[var(--neo-yellow)] hover:bg-[#fde047] disabled:bg-gray-200 disabled:text-gray-500 disabled:cursor-not-allowed text-black font-black uppercase text-xs rounded-xl border-2.5 border-black shadow-[3px_3px_0px_0px_#000] active:translate-x-[2px] active:translate-y-[2px]"
                             >
-                              {openVerifying[task.id] ? "Sprawdzanie..." : "Sprawdź &rarr;"}
+                              {openVerifying[task.id] ? "Sprawdzanie..." : "Sprawdź"}
                             </button>
                           )}
                         </div>
 
                         {openResults[task.id] && (
-                          <div className={`mt-5 p-5 rounded-xl border-2.5 border-[var(--border-dark)] shadow-[4px_4px_0px_0px_#000] ${
-                            openResults[task.id].is_correct ? 'bg-[var(--success-bg)]' : 'bg-[var(--error-bg)]'
-                          }`}>
+                          <div className={`mt-5 p-5 rounded-xl border-2.5 border-[var(--border-dark)] shadow-[4px_4px_0px_0px_#000] ${openResults[task.id].is_correct ? 'bg-[var(--success-bg)]' : 'bg-[var(--error-bg)]'
+                            }`}>
                             <p className="font-black text-lg text-black">
                               {openResults[task.id].is_correct
                                 ? `✓ Poprawna odpowiedź: ${openResults[task.id].correct_answer || contentObj.correct_answer}!`
@@ -526,19 +521,17 @@ export default function ExerciseView({ exerciseId }: ExerciseViewProps) {
                           <button
                             onClick={() => handleCheck(task.id)}
                             disabled={checkedTasks[task.id] || selectedAnswers[task.id] === undefined}
-                            className={`px-8 py-3.5 rounded-xl font-black uppercase text-xs tracking-wider transition-all border-2.5 border-[var(--border-dark)] ${
-                              checkedTasks[task.id] || selectedAnswers[task.id] === undefined
-                                ? 'bg-gray-200 text-gray-500 cursor-not-allowed opacity-50 shadow-none'
-                                : 'bg-[var(--neo-yellow)] hover:bg-[#fde047] text-black shadow-[4px_4px_0px_0px_#000] hover:shadow-[2px_2px_0px_0px_#000] hover:translate-x-[2px] hover:translate-y-[2px] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none cursor-pointer'
-                            }`}
+                            className={`px-8 py-3.5 rounded-xl font-black uppercase text-xs tracking-wider transition-all border-2.5 border-[var(--border-dark)] ${checkedTasks[task.id] || selectedAnswers[task.id] === undefined
+                              ? 'bg-gray-200 text-gray-500 cursor-not-allowed opacity-50 shadow-none'
+                              : 'bg-[var(--neo-yellow)] hover:bg-[#fde047] text-black shadow-[4px_4px_0px_0px_#000] hover:shadow-[2px_2px_0px_0px_#000] hover:translate-x-[2px] hover:translate-y-[2px] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none cursor-pointer'
+                              }`}
                           >
-                            {checkedTasks[task.id] ? "Sprawdzono ✓" : "Sprawdź odpowiedź &rarr;"}
+                            {checkedTasks[task.id] ? "Sprawdzono ✓" : "Sprawdź odpowiedź"}
                           </button>
 
                           {checkedTasks[task.id] && (
-                            <div className={`mt-4 p-5 w-full rounded-xl border-2.5 border-[var(--border-dark)] shadow-[4px_4px_0px_0px_#000] ${
-                              selectedAnswers[task.id] === contentObj.correct_index ? 'bg-[var(--success-bg)]' : 'bg-[var(--error-bg)]'
-                            }`}>
+                            <div className={`mt-4 p-5 w-full rounded-xl border-2.5 border-[var(--border-dark)] shadow-[4px_4px_0px_0px_#000] ${selectedAnswers[task.id] === contentObj.correct_index ? 'bg-[var(--success-bg)]' : 'bg-[var(--error-bg)]'
+                              }`}>
                               <p className="font-black text-lg text-black">
                                 {selectedAnswers[task.id] === contentObj.correct_index
                                   ? "✓ Poprawna odpowiedź! Brawo."
