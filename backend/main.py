@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from core.cors import setup_cors
-from routers import health, nodes, lessons, exercises, auth, student
+from routers import health, nodes, lessons, exercises, auth, student, tutor
 
 # FastAPI application initialization
 app = FastAPI(
@@ -19,4 +19,5 @@ app.include_router(lessons.router)
 app.include_router(exercises.router)
 app.include_router(auth.router)
 app.include_router(student.router)
+app.include_router(tutor.router)
 
