@@ -96,17 +96,6 @@ def get_tutor_classes(current_user: dict = Depends(get_current_user)):
                 (class_id,)
             )
             members = cur.fetchall()
-            student_list = []
-            for m in members:
-                first = m.get("first_name") or ""
-                last = m.get("last_name") or ""
-                full_name = f"{first} {last}".strip() or m.get("email") or "Uczeń"
-                student_list.append({
-                    "id": str(m["id"]),
-                    "name": full_name,
-                    "email": m.get("email"),
-                    "joined_at": m["joined_at"].isoformat() if m.get("joined_at") else None
-                })
 
             # Fetch assignments for this class
             cur.execute(
@@ -133,10 +122,32 @@ def get_tutor_classes(current_user: dict = Depends(get_current_user)):
                 (class_id,)
             )
             assignments_rows = cur.fetchall()
+
+            # Fetch completions for this class
+            cur.execute(
+                """
+                SELECT 
+                    ac.assignment_id,
+                    ac.student_id,
+                    ac.completed_at
+                FROM public.assignment_completions ac
+                JOIN public.class_assignments ca ON ac.assignment_id = ca.id
+                WHERE ca.class_id = %s;
+                """,
+                (class_id,)
+            )
+            completions_rows = cur.fetchall()
+            completions_map = {
+                (str(c["student_id"]), str(c["assignment_id"])): c["completed_at"]
+                for c in completions_rows
+            }
+
             assignment_list = []
             for a in assignments_rows:
+                a_id = str(a["id"])
+                comp_count = sum(1 for m in members if (str(m["id"]), a_id) in completions_map)
                 assignment_list.append({
-                    "id": str(a["id"]),
+                    "id": a_id,
                     "task_group_id": str(a["task_group_id"]),
                     "task_group_name": a["task_group_name"],
                     "subtopic_name": a["subtopic_name"],
@@ -146,6 +157,41 @@ def get_tutor_classes(current_user: dict = Depends(get_current_user)):
                     "due_date": a["due_date"].isoformat() if a.get("due_date") else None,
                     "note": a.get("note"),
                     "created_at": a["created_at"].isoformat() if a.get("created_at") else None,
+                    "completed_count": comp_count,
+                    "total_students": len(members),
+                })
+
+            student_list = []
+            for m in members:
+                first = m.get("first_name") or ""
+                last = m.get("last_name") or ""
+                full_name = f"{first} {last}".strip() or m.get("email") or "Uczeń"
+                s_id = str(m["id"])
+
+                # Check each assignment's completion status for this student
+                student_assignments = []
+                for a in assignment_list:
+                    comp_at = completions_map.get((s_id, a["id"]))
+                    student_assignments.append({
+                        "assignment_id": a["id"],
+                        "task_group_id": a["task_group_id"],
+                        "task_group_name": a["task_group_name"],
+                        "topic_name": a.get("topic_name"),
+                        "subtopic_name": a.get("subtopic_name"),
+                        "due_date": a.get("due_date"),
+                        "is_completed": comp_at is not None,
+                        "completed_at": comp_at.isoformat() if comp_at else None
+                    })
+
+                completed_count = sum(1 for sa in student_assignments if sa["is_completed"])
+                student_list.append({
+                    "id": s_id,
+                    "name": full_name,
+                    "email": m.get("email"),
+                    "joined_at": m["joined_at"].isoformat() if m.get("joined_at") else None,
+                    "completed_assignments_count": completed_count,
+                    "total_assignments_count": len(assignment_list),
+                    "assignments_status": student_assignments
                 })
 
             result.append({
