@@ -60,7 +60,7 @@ export default function RegisterPage() {
 
       setMessage({
         type: "success",
-        text: "Konto zostało pomyślnie utworzone! Przekierowanie do logowania...",
+        text: "Konto zostało pomyślnie utworzone. Nastąpi przekierowanie do logowania",
       });
 
       setTimeout(() => {
@@ -81,9 +81,8 @@ export default function RegisterPage() {
       {/* Decorative Badges */}
       <div className="hidden sm:block absolute top-8 right-8 rotate-[4deg] z-0 pointer-events-none">
         <div
-          className={`text-black font-extrabold text-xs px-3 py-1.5 border-2 border-black rounded-lg shadow-[3px_3px_0px_0px_#000] uppercase transition-colors ${
-            role === "tutor" ? "bg-[var(--neo-yellow)]" : "bg-[var(--neo-green)]"
-          }`}
+          className={`text-black font-extrabold text-xs px-3 py-1.5 border-2 border-black rounded-lg shadow-[3px_3px_0px_0px_#000] uppercase transition-colors ${role === "tutor" ? "bg-[var(--neo-yellow)]" : "bg-[var(--neo-green)]"
+            }`}
         >
           ★ Rejestracja: {role === "tutor" ? "Korepetytor" : "Uczeń"}
         </div>
@@ -102,17 +101,16 @@ export default function RegisterPage() {
             </h1>
             <p className="text-xs text-[var(--text-muted)] font-medium mt-1">
               {role === "tutor"
-                ? "Utwórz konto korepetytora i wspieraj uczniów w nauce."
+                ? "Utwórz konto korepetytora i wspieraj swoich uczniów w nauce."
                 : "Utwórz darmowe konto ucznia i rozpocznij naukę."}
             </p>
           </div>
 
           {message && (
-            <div className={`mb-5 p-4 rounded-xl text-xs font-bold border-2 border-[var(--border-dark)] shadow-[3px_3px_0px_0px_#000] ${
-              message.type === "success"
-                ? "bg-[var(--success-bg)] text-[var(--success-text)]"
-                : "bg-[var(--error-bg)] text-[var(--error-text)]"
-            }`}>
+            <div className={`mb-5 p-4 rounded-xl text-xs font-bold border-2 border-[var(--border-dark)] shadow-[3px_3px_0px_0px_#000] ${message.type === "success"
+              ? "bg-[var(--success-bg)] text-[var(--success-text)]"
+              : "bg-[var(--error-bg)] text-[var(--error-text)]"
+              }`}>
               {message.text}
             </div>
           )}
@@ -127,35 +125,27 @@ export default function RegisterPage() {
                 <button
                   type="button"
                   onClick={() => setRole("student")}
-                  className={`p-3 rounded-xl border-2 border-[var(--border-dark)] font-bold text-left transition-all cursor-pointer ${
-                    role === "student"
-                      ? "bg-[var(--neo-green)] shadow-[3px_3px_0px_0px_#000] translate-x-[-1px] translate-y-[-1px]"
-                      : "bg-[var(--bg-deep)] hover:bg-white shadow-[2px_2px_0px_0px_#000] opacity-80 hover:opacity-100"
-                  }`}
+                  className={`p-3 rounded-xl border-2 border-[var(--border-dark)] font-bold text-center transition-all cursor-pointer ${role === "student"
+                    ? "bg-[var(--neo-green)] shadow-[3px_3px_0px_0px_#000] translate-x-[-1px] translate-y-[-1px]"
+                    : "bg-[var(--bg-deep)] hover:bg-white shadow-[2px_2px_0px_0px_#000] opacity-80 hover:opacity-100"
+                    }`}
                 >
-                  <div className="flex items-center gap-1.5 text-xs font-black uppercase text-black">
-                    <span>🎒</span> Uczeń
+                  <div className="flex items-center justify-center gap-1.5 text-xs font-black uppercase text-black">
+                    Uczeń
                   </div>
-                  <p className="text-[11px] font-semibold text-[var(--text-muted)] mt-0.5 leading-tight">
-                    Dostęp do lekcji i zadań
-                  </p>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => setRole("tutor")}
-                  className={`p-3 rounded-xl border-2 border-[var(--border-dark)] font-bold text-left transition-all cursor-pointer ${
-                    role === "tutor"
-                      ? "bg-[var(--neo-yellow)] shadow-[3px_3px_0px_0px_#000] translate-x-[-1px] translate-y-[-1px]"
-                      : "bg-[var(--bg-deep)] hover:bg-white shadow-[2px_2px_0px_0px_#000] opacity-80 hover:opacity-100"
-                  }`}
+                  className={`p-3 rounded-xl border-2 border-[var(--border-dark)] font-bold text-center transition-all cursor-pointer ${role === "tutor"
+                    ? "bg-[var(--neo-yellow)] shadow-[3px_3px_0px_0px_#000] translate-x-[-1px] translate-y-[-1px]"
+                    : "bg-[var(--bg-deep)] hover:bg-white shadow-[2px_2px_0px_0px_#000] opacity-80 hover:opacity-100"
+                    }`}
                 >
-                  <div className="flex items-center gap-1.5 text-xs font-black uppercase text-black">
-                    <span>🎓</span> Korepetytor
+                  <div className="flex items-center justify-center gap-1.5 text-xs font-black uppercase text-black">
+                    Korepetytor
                   </div>
-                  <p className="text-[11px] font-semibold text-[var(--text-muted)] mt-0.5 leading-tight">
-                    Prowadzenie i wsparcie
-                  </p>
                 </button>
               </div>
             </div>
@@ -249,9 +239,8 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className={`w-full py-3.5 px-4 ${
-                role === "tutor" ? "bg-[var(--neo-yellow)] hover:bg-[#fde047]" : "bg-[var(--neo-green)] hover:bg-[#86efac]"
-              } text-black font-black uppercase tracking-wider text-xs rounded-xl border-2.5 border-[var(--border-dark)] shadow-[4px_4px_0px_0px_#000] hover:shadow-[2px_2px_0px_0px_#000] hover:translate-x-[2px] hover:translate-y-[2px] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer mt-3`}
+              className={`w-full py-3.5 px-4 ${role === "tutor" ? "bg-[var(--neo-yellow)] hover:bg-[#fde047]" : "bg-[var(--neo-green)] hover:bg-[#86efac]"
+                } text-black font-black uppercase tracking-wider text-xs rounded-xl border-2.5 border-[var(--border-dark)] shadow-[4px_4px_0px_0px_#000] hover:shadow-[2px_2px_0px_0px_#000] hover:translate-x-[2px] hover:translate-y-[2px] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer mt-3`}
             >
               {isLoading ? (
                 <>
