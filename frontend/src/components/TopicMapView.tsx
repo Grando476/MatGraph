@@ -581,40 +581,6 @@ export default function TopicMapView() {
                 </button>
               ) : (
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  {(currentUser.role === 'tutor' || currentUser.role === 'admin') && (
-                    <button
-                      onClick={() => router.push('/tutor/mystudents')}
-                      title="Przejdź do Panelu Korepetytora"
-                      style={{
-                        padding: '8px 14px',
-                        background: 'var(--neo-yellow)',
-                        color: '#000000',
-                        border: '2.5px solid #000000',
-                        borderRadius: '10px',
-                        fontWeight: 900,
-                        fontSize: '0.78rem',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.04em',
-                        cursor: 'pointer',
-                        boxShadow: '3px 3px 0px 0px #000000',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '6px',
-                        transition: 'all 0.15s ease',
-                      }}
-                      onMouseEnter={(e: any) => {
-                        e.currentTarget.style.transform = 'translate(-1px, -1px)';
-                        e.currentTarget.style.boxShadow = '4px 4px 0px 0px #000000';
-                      }}
-                      onMouseLeave={(e: any) => {
-                        e.currentTarget.style.transform = 'none';
-                        e.currentTarget.style.boxShadow = '3px 3px 0px 0px #000000';
-                      }}
-                    >
-                      <span>🎓</span>
-                      <span className="hidden sm:inline">Panel Korepetytora</span>
-                    </button>
-                  )}
 
                   <div ref={profileRef} style={{ position: 'relative' }}>
                     <button
@@ -787,7 +753,7 @@ export default function TopicMapView() {
                             <button
                               onClick={() => {
                                 setIsProfileOpen(false);
-                                router.push('/tutor/mystudents');
+                                router.push('/tutor');
                               }}
                               style={{
                                 width: '100%',
@@ -825,122 +791,122 @@ export default function TopicMapView() {
                           </div>
                         )}
 
-                      {/* Admin Tools: Unlock Movement & Save Layout */}
-                      {currentUser.role === 'admin' && (
-                        <div style={{ paddingBottom: '10px', borderBottom: '2px solid #000000', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                          <button
-                            onClick={() => setCanMoveNodes(!canMoveNodes)}
-                            style={{
-                              width: '100%',
-                              padding: '8px 12px',
-                              background: canMoveNodes ? 'var(--neo-yellow)' : 'white',
-                              color: '#000000',
-                              border: '2px solid #000000',
-                              borderRadius: '8px',
-                              fontWeight: 800,
-                              fontSize: '0.78rem',
-                              cursor: 'pointer',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              gap: '8px',
-                              boxShadow: '2px 2px 0px 0px #000000',
-                              transition: 'all 0.15s',
-                            }}
-                          >
-                            {canMoveNodes ? (
-                              <>
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                                  <path d="M7 11V7a5 5 0 0 1 9.9-1" />
-                                </svg>
-                                <span>Zablokuj węzły</span>
-                              </>
-                            ) : (
-                              <>
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                                </svg>
-                                <span>Odblokuj węzły</span>
-                              </>
-                            )}
-                          </button>
+                        {/* Admin Tools: Unlock Movement & Save Layout */}
+                        {currentUser.role === 'admin' && (
+                          <div style={{ paddingBottom: '10px', borderBottom: '2px solid #000000', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            <button
+                              onClick={() => setCanMoveNodes(!canMoveNodes)}
+                              style={{
+                                width: '100%',
+                                padding: '8px 12px',
+                                background: canMoveNodes ? 'var(--neo-yellow)' : 'white',
+                                color: '#000000',
+                                border: '2px solid #000000',
+                                borderRadius: '8px',
+                                fontWeight: 800,
+                                fontSize: '0.78rem',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '8px',
+                                boxShadow: '2px 2px 0px 0px #000000',
+                                transition: 'all 0.15s',
+                              }}
+                            >
+                              {canMoveNodes ? (
+                                <>
+                                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                                    <path d="M7 11V7a5 5 0 0 1 9.9-1" />
+                                  </svg>
+                                  <span>Zablokuj węzły</span>
+                                </>
+                              ) : (
+                                <>
+                                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                                  </svg>
+                                  <span>Odblokuj węzły</span>
+                                </>
+                              )}
+                            </button>
 
-                          <button
-                            onClick={saveLayout}
-                            disabled={savingLayout}
-                            title="Zapisz stan"
-                            style={{
-                              width: '100%',
-                              padding: '8px 12px',
-                              background: savingLayout ? '#e5e7eb' : 'var(--neo-green)',
-                              color: '#000000',
-                              border: '2px solid #000000',
-                              borderRadius: '8px',
-                              fontWeight: 800,
-                              fontSize: '0.78rem',
-                              cursor: savingLayout ? 'not-allowed' : 'pointer',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              gap: '8px',
-                              boxShadow: '2px 2px 0px 0px #000000',
-                              transition: 'all 0.15s',
-                            }}
-                          >
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
-                              <polyline points="17 21 17 13 7 13 7 21" />
-                              <polyline points="7 3 7 8 15 8" />
-                            </svg>
-                            {savingLayout ? 'Zapisywanie...' : 'Zapisz układ'}
-                          </button>
-                        </div>
-                      )}
+                            <button
+                              onClick={saveLayout}
+                              disabled={savingLayout}
+                              title="Zapisz stan"
+                              style={{
+                                width: '100%',
+                                padding: '8px 12px',
+                                background: savingLayout ? '#e5e7eb' : 'var(--neo-green)',
+                                color: '#000000',
+                                border: '2px solid #000000',
+                                borderRadius: '8px',
+                                fontWeight: 800,
+                                fontSize: '0.78rem',
+                                cursor: savingLayout ? 'not-allowed' : 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '8px',
+                                boxShadow: '2px 2px 0px 0px #000000',
+                                transition: 'all 0.15s',
+                              }}
+                            >
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+                                <polyline points="17 21 17 13 7 13 7 21" />
+                                <polyline points="7 3 7 8 15 8" />
+                              </svg>
+                              {savingLayout ? 'Zapisywanie...' : 'Zapisz układ'}
+                            </button>
+                          </div>
+                        )}
 
-                      {/* Bottom Logout Button */}
-                      <button
-                        onClick={handleLogout}
-                        style={{
-                          width: '100%',
-                          padding: '8px 12px',
-                          background: 'white',
-                          color: '#b91c1c',
-                          border: '2px solid #000000',
-                          borderRadius: '8px',
-                          fontWeight: 800,
-                          fontSize: '0.78rem',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          gap: '8px',
-                          boxShadow: '2px 2px 0px 0px #000000',
-                          transition: 'all 0.15s',
-                        }}
-                        onMouseEnter={(e: any) => {
-                          e.currentTarget.style.background = 'var(--neo-pink)';
-                          e.currentTarget.style.color = '#000000';
-                        }}
-                        onMouseLeave={(e: any) => {
-                          e.currentTarget.style.background = 'white';
-                          e.currentTarget.style.color = '#b91c1c';
-                        }}
-                      >
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-                          <polyline points="16 17 21 12 16 7" />
-                          <line x1="21" y1="12" x2="9" y2="12" />
-                        </svg>
-                        Wyloguj się
-                      </button>
-                    </div>
-                  )}
+                        {/* Bottom Logout Button */}
+                        <button
+                          onClick={handleLogout}
+                          style={{
+                            width: '100%',
+                            padding: '8px 12px',
+                            background: 'white',
+                            color: '#b91c1c',
+                            border: '2px solid #000000',
+                            borderRadius: '8px',
+                            fontWeight: 800,
+                            fontSize: '0.78rem',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '8px',
+                            boxShadow: '2px 2px 0px 0px #000000',
+                            transition: 'all 0.15s',
+                          }}
+                          onMouseEnter={(e: any) => {
+                            e.currentTarget.style.background = 'var(--neo-pink)';
+                            e.currentTarget.style.color = '#000000';
+                          }}
+                          onMouseLeave={(e: any) => {
+                            e.currentTarget.style.background = 'white';
+                            e.currentTarget.style.color = '#b91c1c';
+                          }}
+                        >
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                            <polyline points="16 17 21 12 16 7" />
+                            <line x1="21" y1="12" x2="9" y2="12" />
+                          </svg>
+                          Wyloguj się
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
 
             {/* ReactFlow Interactive Canvas */}
             <ReactFlow
