@@ -12,7 +12,7 @@ const isLocalAuth = () => {
 
 export async function middleware(request: NextRequest) {
   if (isLocalAuth()) {
-    const isProtectedPath = ['/profile'].some((path) =>
+    const isProtectedPath = ['/profile', '/tutor'].some((path) =>
       request.nextUrl.pathname.startsWith(path)
     );
     const token = request.cookies.get('auth_token')?.value;

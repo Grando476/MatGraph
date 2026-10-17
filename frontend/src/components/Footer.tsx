@@ -7,7 +7,6 @@ export default function Footer() {
         <div className="flex items-center gap-2">
           <span className="w-2.5 h-2.5 bg-[var(--neo-green)] border border-[var(--border-dark)] rounded-sm inline-block shadow-[1px_1px_0px_#000]" />
           <span className="tracking-wider uppercase font-extrabold">MatGraph Platform</span>
-          <span className="text-[var(--text-muted)] font-medium">• Egzamin Maturalny z Matematyki</span>
         </div>
         <div className="text-[var(--text-muted)] text-[11px] font-semibold">
           &copy; {new Date().getFullYear()} Wszelkie prawa zastrzeżone

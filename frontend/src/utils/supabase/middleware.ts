@@ -57,8 +57,8 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Protect routes requiring authentication (e.g., /profile)
-  const isProtectedPath = ['/profile'].some((path) =>
+  // Protect routes requiring authentication (e.g., /profile, /tutor)
+  const isProtectedPath = ['/profile', '/tutor'].some((path) =>
     request.nextUrl.pathname.startsWith(path)
   );
 
