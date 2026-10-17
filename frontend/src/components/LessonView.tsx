@@ -319,7 +319,7 @@ export default function LessonView({ lessonId }: LessonViewProps) {
                 {lesson.task_groups.map((group: any) => (
                   <Link
                     key={group.id}
-                    href={`/exercise/${group.id}`}
+                    href={`/exercise/${group.id}?from=/lesson/${lessonId}`}
                     className="block p-5 border-2.5 border-[var(--border-dark)] rounded-xl bg-white shadow-[4px_4px_0px_0px_#000] hover:bg-[var(--neo-yellow)] hover:shadow-[2px_2px_0px_0px_#000] hover:translate-x-[2px] hover:translate-y-[2px] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none transition-all group"
                   >
                     <div className="flex items-start justify-between gap-3">

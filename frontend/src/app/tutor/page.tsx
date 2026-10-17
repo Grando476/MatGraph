@@ -611,12 +611,11 @@ export default function TutorPage() {
 
                               <div className="flex items-center justify-between pt-1.5 gap-2 border-t border-black/10">
                                 <Link
-                                  href={`/exercise/${assignment.task_group_id}`}
-                                  target="_blank"
+                                  href={`/exercise/${assignment.task_group_id}?from=/tutor`}
                                   className="text-xs sm:text-sm font-black text-blue-700 hover:text-blue-900 underline flex items-center gap-1"
                                 >
                                   <span>Podgląd zadań</span>
-                                  <span>↗</span>
+                                  <span>&rarr;</span>
                                 </Link>
                                 <button
                                   type="button"
@@ -664,14 +663,14 @@ export default function TutorPage() {
                   <div className="mt-5 pt-3.5 border-t-2 border-black/10">
                     <button
                       onClick={() => setExpandedClassId(isExpanded ? null : cls.id)}
-                      className="w-full py-3 bg-gray-50 hover:bg-gray-100 border-2 border-black rounded-xl font-black text-xs sm:text-sm uppercase tracking-wider text-black flex items-center justify-center gap-2 shadow-[2px_2px_0px_0px_#000] transition-all cursor-pointer"
+                      className="w-full py-3.5 bg-gray-50 hover:bg-gray-100 border-2.5 border-black rounded-xl font-black text-sm sm:text-base uppercase tracking-wider text-black flex items-center justify-center gap-2.5 shadow-[3px_3px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] transition-all cursor-pointer"
                     >
                       <span>{isExpanded ? "Ukryj listę uczniów" : "Pokaż uczniów"}</span>
-                      <span>{isExpanded ? "▲" : "▼"}</span>
+                      <span className="text-sm font-black">{isExpanded ? "▲" : "▼"}</span>
                     </button>
 
                     {isExpanded && (
-                      <div className="mt-3.5 pt-2 space-y-2.5 max-h-96 overflow-y-auto">
+                      <div className="mt-4 pt-2 space-y-3 max-h-[28rem] overflow-y-auto pr-0.5">
                         {cls.students && cls.students.length > 0 ? (
                           cls.students.map((student) => {
                             const studentKey = `${cls.id}-${student.id}`;
@@ -684,29 +683,29 @@ export default function TutorPage() {
                             return (
                               <div
                                 key={student.id}
-                                className="bg-[var(--bg-deep)] border-2 border-black rounded-xl overflow-hidden transition-all shadow-[2px_2px_0px_0px_#000]"
+                                className="bg-[var(--bg-deep)] border-2.5 border-black rounded-2xl overflow-hidden transition-all shadow-[3px_3px_0px_0px_#000]"
                               >
                                 {/* Student row header (klikalny) */}
                                 <div
                                   onClick={() => setExpandedStudentKey(isStudentExpanded ? null : studentKey)}
-                                  className="p-3 flex items-center justify-between gap-2.5 cursor-pointer hover:bg-yellow-50/70 transition-colors select-none"
+                                  className="p-3.5 sm:p-4 flex items-center justify-between gap-3 cursor-pointer hover:bg-yellow-50/70 transition-colors select-none"
                                 >
                                   <div className="min-w-0 flex-1">
-                                    <div className="text-sm font-black text-black leading-snug truncate">
+                                    <div className="text-base sm:text-lg font-black text-black leading-snug truncate">
                                       {student.name}
                                     </div>
                                     {student.email && (
-                                      <div className="text-xs text-gray-600 truncate font-semibold mt-0.5">
+                                      <div className="text-xs sm:text-sm text-gray-700 truncate font-semibold mt-0.5">
                                         {student.email}
                                       </div>
                                     )}
                                   </div>
 
                                   {/* Right side: Homework progress badge & expand icon */}
-                                  <div className="flex items-center gap-2 shrink-0">
+                                  <div className="flex items-center gap-2.5 shrink-0">
                                     {totalAssignments > 0 ? (
                                       <span
-                                        className={`text-xs font-black px-2.5 py-1 rounded-lg border-1.5 border-black shadow-[1px_1px_0px_#000] ${
+                                        className={`text-xs sm:text-sm font-black px-3.5 py-1.5 rounded-xl border-2 border-black shadow-[1.5px_1.5px_0px_#000] ${
                                           allCompleted
                                             ? "bg-[var(--neo-green)] text-black"
                                             : someCompleted
@@ -718,13 +717,13 @@ export default function TutorPage() {
                                         Zadania: {completedCount}/{totalAssignments}
                                       </span>
                                     ) : (
-                                      <span className="text-[11px] font-bold text-gray-500 italic">
+                                      <span className="text-xs font-bold text-gray-500 italic">
                                         Brak zadań
                                       </span>
                                     )}
 
                                     <div
-                                      className="w-6 h-6 rounded-md border border-black bg-white flex items-center justify-center text-xs font-black shadow-[1px_1px_0px_#000]"
+                                      className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg border-2 border-black bg-white flex items-center justify-center text-xs sm:text-sm font-black shadow-[1.5px_1.5px_0px_#000]"
                                       title={isStudentExpanded ? "Ukryj szczegóły" : "Zobacz szczegóły zadań"}
                                     >
                                       {isStudentExpanded ? "▲" : "▼"}
@@ -734,55 +733,55 @@ export default function TutorPage() {
 
                                 {/* Expanded student homework mini-report */}
                                 {isStudentExpanded && (
-                                  <div className="p-3 bg-white border-t-2 border-black space-y-2 animate-in fade-in duration-100">
-                                    <div className="flex items-start justify-between gap-2 pb-1.5 border-b border-black/10">
+                                  <div className="p-4 bg-white border-t-2.5 border-black space-y-3 animate-in fade-in duration-100">
+                                    <div className="flex items-start justify-between gap-2 pb-2 border-b border-black/10">
                                       <div>
-                                        <div className="text-xs font-black uppercase tracking-wider text-black">
+                                        <div className="text-sm sm:text-base font-black uppercase tracking-wider text-black">
                                           📋 Zadania domowe
                                         </div>
-                                        <div className="text-[11px] font-bold text-gray-600 mt-0.5">
+                                        <div className="text-xs sm:text-sm font-bold text-gray-700 mt-0.5">
                                           {completedCount}/{totalAssignments} ukończonych
                                         </div>
                                       </div>
                                       {student.joined_at && (
-                                        <span className="text-[11px] text-gray-500 font-semibold shrink-0">
+                                        <span className="text-xs sm:text-sm text-gray-600 font-semibold shrink-0">
                                           W klasie od: {new Date(student.joined_at).toLocaleDateString("pl-PL")}
                                         </span>
                                       )}
                                     </div>
 
                                     {student.assignments_status && student.assignments_status.length > 0 ? (
-                                      <div className="space-y-1.5 max-h-56 overflow-y-auto pr-0.5">
+                                      <div className="space-y-2 max-h-64 overflow-y-auto pr-0.5">
                                         {student.assignments_status.map((as) => {
                                           const isOverdue = !as.is_completed && as.due_date && new Date(as.due_date) < new Date();
                                           return (
                                             <div
                                               key={as.assignment_id}
-                                              className="p-2.5 bg-[var(--bg-deep)] border-1.5 border-black rounded-lg flex items-center justify-between gap-2.5"
+                                              className="p-3 bg-[var(--bg-deep)] border-2 border-black rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 shadow-[1px_1px_0px_#000]"
                                             >
                                               <div className="min-w-0 flex-1">
-                                                <div className="text-[10px] font-bold text-gray-600 uppercase tracking-wider truncate">
+                                                <div className="text-xs font-bold text-gray-600 uppercase tracking-wider truncate">
                                                   {as.topic_name} - {as.subtopic_name}
                                                 </div>
-                                                <div className="text-xs font-black text-black truncate">
+                                                <div className="text-sm sm:text-base font-black text-black leading-snug truncate">
                                                   {as.task_group_name}
                                                 </div>
                                                 {as.due_date && (
-                                                  <div className="text-[10px] text-gray-600 font-semibold mt-0.5 flex items-center gap-1">
+                                                  <div className="text-xs text-gray-700 font-semibold mt-0.5 flex items-center gap-1.5">
                                                     <span>📅</span>
                                                     <span>Termin: {new Date(as.due_date).toLocaleDateString("pl-PL")}</span>
                                                   </div>
                                                 )}
                                               </div>
 
-                                              <div className="shrink-0 flex flex-col items-end">
+                                              <div className="shrink-0 flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-1">
                                                 {as.is_completed ? (
                                                   <>
-                                                    <span className="px-2 py-0.5 bg-[var(--neo-green)] text-black border border-black rounded text-[10px] font-black shadow-[1px_1px_0px_#000]">
+                                                    <span className="px-2.5 py-1 bg-[var(--neo-green)] text-black border-1.5 border-black rounded-lg text-xs font-black shadow-[1px_1px_0px_#000]">
                                                       ✓ Ukończono
                                                     </span>
                                                     {as.completed_at && (
-                                                      <span className="text-[9px] text-gray-500 font-medium mt-0.5">
+                                                      <span className="text-[11px] text-gray-600 font-semibold">
                                                         {new Date(as.completed_at).toLocaleDateString("pl-PL", {
                                                           day: "2-digit",
                                                           month: "2-digit",
@@ -793,11 +792,11 @@ export default function TutorPage() {
                                                     )}
                                                   </>
                                                 ) : isOverdue ? (
-                                                  <span className="px-2 py-0.5 bg-red-200 text-red-900 border border-black rounded text-[10px] font-black shadow-[1px_1px_0px_#000]">
+                                                  <span className="px-2.5 py-1 bg-red-200 text-red-950 border-1.5 border-black rounded-lg text-xs font-black shadow-[1px_1px_0px_#000]">
                                                     ✕ Po terminie
                                                   </span>
                                                 ) : (
-                                                  <span className="px-2 py-0.5 bg-gray-100 text-gray-700 border border-black rounded text-[10px] font-bold shadow-[1px_1px_0px_#000]">
+                                                  <span className="px-2.5 py-1 bg-gray-100 text-gray-800 border-1.5 border-black rounded-lg text-xs font-bold shadow-[1px_1px_0px_#000]">
                                                     ⏳ Do zrobienia
                                                   </span>
                                                 )}
@@ -807,7 +806,7 @@ export default function TutorPage() {
                                         })}
                                       </div>
                                     ) : (
-                                      <div className="text-center py-2 text-xs text-gray-500 italic font-medium">
+                                      <div className="text-center py-3 text-sm text-gray-600 italic font-medium">
                                         Brak przydzielonych zadań w tej klasie.
                                       </div>
                                     )}
@@ -817,7 +816,7 @@ export default function TutorPage() {
                             );
                           })
                         ) : (
-                          <div className="text-center py-4 text-sm text-gray-600 italic font-bold">
+                          <div className="text-center py-5 text-sm sm:text-base text-gray-600 italic font-bold">
                             Żaden uczeń jeszcze nie dołączył do tej klasy.
                           </div>
                         )}

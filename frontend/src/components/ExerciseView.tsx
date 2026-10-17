@@ -137,6 +137,38 @@ export default function ExerciseView({ exerciseId }: ExerciseViewProps) {
     }
   };
 
+  const handleBack = () => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const from = params.get("from");
+      if (from) {
+        router.push(from);
+        return;
+      }
+
+      if (document.referrer && document.referrer.includes(window.location.host)) {
+        if (window.history.length > 1) {
+          router.back();
+          return;
+        }
+        try {
+          const refUrl = new URL(document.referrer);
+          router.push(refUrl.pathname + refUrl.search);
+          return;
+        } catch {
+          // ignore
+        }
+      }
+
+      if (window.history.length > 1) {
+        router.back();
+        return;
+      }
+    }
+
+    router.push("/graph");
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-[var(--bg-main)] text-[var(--text-main)] p-8 flex justify-center items-center">
@@ -154,7 +186,7 @@ export default function ExerciseView({ exerciseId }: ExerciseViewProps) {
         <div className="bg-white border-3 border-[var(--border-dark)] p-8 rounded-2xl shadow-[6px_6px_0px_0px_#000] text-center max-w-md">
           <p className="text-base font-black text-red-600 mb-4 uppercase">Błąd: {error || "Nie znaleziono zadań"}</p>
           <button
-            onClick={() => router.back()}
+            onClick={handleBack}
             className="inline-flex items-center gap-2 bg-[var(--neo-yellow)] text-black font-black text-xs uppercase px-5 py-3 rounded-xl border-2 border-black shadow-[3px_3px_0px_0px_#000] hover:shadow-[1px_1px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] cursor-pointer"
           >
             &larr; Wróć
@@ -176,7 +208,7 @@ export default function ExerciseView({ exerciseId }: ExerciseViewProps) {
             </span>
           </div>
           <button
-            onClick={() => router.back()}
+            onClick={handleBack}
             className="flex items-center gap-2 bg-white hover:bg-[var(--neo-yellow)] text-black font-black text-xs uppercase tracking-wider px-4 py-2.5 rounded-xl border-2 border-[var(--border-dark)] shadow-[3px_3px_0px_0px_#000] hover:shadow-[1px_1px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] transition-all cursor-pointer group"
           >
             <span className="text-base transition-transform duration-200 group-hover:-translate-x-1">&larr;</span>

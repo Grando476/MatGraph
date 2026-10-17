@@ -787,7 +787,7 @@ export default function TopicMapView() {
                                       key={a.id}
                                       onClick={() => {
                                         setIsProfileOpen(false);
-                                        router.push(`/exercise/${a.task_group_id}`);
+                                        router.push(`/exercise/${a.task_group_id}?from=/graph`);
                                       }}
                                       style={{
                                         padding: '9px 11px',
