@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { getCurrentUser, authLogout, UserProfile, getApiUrl, getAuthToken } from "@/utils/auth";
+import { getCurrentUser, UserProfile, getApiUrl, getAuthToken } from "@/utils/auth";
 import Logo from "@/components/Logo";
 import Footer from "@/components/Footer";
 
@@ -18,6 +18,8 @@ interface Classroom {
   id: string;
   name: string;
   description?: string;
+  schedule?: string;
+  meet_link?: string;
   join_code: string;
   created_at?: string;
   members_count: number;
@@ -35,11 +37,24 @@ export default function TutorPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [classNameInput, setClassNameInput] = useState("");
   const [classDescInput, setClassDescInput] = useState("");
+  const [classScheduleInput, setClassScheduleInput] = useState("");
+  const [classMeetInput, setClassMeetInput] = useState("");
   const [createError, setCreateError] = useState("");
   const [creating, setCreating] = useState(false);
 
+  // Modal edycji klasy
+  const [editingClass, setEditingClass] = useState<Classroom | null>(null);
+  const [editNameInput, setEditNameInput] = useState("");
+  const [editDescInput, setEditDescInput] = useState("");
+  const [editScheduleInput, setEditScheduleInput] = useState("");
+  const [editMeetInput, setEditMeetInput] = useState("");
+  const [editError, setEditError] = useState("");
+  const [updating, setUpdating] = useState(false);
+
   // Podgląd listy uczniów w klasie
   const [expandedClassId, setExpandedClassId] = useState<string | null>(null);
+  // Odkrywanie linku Meet w danej karcie
+  const [revealedMeetId, setRevealedMeetId] = useState<string | null>(null);
 
   const fetchClasses = async () => {
     try {
@@ -72,11 +87,6 @@ export default function TutorPage() {
     loadData();
   }, [router]);
 
-  const handleLogout = async () => {
-    await authLogout();
-    router.push("/login");
-  };
-
   const handleCreateClass = async (e: React.FormEvent) => {
     e.preventDefault();
     const name = classNameInput.trim();
@@ -98,6 +108,8 @@ export default function TutorPage() {
         body: JSON.stringify({
           name,
           description: classDescInput.trim() || undefined,
+          schedule: classScheduleInput.trim() || undefined,
+          meet_link: classMeetInput.trim() || undefined,
         }),
       });
 
@@ -109,12 +121,66 @@ export default function TutorPage() {
 
       setClassNameInput("");
       setClassDescInput("");
+      setClassScheduleInput("");
+      setClassMeetInput("");
       setIsModalOpen(false);
       await fetchClasses();
     } catch (err: any) {
       setCreateError(err.message || "Błąd połączenia z serwerem.");
     } finally {
       setCreating(false);
+    }
+  };
+
+  const openEditModal = (cls: Classroom) => {
+    setEditingClass(cls);
+    setEditNameInput(cls.name);
+    setEditDescInput(cls.description || "");
+    setEditScheduleInput(cls.schedule || "");
+    setEditMeetInput(cls.meet_link || "");
+    setEditError("");
+  };
+
+  const handleUpdateClass = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingClass) return;
+
+    const name = editNameInput.trim();
+    if (!name) {
+      setEditError("Podaj nazwę klasy.");
+      return;
+    }
+
+    try {
+      setUpdating(true);
+      setEditError("");
+      const token = await getAuthToken();
+      const res = await fetch(`${getApiUrl()}/api/v1/tutor/classes/${editingClass.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          name,
+          description: editDescInput.trim() || undefined,
+          schedule: editScheduleInput.trim() || undefined,
+          meet_link: editMeetInput.trim() || undefined,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        setEditError(data.detail || "Nie udało się zaktualizować klasy.");
+        return;
+      }
+
+      setEditingClass(null);
+      await fetchClasses();
+    } catch (err: any) {
+      setEditError(err.message || "Błąd połączenia z serwerem.");
+    } finally {
+      setUpdating(false);
     }
   };
 
@@ -128,7 +194,7 @@ export default function TutorPage() {
 
   return (
     <div className="min-h-screen bg-[var(--bg-main)] text-[var(--text-main)] flex flex-col justify-between selection:bg-[var(--neo-yellow)]">
-      {/* Header */}
+      {/* Header (Styl z LessonView) */}
       <header className="border-b-2.5 border-[var(--border-dark)] bg-[var(--bg-card)] sticky top-0 z-20">
         <div className="max-w-5xl mx-auto px-6 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -159,7 +225,7 @@ export default function TutorPage() {
               </span>
             </h1>
             <p className="text-xs sm:text-sm text-gray-700 font-semibold mt-1">
-              Zarządzaj swoimi klasami, udostępniaj uczniom kody dołączenia i kontroluj ich postępy.
+              Zarządzaj swoimi klasami, terminami lekcji, linkami do spotkań oraz kodami dołączenia.
             </p>
           </div>
 
@@ -193,7 +259,7 @@ export default function TutorPage() {
             </div>
             <h2 className="text-xl font-black text-black uppercase">Nie masz jeszcze żadnych klas</h2>
             <p className="text-xs sm:text-sm text-gray-600 font-semibold max-w-md mx-auto">
-              Utwórz swoją pierwszą klasę, aby wygenerować unikalny kod, który przekażesz uczniom do dołączenia.
+              Utwórz swoją pierwszą klasę, określ godziny spotkań oraz link do Google Meet, aby wygenerować kod dla uczniów.
             </p>
             <div className="pt-2">
               <button
@@ -211,13 +277,14 @@ export default function TutorPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {classes.map((cls) => {
               const isExpanded = expandedClassId === cls.id;
+              const isMeetRevealed = revealedMeetId === cls.id;
               return (
                 <div
                   key={cls.id}
                   className="bg-white border-3 border-black rounded-2xl p-5 shadow-[5px_5px_0px_0px_#000] flex flex-col justify-between transition-all"
                 >
-                  <div className="space-y-3">
-                    {/* Top Row: Title + Code Badge */}
+                  <div className="space-y-3.5">
+                    {/* Top Row: Title + Edit Button */}
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <h3 className="text-lg font-black text-black leading-snug">
@@ -229,13 +296,77 @@ export default function TutorPage() {
                           </p>
                         )}
                       </div>
+                      <button
+                        onClick={() => openEditModal(cls)}
+                        className="px-2.5 py-1 bg-white hover:bg-[var(--neo-yellow)] border-1.5 border-black rounded-lg text-xs font-black shadow-[1.5px_1.5px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] transition-all cursor-pointer shrink-0"
+                        title="Edytuj klasę, godziny i link do spotkań"
+                      >
+                        ✏️ Edytuj
+                      </button>
+                    </div>
+
+                    {/* Godziny lekcji (Na pierwszym planie) */}
+                    <div className="bg-[var(--neo-yellow)] border-2 border-black rounded-xl p-3 shadow-[2.5px_2.5px_0px_0px_#000] flex items-center gap-2.5">
+                      <span className="text-lg">⏰</span>
+                      <div className="min-w-0">
+                        <div className="text-[10px] font-black uppercase text-black/80 tracking-wider">
+                          Godziny lekcji
+                        </div>
+                        <div className="text-xs font-black text-black truncate">
+                          {cls.schedule || "Brak ustalonego harmonogramu"}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Google Meet Link (Ukryty z opcją podglądu / bezpośredniego dołączenia) */}
+                    <div className="bg-[var(--bg-deep)] border-2 border-black rounded-xl p-3 shadow-[2px_2px_0px_0px_#000] space-y-2">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-base">📹</span>
+                          <span className="text-[11px] font-black uppercase tracking-wider text-black">
+                            Google Meet
+                          </span>
+                        </div>
+                        {cls.meet_link ? (
+                          <button
+                            type="button"
+                            onClick={() => setRevealedMeetId(isMeetRevealed ? null : cls.id)}
+                            className="text-[10px] font-black uppercase px-2 py-0.5 bg-white border border-black rounded shadow-[1px_1px_0px_#000] hover:bg-gray-100 cursor-pointer"
+                          >
+                            {isMeetRevealed ? "Ukryj link" : "Pokaż link"}
+                          </button>
+                        ) : (
+                          <span className="text-[10px] font-bold text-gray-500 italic">
+                            Brak linku
+                          </span>
+                        )}
+                      </div>
+
+                      {cls.meet_link && (
+                        <div>
+                          {isMeetRevealed && (
+                            <div className="p-2 mb-2 bg-white border border-black rounded-lg text-[11px] font-mono font-bold text-blue-700 break-all select-all">
+                              {cls.meet_link}
+                            </div>
+                          )}
+                          <a
+                            href={cls.meet_link.startsWith('http') ? cls.meet_link : `https://${cls.meet_link}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="w-full py-1.5 px-3 bg-white hover:bg-[var(--neo-blue)] text-black border-1.5 border-black rounded-lg font-black text-xs uppercase tracking-wider shadow-[1.5px_1.5px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] transition-all flex items-center justify-center gap-1.5 no-underline"
+                          >
+                            <span>Otwórz Google Meet</span>
+                            <span className="text-xs">↗</span>
+                          </a>
+                        </div>
+                      )}
                     </div>
 
                     {/* Join Code Box */}
                     <div className="bg-[var(--bg-deep)] border-2 border-black rounded-xl p-3 flex items-center justify-between gap-2 shadow-[2px_2px_0px_0px_#000]">
                       <div>
                         <div className="text-[10px] font-black uppercase text-gray-600 tracking-wider">
-                          Kod dołączenia:
+                          Kod dołączenia dla uczniów:
                         </div>
                         <div className="font-mono text-base font-black tracking-widest text-black">
                           {cls.join_code}
@@ -312,7 +443,7 @@ export default function TutorPage() {
         )}
       </main>
 
-      {/* Modal: Tworzenie klasy */}
+      {/* Modal: Tworzenie nowej klasy */}
       {isModalOpen && (
         <div
           className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 p-4"
@@ -322,7 +453,7 @@ export default function TutorPage() {
             }
           }}
         >
-          <div className="bg-white border-3 border-black rounded-2xl max-w-md w-full p-6 sm:p-7 shadow-[8px_8px_0px_0px_#000] relative animate-in fade-in zoom-in-95 duration-150">
+          <div className="bg-white border-3 border-black rounded-2xl max-w-md w-full p-6 sm:p-7 shadow-[8px_8px_0px_0px_#000] relative animate-in fade-in zoom-in-95 duration-150 max-h-[90vh] overflow-y-auto">
             {/* Header */}
             <div className="flex items-center justify-between pb-4 border-b-2 border-black mb-4">
               <div className="flex items-center gap-2.5">
@@ -334,7 +465,7 @@ export default function TutorPage() {
                     Utwórz nową klasę
                   </h2>
                   <p className="text-xs text-gray-600 font-semibold">
-                    Kod dołączenia wygeneruje się automatycznie
+                    Ustal harmonogram, spotkanie i wygeneruj kod
                   </p>
                 </div>
               </div>
@@ -366,13 +497,41 @@ export default function TutorPage() {
 
               <div>
                 <label className="block text-xs font-black uppercase tracking-wider text-black mb-1.5">
+                  Godziny lekcji (Harmonogram)
+                </label>
+                <input
+                  type="text"
+                  value={classScheduleInput}
+                  onChange={(e) => setClassScheduleInput(e.target.value)}
+                  placeholder="np. Wtorki i Czwartki 17:00 – 18:30"
+                  disabled={creating}
+                  className="w-full px-3.5 py-2.5 bg-[var(--bg-deep)] border-2 border-black rounded-xl text-black font-bold placeholder-gray-400 shadow-[2px_2px_0px_0px_#000] focus:shadow-[4px_4px_0px_0px_#000] focus:bg-white focus:outline-none transition-all"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-black uppercase tracking-wider text-black mb-1.5">
+                  Link do Google Meet
+                </label>
+                <input
+                  type="url"
+                  value={classMeetInput}
+                  onChange={(e) => setClassMeetInput(e.target.value)}
+                  placeholder="np. https://meet.google.com/abc-defg-hij"
+                  disabled={creating}
+                  className="w-full px-3.5 py-2.5 bg-[var(--bg-deep)] border-2 border-black rounded-xl text-black font-bold placeholder-gray-400 shadow-[2px_2px_0px_0px_#000] focus:shadow-[4px_4px_0px_0px_#000] focus:bg-white focus:outline-none transition-all"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-black uppercase tracking-wider text-black mb-1.5">
                   Opis (opcjonalnie)
                 </label>
                 <textarea
                   value={classDescInput}
                   onChange={(e) => setClassDescInput(e.target.value)}
-                  placeholder="np. Zajęcia we wtorki i czwartki o 17:00..."
-                  rows={3}
+                  placeholder="np. Przygotowanie do egzaminu maturalnego z matematyki..."
+                  rows={2}
                   disabled={creating}
                   className="w-full px-3.5 py-2.5 bg-[var(--bg-deep)] border-2 border-black rounded-xl text-black font-semibold placeholder-gray-400 shadow-[2px_2px_0px_0px_#000] focus:shadow-[4px_4px_0px_0px_#000] focus:bg-white focus:outline-none transition-all resize-none"
                 />
@@ -399,6 +558,125 @@ export default function TutorPage() {
                   className="flex-1.5 py-2.5 bg-[var(--neo-green)] text-black border-2 border-black rounded-xl font-black text-xs uppercase tracking-wider shadow-[3px_3px_0px_0px_#000] hover:bg-[#72e89f] hover:translate-x-[1px] hover:translate-y-[1px] disabled:opacity-50 disabled:cursor-not-allowed transition-all cursor-pointer"
                 >
                   {creating ? "Tworzenie..." : "Utwórz klasę"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Edycja klasy */}
+      {editingClass && (
+        <div
+          className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 p-4"
+          onClick={(e) => {
+            if (e.target === e.currentTarget && !updating) {
+              setEditingClass(null);
+            }
+          }}
+        >
+          <div className="bg-white border-3 border-black rounded-2xl max-w-md w-full p-6 sm:p-7 shadow-[8px_8px_0px_0px_#000] relative animate-in fade-in zoom-in-95 duration-150 max-h-[90vh] overflow-y-auto">
+            {/* Header */}
+            <div className="flex items-center justify-between pb-4 border-b-2 border-black mb-4">
+              <div className="flex items-center gap-2.5">
+                <div className="w-10 h-10 bg-[var(--neo-yellow)] border-2 border-black rounded-xl flex items-center justify-center text-xl shadow-[2px_2px_0px_0px_#000]">
+                  ✏️
+                </div>
+                <div>
+                  <h2 className="text-lg font-black text-black uppercase tracking-tight">
+                    Edytuj klasę
+                  </h2>
+                  <p className="text-xs text-gray-600 font-semibold">
+                    Zmień nazwę, godziny lekcji lub link do Meet
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => !updating && setEditingClass(null)}
+                className="w-8 h-8 rounded-lg border-2 border-black bg-gray-100 hover:bg-gray-200 font-black text-sm flex items-center justify-center cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Form */}
+            <form onSubmit={handleUpdateClass} className="space-y-4">
+              <div>
+                <label className="block text-xs font-black uppercase tracking-wider text-black mb-1.5">
+                  Nazwa klasy / grupy *
+                </label>
+                <input
+                  type="text"
+                  value={editNameInput}
+                  onChange={(e) => setEditNameInput(e.target.value)}
+                  required
+                  disabled={updating}
+                  className="w-full px-3.5 py-2.5 bg-[var(--bg-deep)] border-2 border-black rounded-xl text-black font-bold placeholder-gray-400 shadow-[2px_2px_0px_0px_#000] focus:shadow-[4px_4px_0px_0px_#000] focus:bg-white focus:outline-none transition-all"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-black uppercase tracking-wider text-black mb-1.5">
+                  Godziny lekcji (Harmonogram)
+                </label>
+                <input
+                  type="text"
+                  value={editScheduleInput}
+                  onChange={(e) => setEditScheduleInput(e.target.value)}
+                  placeholder="np. Wtorki i Czwartki 17:00 – 18:30"
+                  disabled={updating}
+                  className="w-full px-3.5 py-2.5 bg-[var(--bg-deep)] border-2 border-black rounded-xl text-black font-bold placeholder-gray-400 shadow-[2px_2px_0px_0px_#000] focus:shadow-[4px_4px_0px_0px_#000] focus:bg-white focus:outline-none transition-all"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-black uppercase tracking-wider text-black mb-1.5">
+                  Link do Google Meet
+                </label>
+                <input
+                  type="url"
+                  value={editMeetInput}
+                  onChange={(e) => setEditMeetInput(e.target.value)}
+                  placeholder="np. https://meet.google.com/abc-defg-hij"
+                  disabled={updating}
+                  className="w-full px-3.5 py-2.5 bg-[var(--bg-deep)] border-2 border-black rounded-xl text-black font-bold placeholder-gray-400 shadow-[2px_2px_0px_0px_#000] focus:shadow-[4px_4px_0px_0px_#000] focus:bg-white focus:outline-none transition-all"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-black uppercase tracking-wider text-black mb-1.5">
+                  Opis (opcjonalnie)
+                </label>
+                <textarea
+                  value={editDescInput}
+                  onChange={(e) => setEditDescInput(e.target.value)}
+                  rows={2}
+                  disabled={updating}
+                  className="w-full px-3.5 py-2.5 bg-[var(--bg-deep)] border-2 border-black rounded-xl text-black font-semibold placeholder-gray-400 shadow-[2px_2px_0px_0px_#000] focus:shadow-[4px_4px_0px_0px_#000] focus:bg-white focus:outline-none transition-all resize-none"
+                />
+              </div>
+
+              {editError && (
+                <div className="p-3 bg-red-100 border-2 border-red-600 rounded-xl text-xs font-bold text-red-800 text-center">
+                  {editError}
+                </div>
+              )}
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setEditingClass(null)}
+                  disabled={updating}
+                  className="flex-1 py-2.5 bg-white border-2 border-black rounded-xl font-black text-xs uppercase tracking-wider hover:bg-gray-100 shadow-[2px_2px_0px_0px_#000] cursor-pointer"
+                >
+                  Anuluj
+                </button>
+                <button
+                  type="submit"
+                  disabled={updating || !editNameInput.trim()}
+                  className="flex-1.5 py-2.5 bg-[var(--neo-green)] text-black border-2 border-black rounded-xl font-black text-xs uppercase tracking-wider shadow-[3px_3px_0px_0px_#000] hover:bg-[#72e89f] hover:translate-x-[1px] hover:translate-y-[1px] disabled:opacity-50 disabled:cursor-not-allowed transition-all cursor-pointer"
+                >
+                  {updating ? "Zapisywanie..." : "Zapisz zmiany"}
                 </button>
               </div>
             </form>

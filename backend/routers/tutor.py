@@ -17,7 +17,6 @@ def generate_join_code(cur) -> str:
         cur.execute("SELECT 1 FROM public.classes WHERE join_code = %s;", (code,))
         if not cur.fetchone():
             return code
-    # Fallback to DB function if defined
     cur.execute("SELECT public.generate_class_join_code() AS code;")
     row = cur.fetchone()
     return row["code"]
@@ -25,11 +24,19 @@ def generate_join_code(cur) -> str:
 class CreateClassRequest(BaseModel):
     name: str = Field(..., min_length=2, max_length=255)
     description: Optional[str] = Field(None, max_length=1000)
+    schedule: Optional[str] = Field(None, max_length=255) # np. "Wtorki i Czwartki 17:00 - 18:30"
+    meet_link: Optional[str] = Field(None, max_length=500) # np. "https://meet.google.com/abc-defg-hij"
+
+class UpdateClassRequest(BaseModel):
+    name: Optional[str] = Field(None, min_length=2, max_length=255)
+    description: Optional[str] = Field(None, max_length=1000)
+    schedule: Optional[str] = Field(None, max_length=255)
+    meet_link: Optional[str] = Field(None, max_length=500)
 
 @router.get("/classes")
 def get_tutor_classes(current_user: dict = Depends(get_current_user)):
     """
-    Returns all classes created by the logged-in tutor, along with student count and members list.
+    Returns all classes created by the logged-in tutor, along with schedule, meet_link, student count and members list.
     """
     if current_user.get("role") not in ("tutor", "admin"):
         raise HTTPException(
@@ -47,6 +54,8 @@ def get_tutor_classes(current_user: dict = Depends(get_current_user)):
                 c.id,
                 c.name,
                 c.description,
+                c.schedule,
+                c.meet_link,
                 c.join_code,
                 c.created_at,
                 COUNT(cm.id) AS members_count
@@ -63,7 +72,6 @@ def get_tutor_classes(current_user: dict = Depends(get_current_user)):
         result = []
         for cls in classes:
             class_id = cls["id"]
-            # Fetch member details for each class
             cur.execute(
                 """
                 SELECT 
@@ -97,6 +105,8 @@ def get_tutor_classes(current_user: dict = Depends(get_current_user)):
                 "id": str(cls["id"]),
                 "name": cls["name"],
                 "description": cls.get("description"),
+                "schedule": cls.get("schedule"),
+                "meet_link": cls.get("meet_link"),
                 "join_code": cls["join_code"],
                 "created_at": cls["created_at"].isoformat() if cls.get("created_at") else None,
                 "members_count": int(cls["members_count"]),
@@ -115,7 +125,7 @@ def get_tutor_classes(current_user: dict = Depends(get_current_user)):
 @router.post("/classes")
 def create_tutor_class(body: CreateClassRequest, current_user: dict = Depends(get_current_user)):
     """
-    Creates a new classroom with an auto-generated unique join code.
+    Creates a new classroom with schedule, meet_link, and an auto-generated unique join code.
     """
     if current_user.get("role") not in ("tutor", "admin"):
         raise HTTPException(
@@ -126,6 +136,8 @@ def create_tutor_class(body: CreateClassRequest, current_user: dict = Depends(ge
     tutor_id = current_user.get("user_id")
     name = body.name.strip()
     description = body.description.strip() if body.description else None
+    schedule = body.schedule.strip() if body.schedule else None
+    meet_link = body.meet_link.strip() if body.meet_link else None
 
     if not name:
         raise HTTPException(
@@ -140,11 +152,11 @@ def create_tutor_class(body: CreateClassRequest, current_user: dict = Depends(ge
 
         cur.execute(
             """
-            INSERT INTO public.classes (tutor_id, name, description, join_code)
-            VALUES (%s, %s, %s, %s)
-            RETURNING id, name, description, join_code, created_at;
+            INSERT INTO public.classes (tutor_id, name, description, schedule, meet_link, join_code)
+            VALUES (%s, %s, %s, %s, %s, %s)
+            RETURNING id, name, description, schedule, meet_link, join_code, created_at;
             """,
-            (tutor_id, name, description, join_code)
+            (tutor_id, name, description, schedule, meet_link, join_code)
         )
         new_class = cur.fetchone()
         conn.commit()
@@ -156,6 +168,8 @@ def create_tutor_class(body: CreateClassRequest, current_user: dict = Depends(ge
                 "id": str(new_class["id"]),
                 "name": new_class["name"],
                 "description": new_class.get("description"),
+                "schedule": new_class.get("schedule"),
+                "meet_link": new_class.get("meet_link"),
                 "join_code": new_class["join_code"],
                 "created_at": new_class["created_at"].isoformat() if new_class.get("created_at") else None,
                 "members_count": 0,
@@ -167,6 +181,85 @@ def create_tutor_class(body: CreateClassRequest, current_user: dict = Depends(ge
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Błąd podczas tworzenia klasy: {str(e)}"
+        )
+    finally:
+        cur.close()
+        conn.close()
+
+@router.put("/classes/{class_id}")
+def update_tutor_class(class_id: str, body: UpdateClassRequest, current_user: dict = Depends(get_current_user)):
+    """
+    Updates classroom details (name, description, schedule, meet_link).
+    """
+    if current_user.get("role") not in ("tutor", "admin"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Brak uprawnień. Dostęp tylko dla korepetytorów i administratorów."
+        )
+
+    tutor_id = current_user.get("user_id")
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    try:
+        # Verify ownership
+        cur.execute("SELECT id FROM public.classes WHERE id = %s AND tutor_id = %s;", (class_id, tutor_id))
+        cls = cur.fetchone()
+        if not cls:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Klasa nie istnieje lub brak uprawnień.")
+
+        updates = []
+        params = []
+        if body.name is not None:
+            name_val = body.name.strip()
+            if not name_val:
+                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Nazwa klasy nie może być pusta.")
+            updates.append("name = %s")
+            params.append(name_val)
+
+        if body.description is not None:
+            updates.append("description = %s")
+            params.append(body.description.strip() or None)
+
+        if body.schedule is not None:
+            updates.append("schedule = %s")
+            params.append(body.schedule.strip() or None)
+
+        if body.meet_link is not None:
+            updates.append("meet_link = %s")
+            params.append(body.meet_link.strip() or None)
+
+        if not updates:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Brak pól do zaktualizowania.")
+
+        updates.append("updated_at = timezone('utc'::text, now())")
+        query = f"UPDATE public.classes SET {', '.join(updates)} WHERE id = %s RETURNING id, name, description, schedule, meet_link, join_code, created_at;"
+        params.append(class_id)
+
+        cur.execute(query, tuple(params))
+        updated_class = cur.fetchone()
+        conn.commit()
+
+        return {
+            "success": True,
+            "message": "Klasa została pomyślnie zaktualizowana!",
+            "class": {
+                "id": str(updated_class["id"]),
+                "name": updated_class["name"],
+                "description": updated_class.get("description"),
+                "schedule": updated_class.get("schedule"),
+                "meet_link": updated_class.get("meet_link"),
+                "join_code": updated_class["join_code"],
+                "created_at": updated_class["created_at"].isoformat() if updated_class.get("created_at") else None,
+            }
+        }
+    except HTTPException:
+        conn.rollback()
+        raise
+    except Exception as e:
+        conn.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Błąd podczas aktualizacji klasy: {str(e)}"
         )
     finally:
         cur.close()

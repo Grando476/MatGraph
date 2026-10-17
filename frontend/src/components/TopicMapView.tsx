@@ -621,7 +621,7 @@ export default function TopicMapView() {
                           position: 'absolute',
                           top: '52px',
                           right: 0,
-                          width: '290px',
+                          width: '320px',
                           background: '#ffffff',
                           border: '2.5px solid #000000',
                           borderRadius: '14px',
@@ -715,31 +715,93 @@ export default function TopicMapView() {
                                 Nie należysz jeszcze do żadnej klasy.
                               </div>
                             ) : (
-                              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '140px', overflowY: 'auto', paddingRight: '2px' }}>
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '200px', overflowY: 'auto', paddingRight: '2px' }}>
                                 {studentClasses.map((cls) => (
                                   <div
                                     key={cls.id}
                                     style={{
-                                      padding: '7px 9px',
+                                      padding: '9px 11px',
                                       background: '#f8fafc',
                                       border: '1.5px solid #000000',
-                                      borderRadius: '7px',
+                                      borderRadius: '9px',
                                       display: 'flex',
                                       flexDirection: 'column',
-                                      gap: '2px',
+                                      gap: '5px',
                                     }}
                                   >
                                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '4px' }}>
-                                      <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#111827', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                      <span style={{ fontSize: '0.8rem', fontWeight: 800, color: '#111827', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                         {cls.name}
                                       </span>
-                                      <span style={{ fontSize: '0.62rem', fontWeight: 900, background: 'var(--neo-green)', border: '1px solid #000', padding: '1px 4px', borderRadius: '4px', letterSpacing: '0.04em' }}>
+                                      <span style={{ fontSize: '0.62rem', fontWeight: 900, background: 'var(--neo-green)', border: '1px solid #000', padding: '1px 5px', borderRadius: '4px', letterSpacing: '0.04em' }}>
                                         {cls.join_code}
                                       </span>
                                     </div>
-                                    <div style={{ fontSize: '0.66rem', color: '#64748b', fontWeight: 600 }}>
-                                      👨‍🏫 {cls.tutor_name}
+
+                                    {/* Nauczyciel */}
+                                    <div style={{ fontSize: '0.7rem', color: '#374151', fontWeight: 700 }}>
+                                      Nauczyciel: <span style={{ color: '#000000', fontWeight: 800 }}>{cls.tutor_name}</span>
                                     </div>
+
+                                    {/* Godziny lekcji */}
+                                    {cls.schedule && (
+                                      <div
+                                        style={{
+                                          width: '100%',
+                                          minHeight: '28px',
+                                          display: 'flex',
+                                          alignItems: 'center',
+                                          justifyContent: 'center',
+                                          gap: '6px',
+                                          fontSize: '0.68rem',
+                                          fontWeight: 800,
+                                          color: '#000000',
+                                          background: 'var(--neo-yellow)',
+                                          border: '1.5px solid #000000',
+                                          padding: '4px 8px',
+                                          borderRadius: '6px',
+                                          boxShadow: '1.5px 1.5px 0px #000000',
+                                          boxSizing: 'border-box',
+                                          textAlign: 'center',
+                                        }}
+                                      >
+                                        <span>⏰</span>
+                                        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                          {cls.schedule}
+                                        </span>
+                                      </div>
+                                    )}
+
+                                    {/* Link do Google Meet */}
+                                    {cls.meet_link && (
+                                      <a
+                                        href={cls.meet_link.startsWith('http') ? cls.meet_link : `https://${cls.meet_link}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        style={{
+                                          width: '100%',
+                                          minHeight: '28px',
+                                          display: 'flex',
+                                          alignItems: 'center',
+                                          justifyContent: 'center',
+                                          gap: '6px',
+                                          padding: '4px 8px',
+                                          background: '#ffffff',
+                                          color: '#1d4ed8',
+                                          border: '1.5px solid #000000',
+                                          borderRadius: '6px',
+                                          fontWeight: 900,
+                                          fontSize: '0.68rem',
+                                          textDecoration: 'none',
+                                          boxShadow: '1.5px 1.5px 0px #000000',
+                                          boxSizing: 'border-box',
+                                          transition: 'all 0.15s ease',
+                                        }}
+                                      >
+                                        <span>📹 Dołącz do lekcji (Google Meet)</span>
+                                        <span style={{ fontSize: '0.7rem' }}>↗</span>
+                                      </a>
+                                    )}
                                   </div>
                                 ))}
                               </div>
