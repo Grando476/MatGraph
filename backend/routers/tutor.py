@@ -2,7 +2,7 @@ import random
 import string
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import Optional, List
 from psycopg2.extras import RealDictCursor
 from db.session import get_db_connection
 from core.auth import get_current_user
@@ -33,10 +33,15 @@ class UpdateClassRequest(BaseModel):
     schedule: Optional[str] = Field(None, max_length=255)
     meet_link: Optional[str] = Field(None, max_length=500)
 
+class AssignTaskGroupRequest(BaseModel):
+    task_group_id: str
+    due_date: Optional[str] = None
+    note: Optional[str] = None
+
 @router.get("/classes")
 def get_tutor_classes(current_user: dict = Depends(get_current_user)):
     """
-    Returns all classes created by the logged-in tutor, along with schedule, meet_link, student count and members list.
+    Returns all classes created by the logged-in tutor, along with schedule, meet_link, student count, members list, and assigned task groups.
     """
     if current_user.get("role") not in ("tutor", "admin"):
         raise HTTPException(
@@ -72,6 +77,8 @@ def get_tutor_classes(current_user: dict = Depends(get_current_user)):
         result = []
         for cls in classes:
             class_id = cls["id"]
+            
+            # Fetch members
             cur.execute(
                 """
                 SELECT 
@@ -101,6 +108,46 @@ def get_tutor_classes(current_user: dict = Depends(get_current_user)):
                     "joined_at": m["joined_at"].isoformat() if m.get("joined_at") else None
                 })
 
+            # Fetch assignments for this class
+            cur.execute(
+                """
+                SELECT 
+                    ca.id,
+                    ca.task_group_id,
+                    tg.name AS task_group_name,
+                    s.name AS subtopic_name,
+                    t.name AS topic_name,
+                    c_chap.name AS chapter_name,
+                    ca.due_date,
+                    ca.note,
+                    ca.created_at,
+                    (SELECT COUNT(*) FROM public.tasks WHERE task_group_id = tg.id) AS task_count
+                FROM public.class_assignments ca
+                JOIN public.task_groups tg ON ca.task_group_id = tg.id
+                JOIN public.subtopics s ON tg.subtopic_id = s.id
+                JOIN public.topics t ON s.topic_id = t.id
+                JOIN public.chapters c_chap ON t.chapter_id = c_chap.id
+                WHERE ca.class_id = %s
+                ORDER BY ca.created_at DESC;
+                """,
+                (class_id,)
+            )
+            assignments_rows = cur.fetchall()
+            assignment_list = []
+            for a in assignments_rows:
+                assignment_list.append({
+                    "id": str(a["id"]),
+                    "task_group_id": str(a["task_group_id"]),
+                    "task_group_name": a["task_group_name"],
+                    "subtopic_name": a["subtopic_name"],
+                    "topic_name": a["topic_name"],
+                    "chapter_name": a["chapter_name"],
+                    "task_count": a["task_count"],
+                    "due_date": a["due_date"].isoformat() if a.get("due_date") else None,
+                    "note": a.get("note"),
+                    "created_at": a["created_at"].isoformat() if a.get("created_at") else None,
+                })
+
             result.append({
                 "id": str(cls["id"]),
                 "name": cls["name"],
@@ -110,7 +157,8 @@ def get_tutor_classes(current_user: dict = Depends(get_current_user)):
                 "join_code": cls["join_code"],
                 "created_at": cls["created_at"].isoformat() if cls.get("created_at") else None,
                 "members_count": int(cls["members_count"]),
-                "students": student_list
+                "students": student_list,
+                "assignments": assignment_list
             })
 
         return {"classes": result, "total": len(result)}
@@ -173,7 +221,8 @@ def create_tutor_class(body: CreateClassRequest, current_user: dict = Depends(ge
                 "join_code": new_class["join_code"],
                 "created_at": new_class["created_at"].isoformat() if new_class.get("created_at") else None,
                 "members_count": 0,
-                "students": []
+                "students": [],
+                "assignments": []
             }
         }
     except Exception as e:
@@ -201,7 +250,6 @@ def update_tutor_class(class_id: str, body: UpdateClassRequest, current_user: di
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
     try:
-        # Verify ownership
         cur.execute("SELECT id FROM public.classes WHERE id = %s AND tutor_id = %s;", (class_id, tutor_id))
         cls = cur.fetchone()
         if not cls:
@@ -261,6 +309,163 @@ def update_tutor_class(class_id: str, body: UpdateClassRequest, current_user: di
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Błąd podczas aktualizacji klasy: {str(e)}"
         )
+    finally:
+        cur.close()
+        conn.close()
+
+@router.get("/task-groups")
+def get_available_task_groups(current_user: dict = Depends(get_current_user)):
+    """
+    Returns all task groups grouped with chapter, topic and subtopic context for assigning.
+    """
+    if current_user.get("role") not in ("tutor", "admin"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Brak uprawnień."
+        )
+
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    try:
+        cur.execute(
+            """
+            SELECT 
+                tg.id,
+                tg.name AS name,
+                s.id AS subtopic_id,
+                s.name AS subtopic_name,
+                t.id AS topic_id,
+                t.name AS topic_name,
+                c.id AS chapter_id,
+                c.name AS chapter_name,
+                (SELECT COUNT(*) FROM public.tasks WHERE task_group_id = tg.id) AS task_count
+            FROM public.task_groups tg
+            JOIN public.subtopics s ON tg.subtopic_id = s.id
+            JOIN public.topics t ON s.topic_id = t.id
+            JOIN public.chapters c ON t.chapter_id = c.id
+            ORDER BY c.name, t.name, s.sort_order, tg.name;
+            """
+        )
+        rows = cur.fetchall()
+        result = [
+            {
+                "id": str(r["id"]),
+                "name": r["name"],
+                "subtopic_id": str(r["subtopic_id"]),
+                "subtopic_name": r["subtopic_name"],
+                "topic_id": str(r["topic_id"]),
+                "topic_name": r["topic_name"],
+                "chapter_id": str(r["chapter_id"]),
+                "chapter_name": r["chapter_name"],
+                "task_count": r["task_count"]
+            }
+            for r in rows
+        ]
+        return {"task_groups": result, "total": len(result)}
+    finally:
+        cur.close()
+        conn.close()
+
+@router.post("/classes/{class_id}/assignments")
+def assign_task_group_to_class(class_id: str, body: AssignTaskGroupRequest, current_user: dict = Depends(get_current_user)):
+    """
+    Assigns a task group to an entire class.
+    """
+    if current_user.get("role") not in ("tutor", "admin"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Brak uprawnień. Dostęp tylko dla korepetytorów i administratorów."
+        )
+
+    tutor_id = current_user.get("user_id")
+    task_group_id = body.task_group_id.strip()
+    note = body.note.strip() if body.note else None
+    due_date = body.due_date.strip() if body.due_date else None
+
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    try:
+        # Check that class belongs to tutor
+        cur.execute("SELECT id, name FROM public.classes WHERE id = %s AND tutor_id = %s;", (class_id, tutor_id))
+        cls = cur.fetchone()
+        if not cls:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Klasa nie istnieje lub brak uprawnień.")
+
+        # Check task group exists
+        cur.execute("SELECT id, name FROM public.task_groups WHERE id = %s;", (task_group_id,))
+        tg = cur.fetchone()
+        if not tg:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Nie znaleziono grupy zadań.")
+
+        # Check if already assigned
+        cur.execute("SELECT id FROM public.class_assignments WHERE class_id = %s AND task_group_id = %s;", (class_id, task_group_id))
+        if cur.fetchone():
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Ta grupa zadań jest już przypisana do tej klasy.")
+
+        cur.execute(
+            """
+            INSERT INTO public.class_assignments (class_id, task_group_id, due_date, note)
+            VALUES (%s, %s, %s, %s)
+            RETURNING id, created_at;
+            """,
+            (class_id, task_group_id, due_date, note)
+        )
+        new_assignment = cur.fetchone()
+        conn.commit()
+
+        return {
+            "success": True,
+            "message": f"Pomyślnie przypisano grupę zadań '{tg['name']}' do klasy '{cls['name']}'!",
+            "assignment": {
+                "id": str(new_assignment["id"]),
+                "class_id": class_id,
+                "task_group_id": task_group_id,
+                "task_group_name": tg["name"],
+                "due_date": due_date,
+                "note": note,
+                "created_at": new_assignment["created_at"].isoformat() if new_assignment.get("created_at") else None
+            }
+        }
+    except HTTPException:
+        conn.rollback()
+        raise
+    except Exception as e:
+        conn.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        cur.close()
+        conn.close()
+
+@router.delete("/assignments/{assignment_id}")
+def delete_assignment(assignment_id: str, current_user: dict = Depends(get_current_user)):
+    """
+    Deletes an assigned task group from a class.
+    """
+    if current_user.get("role") not in ("tutor", "admin"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Brak uprawnień."
+        )
+
+    tutor_id = current_user.get("user_id")
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    try:
+        cur.execute(
+            """
+            SELECT ca.id 
+            FROM public.class_assignments ca
+            JOIN public.classes c ON ca.class_id = c.id
+            WHERE ca.id = %s AND c.tutor_id = %s;
+            """,
+            (assignment_id, tutor_id)
+        )
+        if not cur.fetchone():
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Przypisanie nie istnieje lub brak uprawnień.")
+
+        cur.execute("DELETE FROM public.class_assignments WHERE id = %s;", (assignment_id,))
+        conn.commit()
+        return {"success": True, "message": "Pomyślnie usunięto zadanie z klasy."}
     finally:
         cur.close()
         conn.close()

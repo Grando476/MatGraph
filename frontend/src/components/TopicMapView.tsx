@@ -163,6 +163,10 @@ export default function TopicMapView() {
   const [joinSuccess, setJoinSuccess] = useState("");
   const [joiningClass, setJoiningClass] = useState(false);
 
+  // Zadania do zrobienia dla studenta
+  const [studentAssignments, setStudentAssignments] = useState<any[]>([]);
+  const [loadingAssignments, setLoadingAssignments] = useState(false);
+
   const fetchStudentClasses = useCallback(async () => {
     try {
       setLoadingClasses(true);
@@ -180,6 +184,43 @@ export default function TopicMapView() {
       setLoadingClasses(false);
     }
   }, []);
+
+  const fetchStudentAssignments = useCallback(async () => {
+    try {
+      setLoadingAssignments(true);
+      const token = await getAuthToken();
+      const res = await fetch(`${getApiUrl()}/api/v1/student/assignments`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setStudentAssignments(data.assignments || []);
+      }
+    } catch (err) {
+      console.error("Błąd pobierania zadań studenta:", err);
+    } finally {
+      setLoadingAssignments(false);
+    }
+  }, []);
+
+  const handleToggleAssignmentComplete = async (assignmentId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      const token = await getAuthToken();
+      const res = await fetch(`${getApiUrl()}/api/v1/student/assignments/${assignmentId}/toggle-complete`, {
+        method: "POST",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setStudentAssignments((prev) =>
+          prev.map((a) => (a.id === assignmentId ? { ...a, is_completed: data.is_completed } : a))
+        );
+      }
+    } catch (err) {
+      console.error("Błąd oznaczania statusu zadania:", err);
+    }
+  };
 
   const handleJoinClass = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -213,6 +254,7 @@ export default function TopicMapView() {
       setJoinSuccess(data.message || "Pomyślnie dołączono do klasy!");
       setJoinCodeInput("");
       await fetchStudentClasses();
+      await fetchStudentAssignments();
       setTimeout(() => {
         setIsJoinModalOpen(false);
         setJoinSuccess("");
@@ -254,6 +296,7 @@ export default function TopicMapView() {
           setCurrentUser(u);
           if (u && (u.role === 'student' || !u.role)) {
             fetchStudentClasses();
+            fetchStudentAssignments();
           }
         }
       } catch (err) {
@@ -264,7 +307,7 @@ export default function TopicMapView() {
     return () => {
       isMounted = false;
     };
-  }, [fetchStudentClasses]);
+  }, [fetchStudentClasses, fetchStudentAssignments]);
 
   useEffect(() => {
     if (currentUser?.role !== 'admin') {
@@ -587,6 +630,7 @@ export default function TopicMapView() {
                       onClick={() => setIsProfileOpen(!isProfileOpen)}
                       title="Profil użytkownika"
                       style={{
+                        position: 'relative',
                         width: '44px',
                         height: '44px',
                         borderRadius: '50%',
@@ -613,6 +657,32 @@ export default function TopicMapView() {
                         <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
                         <circle cx="12" cy="7" r="4" />
                       </svg>
+
+                      {/* Notification badge for pending assignments */}
+                      {studentAssignments.filter((a) => !a.is_completed).length > 0 && (
+                        <span
+                          style={{
+                            position: 'absolute',
+                            top: '-4px',
+                            right: '-4px',
+                            background: 'var(--neo-pink)',
+                            color: '#000000',
+                            border: '2px solid #000000',
+                            borderRadius: '50%',
+                            minWidth: '20px',
+                            height: '20px',
+                            padding: '0 4px',
+                            fontSize: '0.68rem',
+                            fontWeight: 900,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            boxShadow: '1.5px 1.5px 0px #000',
+                          }}
+                        >
+                          {studentAssignments.filter((a) => !a.is_completed).length}
+                        </span>
+                      )}
                     </button>
 
                     {isProfileOpen && (
@@ -621,7 +691,9 @@ export default function TopicMapView() {
                           position: 'absolute',
                           top: '52px',
                           right: 0,
-                          width: '320px',
+                          width: '340px',
+                          maxHeight: '82vh',
+                          overflowY: 'auto',
                           background: '#ffffff',
                           border: '2.5px solid #000000',
                           borderRadius: '14px',
@@ -661,6 +733,165 @@ export default function TopicMapView() {
                             {currentUser.email}
                           </span>
                         </div>
+
+                        {/* Student Assignments Section: Zadania do zrobienia */}
+                        {currentUser.role !== 'tutor' && (
+                          <div style={{ paddingBottom: '10px', borderBottom: '2px solid #000000', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                <span style={{ fontSize: '0.74rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.04em', color: '#111827' }}>
+                                  Zadania do zrobienia
+                                </span>
+                                <span
+                                  style={{
+                                    fontSize: '0.62rem',
+                                    fontWeight: 900,
+                                    background: studentAssignments.filter((a) => !a.is_completed).length > 0 ? 'var(--neo-pink)' : '#e5e7eb',
+                                    color: '#000000',
+                                    border: '1.2px solid #000',
+                                    padding: '1px 5px',
+                                    borderRadius: '4px',
+                                    boxShadow: '1px 1px 0px #000',
+                                  }}
+                                >
+                                  {studentAssignments.filter((a) => !a.is_completed).length}
+                                </span>
+                              </div>
+                            </div>
+
+                            {loadingAssignments ? (
+                              <div style={{ fontSize: '0.72rem', color: '#6b7280', fontStyle: 'italic', padding: '4px 0' }}>
+                                Wczytywanie zadań...
+                              </div>
+                            ) : studentAssignments.length === 0 ? (
+                              <div
+                                style={{
+                                  padding: '8px 10px',
+                                  background: 'var(--bg-deep)',
+                                  border: '1.5px dashed #9ca3af',
+                                  borderRadius: '8px',
+                                  fontSize: '0.72rem',
+                                  color: '#4b5563',
+                                  textAlign: 'center',
+                                  fontWeight: 600,
+                                }}
+                              >
+                                Brak przydzielonych zadań ✨
+                              </div>
+                            ) : (
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '190px', overflowY: 'auto', paddingRight: '2px' }}>
+                                {studentAssignments.map((a) => {
+                                  const isDone = a.is_completed;
+                                  return (
+                                    <div
+                                      key={a.id}
+                                      onClick={() => {
+                                        setIsProfileOpen(false);
+                                        router.push(`/exercise/${a.task_group_id}`);
+                                      }}
+                                      style={{
+                                        padding: '9px 11px',
+                                        background: isDone ? '#f0fdf4' : '#ffffff',
+                                        border: '1.8px solid #000000',
+                                        borderRadius: '9px',
+                                        cursor: 'pointer',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        gap: '4px',
+                                        boxShadow: '2.5px 2.5px 0px 0px #000000',
+                                        transition: 'all 0.15s ease',
+                                        opacity: isDone ? 0.75 : 1,
+                                      }}
+                                      onMouseEnter={(e: any) => {
+                                        e.currentTarget.style.transform = 'translate(-1px, -1px)';
+                                        e.currentTarget.style.boxShadow = '3.5px 3.5px 0px 0px #000000';
+                                      }}
+                                      onMouseLeave={(e: any) => {
+                                        e.currentTarget.style.transform = 'none';
+                                        e.currentTarget.style.boxShadow = '2.5px 2.5px 0px 0px #000000';
+                                      }}
+                                    >
+                                      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '6px' }}>
+                                        <div style={{ minWidth: 0 }}>
+                                          <div style={{ fontSize: '0.78rem', fontWeight: 900, color: '#000000', lineHeight: 1.25 }}>
+                                            {a.task_group_name}
+                                          </div>
+                                          <div style={{ fontSize: '0.64rem', color: '#4b5563', fontWeight: 700, marginTop: '2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                            {a.topic_name} {a.subtopic_name ? `- ${a.subtopic_name}` : ''}
+                                          </div>
+                                        </div>
+                                        <button
+                                          type="button"
+                                          onClick={(e) => handleToggleAssignmentComplete(a.id, e)}
+                                          title={isDone ? "Oznacz jako niezrobione" : "Oznacz jako zrobione"}
+                                          style={{
+                                            width: '20px',
+                                            height: '20px',
+                                            borderRadius: '5px',
+                                            border: '1.5px solid #000',
+                                            background: isDone ? 'var(--neo-green)' : '#fff',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            fontSize: '0.72rem',
+                                            fontWeight: 900,
+                                            cursor: 'pointer',
+                                            flexShrink: 0,
+                                            boxShadow: '1px 1px 0px #000',
+                                          }}
+                                        >
+                                          {isDone ? '✓' : ''}
+                                        </button>
+                                      </div>
+
+                                      {a.note && (
+                                        <div
+                                          style={{
+                                            fontSize: '0.65rem',
+                                            color: '#1f2937',
+                                            background: 'var(--bg-deep)',
+                                            padding: '3px 6px',
+                                            borderRadius: '5px',
+                                            fontStyle: 'italic',
+                                            borderLeft: '2.5px solid var(--neo-yellow)',
+                                          }}
+                                        >
+                                          💬 {a.note}
+                                        </div>
+                                      )}
+
+                                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '2px', fontSize: '0.64rem', color: '#4b5563', fontWeight: 700 }}>
+                                        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                          🏫 {a.class_name}
+                                        </span>
+                                        <span
+                                          style={{
+                                            background: isDone ? 'var(--neo-green)' : 'var(--neo-yellow)',
+                                            border: '1px solid #000',
+                                            padding: '1px 5px',
+                                            borderRadius: '4px',
+                                            fontWeight: 900,
+                                            color: '#000',
+                                            flexShrink: 0,
+                                            letterSpacing: '0.02em',
+                                          }}
+                                        >
+                                          {a.task_count} {a.task_count === 1 ? 'zadanie' : a.task_count < 5 ? 'zadania' : 'zadań'} &rarr;
+                                        </span>
+                                      </div>
+
+                                      {a.due_date && (
+                                        <div style={{ fontSize: '0.62rem', color: '#b91c1c', fontWeight: 800 }}>
+                                          ⏰ Termin: {new Date(a.due_date).toLocaleDateString('pl-PL')}
+                                        </div>
+                                      )}
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            )}
+                          </div>
+                        )}
 
                         {/* Student Classes Section (Only for student or unassigned role) */}
                         {currentUser.role !== 'tutor' && (

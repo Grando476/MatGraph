@@ -189,3 +189,127 @@ def join_class(body: JoinClassRequest, current_user: dict = Depends(get_current_
     finally:
         cur.close()
         conn.close()
+
+@router.get("/assignments")
+def get_student_assignments(current_user: dict = Depends(get_current_user)):
+    """
+    Pobiera listę grup zadań zadanych klasom, do których należy uczeń.
+    """
+    user_id = current_user.get("user_id")
+    if not user_id:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Wymagane uwierzytelnienie."
+        )
+
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    try:
+        cur.execute(
+            """
+            SELECT 
+                ca.id,
+                ca.class_id,
+                c.name AS class_name,
+                ca.task_group_id,
+                tg.name AS task_group_name,
+                s.name AS subtopic_name,
+                t.name AS topic_name,
+                ch.name AS chapter_name,
+                ca.due_date,
+                ca.note,
+                ca.created_at,
+                p.first_name AS tutor_first_name,
+                p.last_name AS tutor_last_name,
+                u.email AS tutor_email,
+                (SELECT COUNT(*) FROM public.tasks WHERE task_group_id = tg.id) AS task_count,
+                EXISTS(SELECT 1 FROM public.assignment_completions ac WHERE ac.assignment_id = ca.id AND ac.student_id = %s) AS is_completed
+            FROM public.class_assignments ca
+            JOIN public.classes c ON ca.class_id = c.id
+            JOIN public.class_members cm ON c.id = cm.class_id
+            JOIN public.task_groups tg ON ca.task_group_id = tg.id
+            JOIN public.subtopics s ON tg.subtopic_id = s.id
+            JOIN public.topics t ON s.topic_id = t.id
+            JOIN public.chapters ch ON t.chapter_id = ch.id
+            JOIN public.profiles p ON c.tutor_id = p.id
+            LEFT JOIN auth.users u ON p.id = u.id
+            WHERE cm.student_id = %s
+            ORDER BY ca.created_at DESC;
+            """,
+            (user_id, user_id)
+        )
+        rows = cur.fetchall()
+
+        result = []
+        for r in rows:
+            tutor_first = r.get("tutor_first_name") or ""
+            tutor_last = r.get("tutor_last_name") or ""
+            tutor_name = f"{tutor_first} {tutor_last}".strip() or r.get("tutor_email") or "Korepetytor"
+
+            result.append({
+                "id": str(r["id"]),
+                "class_id": str(r["class_id"]),
+                "class_name": r["class_name"],
+                "task_group_id": str(r["task_group_id"]),
+                "task_group_name": r["task_group_name"],
+                "subtopic_name": r["subtopic_name"],
+                "topic_name": r["topic_name"],
+                "chapter_name": r["chapter_name"],
+                "task_count": r["task_count"],
+                "due_date": r["due_date"].isoformat() if r.get("due_date") else None,
+                "note": r.get("note"),
+                "tutor_name": tutor_name,
+                "is_completed": bool(r.get("is_completed")),
+                "created_at": r["created_at"].isoformat() if r.get("created_at") else None,
+            })
+
+        return {"assignments": result, "total": len(result)}
+    except Exception as e:
+        if "relation \"public.class_assignments\" does not exist" in str(e):
+            return {"assignments": [], "total": 0}
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        cur.close()
+        conn.close()
+
+@router.post("/assignments/{assignment_id}/toggle-complete")
+def toggle_assignment_completion(assignment_id: str, current_user: dict = Depends(get_current_user)):
+    """
+    Przełącza stan ukończenia zadania domowego przez studenta.
+    """
+    user_id = current_user.get("user_id")
+    if not user_id:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Wymagane uwierzytelnienie."
+        )
+
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    try:
+        cur.execute(
+            "SELECT id FROM public.assignment_completions WHERE assignment_id = %s AND student_id = %s;",
+            (assignment_id, user_id)
+        )
+        existing = cur.fetchone()
+        if existing:
+            cur.execute(
+                "DELETE FROM public.assignment_completions WHERE assignment_id = %s AND student_id = %s;",
+                (assignment_id, user_id)
+            )
+            conn.commit()
+            return {"is_completed": False}
+        else:
+            cur.execute(
+                "INSERT INTO public.assignment_completions (assignment_id, student_id) VALUES (%s, %s);",
+                (assignment_id, user_id)
+            )
+            conn.commit()
+            return {"is_completed": True}
+    except Exception as e:
+        conn.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        cur.close()
+        conn.close()
+
