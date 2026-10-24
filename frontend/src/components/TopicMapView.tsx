@@ -137,6 +137,24 @@ const calculateExtent = (nodeList: Node[]): CoordinateExtent | undefined => {
   ];
 };
 
+const getInitialNodeId = (): string | null => {
+  if (typeof window === "undefined") return null;
+  const urlParams = new URLSearchParams(window.location.search);
+  const paramNode = urlParams.get("node");
+  if (paramNode) return paramNode;
+  return sessionStorage.getItem("graph_selected_node_id");
+};
+
+const getInitialZoom = (): number | null => {
+  if (typeof window === "undefined") return null;
+  const saved = sessionStorage.getItem("graph_zoom");
+  if (saved) {
+    const val = parseFloat(saved);
+    if (!isNaN(val) && val > 0) return val;
+  }
+  return null;
+};
+
 export default function TopicMapView() {
   const router = useRouter();
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
@@ -153,6 +171,8 @@ export default function TopicMapView() {
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
+  const restoredNodeIdRef = useRef<string | null>(null);
+  const hasRestoredViewportRef = useRef(false);
 
   // Klasy studenta
   const [studentClasses, setStudentClasses] = useState<any[]>([]);
@@ -330,6 +350,10 @@ export default function TopicMapView() {
   }, [isProfileOpen]);
 
   const handleLogout = async () => {
+    if (typeof window !== "undefined") {
+      sessionStorage.removeItem("graph_selected_node_id");
+      sessionStorage.removeItem("graph_zoom");
+    }
     await authLogout();
     setCurrentUser(null);
     setCanMoveNodes(false);
@@ -349,6 +373,25 @@ export default function TopicMapView() {
     onNodesChange(changes);
   }, [canDragNodes, onNodesChange]);
 
+  const fetchNodeLessons = useCallback(async (nodeId: string) => {
+    setSidebarLessons([]);
+    setLoadingLessons(true);
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+      const res = await fetch(`${apiUrl}/api/v1/nodes/${nodeId}/lessons`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.lessons) {
+          setSidebarLessons(data.lessons);
+        }
+      }
+    } catch (err) {
+      console.error("Error fetching lessons:", err);
+    } finally {
+      setLoadingLessons(false);
+    }
+  }, []);
+
   useEffect(() => {
     const fetchNodes = async () => {
       try {
@@ -358,6 +401,8 @@ export default function TopicMapView() {
           const data = await res.json();
           if (!data.nodes || !data.edges) return;
 
+          const initialNodeId = getInitialNodeId();
+
           const rawNodes: Node[] = data.nodes.map((n: any) => ({
             id: n.id,
             type: 'cyber',
@@ -365,6 +410,7 @@ export default function TopicMapView() {
             sourcePosition: Position.Top,
             position: { x: n.ui_x || 0, y: n.ui_y || 0 },
             data: { label: n.name, subtasksCount: n.subtasks_count },
+            selected: initialNodeId ? n.id === initialNodeId : false,
           }));
 
           const rawEdges: Edge[] = data.edges.map((e: any, idx: number) => ({
@@ -382,6 +428,20 @@ export default function TopicMapView() {
           setNodes(rawNodes);
           setEdges(rawEdges);
           setTranslateExtent(calculateExtent(rawNodes));
+
+          if (initialNodeId) {
+            const matchedNode = rawNodes.find((n) => n.id === initialNodeId);
+            if (matchedNode) {
+              setSelectedNode(matchedNode);
+              restoredNodeIdRef.current = initialNodeId;
+              fetchNodeLessons(initialNodeId);
+            } else {
+              if (typeof window !== "undefined") {
+                sessionStorage.removeItem("graph_selected_node_id");
+                sessionStorage.removeItem("graph_zoom");
+              }
+            }
+          }
         }
       } catch (err) {
         console.error("Error fetching nodes:", err);
@@ -390,35 +450,76 @@ export default function TopicMapView() {
       }
     };
     fetchNodes();
-  }, [setNodes, setEdges]);
+  }, [setNodes, setEdges, fetchNodeLessons]);
+
+  useEffect(() => {
+    if (
+      rfInstance &&
+      selectedNode &&
+      restoredNodeIdRef.current === selectedNode.id &&
+      !hasRestoredViewportRef.current
+    ) {
+      hasRestoredViewportRef.current = true;
+      const initialZoom = getInitialZoom() || 1.0;
+      const centerNode = () => {
+        rfInstance.setCenter(
+          selectedNode.position.x + NODE_WIDTH / 2,
+          selectedNode.position.y + NODE_HEIGHT / 2,
+          { zoom: initialZoom, duration: 0 }
+        );
+      };
+
+      centerNode();
+      requestAnimationFrame(centerNode);
+      const t1 = setTimeout(centerNode, 50);
+      const t2 = setTimeout(centerNode, 150);
+      return () => {
+        clearTimeout(t1);
+        clearTimeout(t2);
+      };
+    }
+  }, [rfInstance, selectedNode]);
 
   const onNodeClick = useCallback(async (event: React.MouseEvent, node: Node) => {
     setSelectedNode(node);
+    restoredNodeIdRef.current = node.id;
+    setNodes((prevNodes) =>
+      prevNodes.map((n) => ({
+        ...n,
+        selected: n.id === node.id,
+      }))
+    );
+
+    const currentZoom = rfInstance?.getZoom ? rfInstance.getZoom() : 1.0;
+    const targetZoom = Math.max(currentZoom, 1.0);
     if (rfInstance) {
-      const currentZoom = rfInstance.getZoom ? rfInstance.getZoom() : 1.0;
-      const targetZoom = Math.max(currentZoom, 1.0);
       rfInstance.setCenter(node.position.x + NODE_WIDTH / 2, node.position.y + NODE_HEIGHT / 2, {
         zoom: targetZoom,
         duration: 600,
       });
     }
-    setSidebarLessons([]);
-    setLoadingLessons(true);
-    try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
-      const res = await fetch(`${apiUrl}/api/v1/nodes/${node.id}/lessons`);
-      if (res.ok) {
-        const data = await res.json();
-        if (data.lessons) {
-          setSidebarLessons(data.lessons);
-        }
-      }
-    } catch (err) {
-      console.error("Error fetching lessons:", err);
-    } finally {
-      setLoadingLessons(false);
+
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem("graph_selected_node_id", node.id);
+      sessionStorage.setItem("graph_zoom", String(targetZoom));
+      window.history.replaceState(null, "", `/graph?node=${node.id}`);
     }
-  }, [rfInstance]);
+
+    fetchNodeLessons(node.id);
+  }, [rfInstance, fetchNodeLessons, setNodes]);
+
+  const onPaneClick = useCallback(() => {
+    if (selectedNode) {
+      setSelectedNode(null);
+      restoredNodeIdRef.current = null;
+      setNodes((prev) => prev.map((n) => ({ ...n, selected: false })));
+      if (typeof window !== "undefined") {
+        sessionStorage.removeItem("graph_selected_node_id");
+        sessionStorage.removeItem("graph_zoom");
+        window.history.replaceState(null, "", "/graph");
+      }
+    }
+  }, [selectedNode, setNodes]);
 
   const saveLayout = async () => {
     setSavingLayout(true);
@@ -1208,6 +1309,7 @@ export default function TopicMapView() {
               onNodesChange={handleNodesChange}
               onEdgesChange={onEdgesChange}
               onNodeClick={onNodeClick}
+              onPaneClick={onPaneClick}
               nodeTypes={nodeTypes}
               nodesDraggable={canDragNodes}
               nodesConnectable={false}
@@ -1221,9 +1323,14 @@ export default function TopicMapView() {
               maxZoom={1.3}
               translateExtent={translateExtent}
               nodeExtent={translateExtent}
-              fitView
+              fitView={!restoredNodeIdRef.current}
               fitViewOptions={{ minZoom: 0.65, maxZoom: 1.3, padding: 0.2 }}
               onInit={setRfInstance}
+              onMoveEnd={(_event, viewport) => {
+                if (typeof window !== "undefined" && selectedNode) {
+                  sessionStorage.setItem("graph_zoom", String(viewport.zoom));
+                }
+              }}
               proOptions={{ hideAttribution: true }}
             >
               <Background color="#000000" gap={26} size={1.8} variant={BackgroundVariant.Dots} style={{ opacity: 0.2 }} />
@@ -1275,7 +1382,13 @@ export default function TopicMapView() {
             <button
               onClick={() => {
                 setSelectedNode(null);
+                restoredNodeIdRef.current = null;
                 setNodes((prev) => prev.map((n) => ({ ...n, selected: false })));
+                if (typeof window !== "undefined") {
+                  sessionStorage.removeItem("graph_selected_node_id");
+                  sessionStorage.removeItem("graph_zoom");
+                  window.history.replaceState(null, "", "/graph");
+                }
               }}
               aria-label="Zamknij panel"
               style={{
@@ -1340,7 +1453,14 @@ export default function TopicMapView() {
                         background: '#ffffff',
                         boxShadow: '4px 4px 0px 0px #000000',
                       }}
-                      onClick={() => router.push(`/lesson/${lesson.id}`)}
+                      onClick={() => {
+                        if (typeof window !== "undefined" && selectedNode) {
+                          sessionStorage.setItem("graph_selected_node_id", selectedNode.id);
+                          const currentZoom = rfInstance?.getZoom ? rfInstance.getZoom() : 1.0;
+                          sessionStorage.setItem("graph_zoom", String(currentZoom));
+                        }
+                        router.push(`/lesson/${lesson.id}`);
+                      }}
                       onMouseEnter={(e: any) => {
                         e.currentTarget.style.background = 'var(--neo-yellow)';
                         e.currentTarget.style.transform = 'translate(2px, 2px)';

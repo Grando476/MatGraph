@@ -3,7 +3,7 @@
 import Link from "next/link";
 import 'katex/dist/katex.min.css';
 import { BlockMath } from 'react-katex';
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { FileText, Download, ExternalLink, Eye, EyeOff, AlertCircle, Loader2, Maximize2, Minimize2 } from "lucide-react";
 import Footer from "@/components/Footer";
 import Logo from "@/components/Logo";
@@ -27,7 +27,7 @@ export default function LessonView({ lessonId }: LessonViewProps) {
   const [isPdfExpanded, setIsPdfExpanded] = useState(false);
   const [downloading, setDownloading] = useState(false);
 
-  const fetchLesson = async () => {
+  const fetchLesson = useCallback(async () => {
     try {
 
       const userToken = await getAuthToken();
@@ -54,12 +54,12 @@ export default function LessonView({ lessonId }: LessonViewProps) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [lessonId]);
 
 
   useEffect(() => {
     fetchLesson();
-  }, [lessonId]);
+  }, [fetchLesson]);
 
   const refreshPdfUrl = async () => {
     if (!lessonId) return;
@@ -122,13 +122,15 @@ export default function LessonView({ lessonId }: LessonViewProps) {
     );
   }
 
+  const backToGraphUrl = lesson?.topic_id ? `/graph?node=${lesson.topic_id}` : "/graph";
+
   if (error || !lesson) {
     return (
       <div className="min-h-screen bg-[var(--bg-main)] text-[var(--text-main)] p-8 flex flex-col justify-center items-center">
         <div className="bg-white border-3 border-[var(--border-dark)] p-8 rounded-2xl shadow-[6px_6px_0px_0px_#000] text-center max-w-md">
           <p className="text-base font-black text-red-600 mb-4 uppercase">Błąd: {error || "Nie znaleziono lekcji"}</p>
           <Link
-            href="/graph"
+            href={backToGraphUrl}
             className="inline-flex items-center gap-2 bg-[var(--neo-yellow)] text-black font-black text-xs uppercase px-5 py-3 rounded-xl border-2 border-black shadow-[3px_3px_0px_0px_#000] hover:shadow-[1px_1px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px]"
           >
             &larr; Wróć do Mapy
@@ -144,13 +146,13 @@ export default function LessonView({ lessonId }: LessonViewProps) {
       <header className="border-b-2.5 border-[var(--border-dark)] bg-[var(--bg-card)] sticky top-0 z-20">
         <div className="max-w-5xl mx-auto px-6 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Logo size="md" href="/graph" />
+            <Logo size="md" href={backToGraphUrl} />
             <span className="hidden sm:inline-block bg-[var(--neo-yellow)] text-black border-2 border-black rounded-md px-2.5 py-0.5 font-black text-xs uppercase tracking-wider shadow-[2px_2px_0px_0px_#000]">
               Lekcja Teoretyczna
             </span>
           </div>
           <Link
-            href="/graph"
+            href={backToGraphUrl}
             className="flex items-center gap-2 bg-white hover:bg-[var(--neo-yellow)] text-black font-black text-xs uppercase tracking-wider px-4 py-2.5 rounded-xl border-2 border-[var(--border-dark)] shadow-[3px_3px_0px_0px_#000] hover:shadow-[1px_1px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] transition-all cursor-pointer group"
           >
             <span className="text-base transition-transform duration-200 group-hover:-translate-x-1">&larr;</span>
