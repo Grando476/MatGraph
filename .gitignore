@@ -38,3 +38,6 @@ venv/
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+#
+8and9chap.docx
