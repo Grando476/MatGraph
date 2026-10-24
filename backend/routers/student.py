@@ -223,7 +223,12 @@ def get_student_assignments(current_user: dict = Depends(get_current_user)):
                 p.last_name AS tutor_last_name,
                 u.email AS tutor_email,
                 (SELECT COUNT(*) FROM public.tasks WHERE task_group_id = tg.id) AS task_count,
-                EXISTS(SELECT 1 FROM public.assignment_completions ac WHERE ac.assignment_id = ca.id AND ac.student_id = %s) AS is_completed
+                COALESCE(BOOL_OR(ta.passed), false) AS is_completed,
+                COUNT(ta.id) AS attempts_count,
+                COUNT(ta.id) FILTER (WHERE ta.passed) AS success_count,
+                COUNT(ta.id) FILTER (WHERE NOT ta.passed) AS failed_count,
+                MAX(ta.score_percentage) AS best_score,
+                MIN(ta.completed_at) FILTER (WHERE ta.passed) AS completed_at
             FROM public.class_assignments ca
             JOIN public.classes c ON ca.class_id = c.id
             JOIN public.class_members cm ON c.id = cm.class_id
@@ -233,10 +238,15 @@ def get_student_assignments(current_user: dict = Depends(get_current_user)):
             JOIN public.chapters ch ON t.chapter_id = ch.id
             JOIN public.profiles p ON c.tutor_id = p.id
             LEFT JOIN auth.users u ON p.id = u.id
+            LEFT JOIN public.task_group_test_attempts ta 
+                ON ta.task_group_id = ca.task_group_id AND ta.student_id = cm.student_id
             WHERE cm.student_id = %s
+            GROUP BY 
+                ca.id, ca.class_id, c.name, ca.task_group_id, tg.name, s.name, t.name, ch.name,
+                ca.due_date, ca.note, ca.created_at, p.first_name, p.last_name, u.email, tg.id
             ORDER BY ca.created_at DESC;
             """,
-            (user_id, user_id)
+            (user_id,)
         )
         rows = cur.fetchall()
 
@@ -260,6 +270,11 @@ def get_student_assignments(current_user: dict = Depends(get_current_user)):
                 "note": r.get("note"),
                 "tutor_name": tutor_name,
                 "is_completed": bool(r.get("is_completed")),
+                "completed_at": r["completed_at"].isoformat() if r.get("completed_at") else None,
+                "attempts_count": int(r.get("attempts_count") or 0),
+                "success_count": int(r.get("success_count") or 0),
+                "failed_count": int(r.get("failed_count") or 0),
+                "best_score": float(r["best_score"]) if r.get("best_score") is not None else None,
                 "created_at": r["created_at"].isoformat() if r.get("created_at") else None,
             })
 
@@ -275,7 +290,7 @@ def get_student_assignments(current_user: dict = Depends(get_current_user)):
 @router.post("/assignments/{assignment_id}/toggle-complete")
 def toggle_assignment_completion(assignment_id: str, current_user: dict = Depends(get_current_user)):
     """
-    Przełącza stan ukończenia zadania domowego przez studenta.
+    Zwraca aktualny stan zaliczenia zadania (zaliczenie następuje automatycznie po zdaniu testu).
     """
     user_id = current_user.get("user_id")
     if not user_id:
@@ -288,26 +303,22 @@ def toggle_assignment_completion(assignment_id: str, current_user: dict = Depend
     cur = conn.cursor(cursor_factory=RealDictCursor)
     try:
         cur.execute(
-            "SELECT id FROM public.assignment_completions WHERE assignment_id = %s AND student_id = %s;",
-            (assignment_id, user_id)
+            """
+            SELECT COALESCE(BOOL_OR(ta.passed), false) AS is_completed
+            FROM public.class_assignments ca
+            LEFT JOIN public.task_group_test_attempts ta 
+                ON ta.task_group_id = ca.task_group_id AND ta.student_id = %s
+            WHERE ca.id = %s;
+            """,
+            (user_id, assignment_id)
         )
-        existing = cur.fetchone()
-        if existing:
-            cur.execute(
-                "DELETE FROM public.assignment_completions WHERE assignment_id = %s AND student_id = %s;",
-                (assignment_id, user_id)
-            )
-            conn.commit()
-            return {"is_completed": False}
-        else:
-            cur.execute(
-                "INSERT INTO public.assignment_completions (assignment_id, student_id) VALUES (%s, %s);",
-                (assignment_id, user_id)
-            )
-            conn.commit()
-            return {"is_completed": True}
+        row = cur.fetchone()
+        is_completed = bool(row["is_completed"]) if row else False
+        return {
+            "is_completed": is_completed,
+            "message": "Zadanie jest zaliczane automatycznie po zdaniu testu grupy (min. 80%)."
+        }
     except Exception as e:
-        conn.rollback()
         raise HTTPException(status_code=500, detail=str(e))
     finally:
         cur.close()

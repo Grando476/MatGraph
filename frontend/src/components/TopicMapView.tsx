@@ -223,24 +223,7 @@ export default function TopicMapView() {
     }
   }, []);
 
-  const handleToggleAssignmentComplete = async (assignmentId: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    try {
-      const token = await getAuthToken();
-      const res = await fetch(`${getApiUrl()}/api/v1/student/assignments/${assignmentId}/toggle-complete`, {
-        method: "POST",
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setStudentAssignments((prev) =>
-          prev.map((a) => (a.id === assignmentId ? { ...a, is_completed: data.is_completed } : a))
-        );
-      }
-    } catch (err) {
-      console.error("Błąd oznaczania statusu zadania:", err);
-    }
-  };
+
 
   const handleJoinClass = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -913,7 +896,7 @@ export default function TopicMapView() {
                                       }}
                                     >
                                       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '6px' }}>
-                                        <div style={{ minWidth: 0 }}>
+                                        <div style={{ minWidth: 0, flex: 1 }}>
                                           <div style={{ fontSize: '0.78rem', fontWeight: 900, color: '#000000', lineHeight: 1.25 }}>
                                             {a.task_group_name}
                                           </div>
@@ -921,28 +904,89 @@ export default function TopicMapView() {
                                             {a.topic_name} {a.subtopic_name ? `- ${a.subtopic_name}` : ''}
                                           </div>
                                         </div>
-                                        <button
-                                          type="button"
-                                          onClick={(e) => handleToggleAssignmentComplete(a.id, e)}
-                                          title={isDone ? "Oznacz jako niezrobione" : "Oznacz jako zrobione"}
+                                        <div
+                                          title={isDone ? "Zadanie zaliczone: zdano test (min. 80%)" : "Do zaliczenia: zdaj test (min. 80%)"}
                                           style={{
-                                            width: '20px',
-                                            height: '20px',
+                                            padding: '2px 6px',
                                             borderRadius: '5px',
                                             border: '1.5px solid #000',
-                                            background: isDone ? 'var(--neo-green)' : '#fff',
+                                            background: isDone ? 'var(--neo-green)' : 'var(--neo-yellow)',
                                             display: 'flex',
                                             alignItems: 'center',
-                                            justifyContent: 'center',
-                                            fontSize: '0.72rem',
+                                            gap: '3px',
+                                            fontSize: '0.62rem',
                                             fontWeight: 900,
-                                            cursor: 'pointer',
                                             flexShrink: 0,
                                             boxShadow: '1px 1px 0px #000',
+                                            color: '#000',
                                           }}
                                         >
-                                          {isDone ? '✓' : ''}
-                                        </button>
+                                          {isDone ? '✓ Zaliczone' : '⏳ Do testu'}
+                                        </div>
+                                      </div>
+
+                                      {/* Statystyki prób zaliczenia */}
+                                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap', marginTop: '1px' }}>
+                                        <span
+                                          style={{
+                                            fontSize: '0.6rem',
+                                            fontWeight: 800,
+                                            background: (a.attempts_count ?? 0) > 0 ? '#e0f2fe' : '#f3f4f6',
+                                            color: (a.attempts_count ?? 0) > 0 ? '#0369a1' : '#6b7280',
+                                            border: '1px solid #000',
+                                            padding: '1px 4px',
+                                            borderRadius: '4px',
+                                          }}
+                                        >
+                                          🎯 Próby: {a.attempts_count ?? 0}
+                                        </span>
+                                        {(a.attempts_count ?? 0) > 0 && (
+                                          <>
+                                            <span
+                                              style={{
+                                                fontSize: '0.6rem',
+                                                fontWeight: 800,
+                                                background: (a.success_count ?? 0) > 0 ? '#dcfce7' : '#f3f4f6',
+                                                color: (a.success_count ?? 0) > 0 ? '#15803d' : '#6b7280',
+                                                border: '1px solid #000',
+                                                padding: '1px 4px',
+                                                borderRadius: '4px',
+                                              }}
+                                            >
+                                              ✓ {a.success_count ?? 0}
+                                            </span>
+                                            {(a.failed_count ?? 0) > 0 && (
+                                              <span
+                                                style={{
+                                                  fontSize: '0.6rem',
+                                                  fontWeight: 800,
+                                                  background: '#fee2e2',
+                                                  color: '#b91c1c',
+                                                  border: '1px solid #000',
+                                                  padding: '1px 4px',
+                                                  borderRadius: '4px',
+                                                }}
+                                              >
+                                                ✕ {a.failed_count}
+                                              </span>
+                                            )}
+                                            {a.best_score != null && (
+                                              <span
+                                                style={{
+                                                  fontSize: '0.6rem',
+                                                  fontWeight: 800,
+                                                  background: '#fef3c7',
+                                                  color: '#92400e',
+                                                  border: '1px solid #000',
+                                                  padding: '1px 4px',
+                                                  borderRadius: '4px',
+                                                }}
+                                              >
+                                                Max: {a.best_score}%
+                                              </span>
+                                            )}
+                                          </>
+                                        )}
                                       </div>
 
                                       {a.note && (

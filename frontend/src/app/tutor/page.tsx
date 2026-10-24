@@ -16,6 +16,10 @@ interface StudentAssignmentStatus {
   due_date?: string;
   is_completed: boolean;
   completed_at?: string;
+  attempts_count?: number;
+  success_count?: number;
+  failed_count?: number;
+  best_score?: number | null;
 }
 
 interface StudentMember {
@@ -772,13 +776,40 @@ export default function TutorPage() {
                                                     <span>Termin: {new Date(as.due_date).toLocaleDateString("pl-PL")}</span>
                                                   </div>
                                                 )}
+
+                                                {/* Statystyki podejść do testu zaliczeniowego */}
+                                                <div className="flex flex-wrap items-center gap-1.5 mt-2">
+                                                  <span className="px-2 py-0.5 bg-white border border-black rounded-md text-[11px] font-black shadow-[1px_1px_0px_#000] text-black">
+                                                    Próby: <b>{as.attempts_count ?? 0}</b>
+                                                  </span>
+                                                  <span className={`px-2 py-0.5 border border-black rounded-md text-[11px] font-black shadow-[1px_1px_0px_#000] ${
+                                                    (as.success_count ?? 0) > 0 ? "bg-[var(--neo-green)] text-black" : "bg-gray-100 text-gray-600"
+                                                  }`}>
+                                                    ✓ Zdane: <b>{as.success_count ?? 0}</b>
+                                                  </span>
+                                                  <span className={`px-2 py-0.5 border border-black rounded-md text-[11px] font-black shadow-[1px_1px_0px_#000] ${
+                                                    (as.failed_count ?? 0) > 0 ? "bg-red-100 text-red-900" : "bg-gray-100 text-gray-600"
+                                                  }`}>
+                                                    ✕ Niezdane: <b>{as.failed_count ?? 0}</b>
+                                                  </span>
+                                                  {as.best_score !== undefined && as.best_score !== null && (
+                                                    <span className="px-2 py-0.5 bg-[var(--neo-yellow)] text-black border border-black rounded-md text-[11px] font-black shadow-[1px_1px_0px_#000]">
+                                                      Najlepszy wynik: <b>{as.best_score}%</b>
+                                                    </span>
+                                                  )}
+                                                  {(as.attempts_count ?? 0) === 0 && (
+                                                    <span className="text-[11px] text-gray-500 font-semibold italic">
+                                                      (Brak podejść do testu)
+                                                    </span>
+                                                  )}
+                                                </div>
                                               </div>
 
                                               <div className="shrink-0 flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-1">
                                                 {as.is_completed ? (
                                                   <>
                                                     <span className="px-2.5 py-1 bg-[var(--neo-green)] text-black border-1.5 border-black rounded-lg text-xs font-black shadow-[1px_1px_0px_#000]">
-                                                      ✓ Ukończono
+                                                      ✓ Zaliczone
                                                     </span>
                                                     {as.completed_at && (
                                                       <span className="text-[11px] text-gray-600 font-semibold">
@@ -797,7 +828,7 @@ export default function TutorPage() {
                                                   </span>
                                                 ) : (
                                                   <span className="px-2.5 py-1 bg-gray-100 text-gray-800 border-1.5 border-black rounded-lg text-xs font-bold shadow-[1px_1px_0px_#000]">
-                                                    ⏳ Do zrobienia
+                                                    ⏳ Do zaliczenia
                                                   </span>
                                                 )}
                                               </div>

@@ -123,29 +123,46 @@ def get_tutor_classes(current_user: dict = Depends(get_current_user)):
             )
             assignments_rows = cur.fetchall()
 
-            # Fetch completions for this class
+            # Fetch test attempts stats for all assignments in this class
             cur.execute(
                 """
                 SELECT 
-                    ac.assignment_id,
-                    ac.student_id,
-                    ac.completed_at
-                FROM public.assignment_completions ac
-                JOIN public.class_assignments ca ON ac.assignment_id = ca.id
-                WHERE ca.class_id = %s;
+                    ca.id AS assignment_id,
+                    ta.student_id,
+                    COUNT(ta.id) AS total_attempts,
+                    COUNT(ta.id) FILTER (WHERE ta.passed) AS success_count,
+                    COUNT(ta.id) FILTER (WHERE NOT ta.passed) AS failed_count,
+                    COALESCE(BOOL_OR(ta.passed), false) AS is_completed,
+                    MIN(ta.completed_at) FILTER (WHERE ta.passed) AS completed_at,
+                    MAX(ta.score_percentage) AS best_score
+                FROM public.class_assignments ca
+                JOIN public.task_group_test_attempts ta ON ca.task_group_id = ta.task_group_id
+                JOIN public.class_members cm ON ca.class_id = cm.class_id AND cm.student_id = ta.student_id
+                WHERE ca.class_id = %s
+                GROUP BY ca.id, ta.student_id;
                 """,
                 (class_id,)
             )
-            completions_rows = cur.fetchall()
-            completions_map = {
-                (str(c["student_id"]), str(c["assignment_id"])): c["completed_at"]
-                for c in completions_rows
+            attempts_rows = cur.fetchall()
+            attempts_map = {
+                (str(c["student_id"]), str(c["assignment_id"])): {
+                    "attempts_count": int(c["total_attempts"] or 0),
+                    "success_count": int(c["success_count"] or 0),
+                    "failed_count": int(c["failed_count"] or 0),
+                    "is_completed": bool(c["is_completed"]),
+                    "completed_at": c["completed_at"].isoformat() if c.get("completed_at") else None,
+                    "best_score": float(c["best_score"]) if c.get("best_score") is not None else None,
+                }
+                for c in attempts_rows
             }
 
             assignment_list = []
             for a in assignments_rows:
                 a_id = str(a["id"])
-                comp_count = sum(1 for m in members if (str(m["id"]), a_id) in completions_map)
+                comp_count = sum(
+                    1 for m in members 
+                    if attempts_map.get((str(m["id"]), a_id), {}).get("is_completed", False)
+                )
                 assignment_list.append({
                     "id": a_id,
                     "task_group_id": str(a["task_group_id"]),
@@ -171,7 +188,14 @@ def get_tutor_classes(current_user: dict = Depends(get_current_user)):
                 # Check each assignment's completion status for this student
                 student_assignments = []
                 for a in assignment_list:
-                    comp_at = completions_map.get((s_id, a["id"]))
+                    stats = attempts_map.get((s_id, a["id"]), {
+                        "attempts_count": 0,
+                        "success_count": 0,
+                        "failed_count": 0,
+                        "is_completed": False,
+                        "completed_at": None,
+                        "best_score": None,
+                    })
                     student_assignments.append({
                         "assignment_id": a["id"],
                         "task_group_id": a["task_group_id"],
@@ -179,8 +203,12 @@ def get_tutor_classes(current_user: dict = Depends(get_current_user)):
                         "topic_name": a.get("topic_name"),
                         "subtopic_name": a.get("subtopic_name"),
                         "due_date": a.get("due_date"),
-                        "is_completed": comp_at is not None,
-                        "completed_at": comp_at.isoformat() if comp_at else None
+                        "is_completed": stats["is_completed"],
+                        "completed_at": stats["completed_at"],
+                        "attempts_count": stats["attempts_count"],
+                        "success_count": stats["success_count"],
+                        "failed_count": stats["failed_count"],
+                        "best_score": stats["best_score"],
                     })
 
                 completed_count = sum(1 for sa in student_assignments if sa["is_completed"])

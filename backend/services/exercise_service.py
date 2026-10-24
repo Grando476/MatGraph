@@ -226,6 +226,23 @@ class ExerciseService:
                 (user_id, task_group_id, score_percentage, correct_count, total_count, passed)
             )
             attempt_row = cur.fetchone()
+
+            if passed and attempt_row:
+                try:
+                    cur.execute(
+                        """
+                        INSERT INTO public.assignment_completions (assignment_id, student_id, completed_at)
+                        SELECT ca.id, %s, %s
+                        FROM public.class_assignments ca
+                        JOIN public.class_members cm ON ca.class_id = cm.class_id
+                        WHERE ca.task_group_id = %s AND cm.student_id = %s
+                        ON CONFLICT (assignment_id, student_id) DO NOTHING;
+                        """,
+                        (user_id, attempt_row["completed_at"], task_group_id, user_id)
+                    )
+                except Exception as comp_err:
+                    print(f"Warning: could not sync assignment_completions: {comp_err}")
+
             conn.commit()
 
             # Pobierz zaktualizowane statystyki
