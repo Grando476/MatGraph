@@ -10,6 +10,19 @@ SUPABASE_JWT_SECRET = os.getenv("SUPABASE_JWT_SECRET", "your-supabase-jwt-secret
 ALGORITHM = "HS256"
 
 security = HTTPBearer()
+security_optional = HTTPBearer(auto_error=False)
+
+def get_optional_user(credentials: HTTPAuthorizationCredentials = Depends(security_optional)) -> dict | None:
+    """
+    Optional auth dependency. Returns user dict if valid Bearer token provided, None otherwise.
+    """
+    if not credentials:
+        return None
+    try:
+        return get_current_user(credentials)
+    except Exception:
+        return None
+
 
 def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)) -> dict:
     """

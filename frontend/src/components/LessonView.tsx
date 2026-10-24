@@ -8,6 +8,8 @@ import { FileText, Download, ExternalLink, Eye, EyeOff, AlertCircle, Loader2, Ma
 import Footer from "@/components/Footer";
 import Logo from "@/components/Logo";
 import Scratchpad from "@/components/Scratchpad";
+import { getApiUrl, getAuthToken } from "@/utils/auth";
+
 
 interface LessonViewProps {
   lessonId: string;
@@ -27,8 +29,16 @@ export default function LessonView({ lessonId }: LessonViewProps) {
 
   const fetchLesson = async () => {
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
-      const res = await fetch(`${apiUrl}/api/v1/lessons/${lessonId}`);
+
+      const userToken = await getAuthToken();
+      const headers: Record<string, string> = {};
+      if (userToken) {
+        headers["Authorization"] = `Bearer ${userToken}`;
+      }
+
+      const res = await fetch(`${getApiUrl()}/api/v1/lessons/${lessonId}`, {
+        headers,
+      });
       if (!res.ok) {
         throw new Error("Failed to fetch lesson");
       }
@@ -45,6 +55,7 @@ export default function LessonView({ lessonId }: LessonViewProps) {
       setLoading(false);
     }
   };
+
 
   useEffect(() => {
     fetchLesson();
@@ -323,16 +334,24 @@ export default function LessonView({ lessonId }: LessonViewProps) {
                     className="block p-5 border-2.5 border-[var(--border-dark)] rounded-xl bg-white shadow-[4px_4px_0px_0px_#000] hover:bg-[var(--neo-yellow)] hover:shadow-[2px_2px_0px_0px_#000] hover:translate-x-[2px] hover:translate-y-[2px] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none transition-all group"
                   >
                     <div className="flex items-start justify-between gap-3">
-                      <h3 className="font-extrabold text-lg text-[var(--text-main)] group-hover:text-black">
-                        {group.name}
-                      </h3>
+                      <div>
+                        <h3 className="font-extrabold text-lg text-[var(--text-main)] group-hover:text-black">
+                          {group.name}
+                        </h3>
+                        {group.is_passed && (
+                          <span className="inline-block mt-1.5 bg-[var(--neo-green)] text-black border border-black rounded px-2 py-0.5 font-black text-[11px] shadow-[1px_1px_0px_0px_#000]">
+                            ✓ Zaliczono ({group.best_score || 80}%)
+                          </span>
+                        )}
+                      </div>
                       <span className="bg-[var(--neo-green)] text-black border border-black rounded-md px-2 py-0.5 font-black text-xs shadow-[1px_1px_0px_0px_#000] group-hover:translate-x-1 transition-transform">
                         &rarr;
                       </span>
                     </div>
                     <p className="text-[var(--text-muted)] font-semibold text-xs mt-3 uppercase tracking-wider group-hover:text-black">
-                      Przejdź do zadań
+                      {group.is_passed ? "Przejdź do grupy (Zaliczona)" : "Przejdź do zadań"}
                     </p>
+
                   </Link>
                 ))}
               </div>

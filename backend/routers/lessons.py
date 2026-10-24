@@ -1,17 +1,21 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+from typing import Optional
 from services.lesson_service import LessonService
+from core.auth import get_optional_user
 
 router = APIRouter(prefix="/api/v1/lessons", tags=["Lessons"])
 
 @router.get("/{lesson_id}")
-async def get_lesson_details(lesson_id: str):
+async def get_lesson_details(lesson_id: str, current_user: Optional[dict] = Depends(get_optional_user)):
     """
-    Pulls details for a specific lesson (subtopic), including content_tex, task_groups, and presigned pdf_url.
+    Pulls details for a specific lesson (subtopic), including content_tex, task_groups (with pass status), and presigned pdf_url.
     """
     try:
-        return LessonService.get_lesson_details(lesson_id)
+        user_id = current_user.get("user_id") if current_user else None
+        return LessonService.get_lesson_details(lesson_id, user_id=user_id)
     except Exception as e:
         return {"error": str(e)}
+
 
 @router.get("/{lesson_id}/pdf-url")
 async def get_lesson_pdf_url(lesson_id: str):

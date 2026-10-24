@@ -4,3 +4,7 @@ from typing import Any, Dict, Optional
 class VerifyExerciseRequest(BaseModel):
     task_id: Optional[str] = None
     answers: Dict[str, Any]
+
+class SubmitTestRequest(BaseModel):
+    answers: Dict[str, Any]
+
