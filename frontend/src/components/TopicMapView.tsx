@@ -1221,7 +1221,7 @@ export default function TopicMapView() {
                               }}
                             >
                               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <span style={{ fontSize: '1.05rem' }}>🎓</span>
+
                                 <span>Panel Korepetytora</span>
                               </div>
                               <span style={{ fontSize: '0.85rem', fontWeight: 900 }}>&rarr;</span>
