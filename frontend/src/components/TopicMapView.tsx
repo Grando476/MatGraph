@@ -75,6 +75,7 @@ export default function TopicMapView() {
   const profileRef = useRef<HTMLDivElement>(null);
   const restoredNodeIdRef = useRef<string | null>(null);
   const hasRestoredViewportRef = useRef(false);
+  const [initialFitView, setInitialFitView] = useState(() => !getInitialNodeId());
 
   // Klasy studenta
   const [studentClasses, setStudentClasses] = useState<any[]>([]);
@@ -270,6 +271,7 @@ export default function TopicMapView() {
               restoredNodeIdRef.current = initialNodeId;
               fetchNodeLessons(initialNodeId);
             } else {
+              setInitialFitView(true);
               if (typeof window !== "undefined") {
                 sessionStorage.removeItem("graph_selected_node_id");
                 sessionStorage.removeItem("graph_zoom");
@@ -314,9 +316,14 @@ export default function TopicMapView() {
     }
   }, [rfInstance, selectedNode]);
 
+  useEffect(() => {
+    if (rfInstance && !restoredNodeIdRef.current) {
+      hasRestoredViewportRef.current = true;
+    }
+  }, [rfInstance]);
+
   const onNodeClick = useCallback(async (event: React.MouseEvent, node: Node) => {
     setSelectedNode(node);
-    restoredNodeIdRef.current = node.id;
     setNodes((prevNodes) =>
       prevNodes.map((n) => ({
         ...n,
@@ -345,7 +352,6 @@ export default function TopicMapView() {
   const onPaneClick = useCallback(() => {
     if (selectedNode) {
       setSelectedNode(null);
-      restoredNodeIdRef.current = null;
       setNodes((prev) => prev.map((n) => ({ ...n, selected: false })));
       if (typeof window !== "undefined") {
         sessionStorage.removeItem("graph_selected_node_id");
@@ -598,7 +604,7 @@ export default function TopicMapView() {
               maxZoom={1.3}
               translateExtent={translateExtent}
               nodeExtent={translateExtent}
-              fitView={!restoredNodeIdRef.current}
+              fitView={initialFitView}
               fitViewOptions={{ minZoom: 0.65, maxZoom: 1.3, padding: 0.2 }}
               onInit={setRfInstance}
               onMoveEnd={(_event, viewport) => {
@@ -622,7 +628,6 @@ export default function TopicMapView() {
         loadingLessons={loadingLessons}
         onClose={() => {
           setSelectedNode(null);
-          restoredNodeIdRef.current = null;
           setNodes((prev) => prev.map((n) => ({ ...n, selected: false })));
           if (typeof window !== "undefined") {
             sessionStorage.removeItem("graph_selected_node_id");

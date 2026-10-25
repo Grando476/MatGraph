@@ -137,8 +137,8 @@ export default function UserProfileDrawer({
                 {currentUser.firstName || currentUser.lastName
                   ? `${currentUser.firstName || ''} ${currentUser.lastName || ''}`.trim()
                   : currentUser.email
-                  ? currentUser.email.split('@')[0]
-                  : 'Użytkownik'}
+                    ? currentUser.email.split('@')[0]
+                    : 'Użytkownik'}
               </span>
               <span
                 style={{
@@ -151,8 +151,8 @@ export default function UserProfileDrawer({
                     currentUser.role === 'admin'
                       ? 'var(--neo-yellow)'
                       : currentUser.role === 'tutor'
-                      ? 'var(--neo-blue)'
-                      : 'var(--neo-green)',
+                        ? 'var(--neo-blue)'
+                        : 'var(--neo-green)',
                   color: '#000000',
                   border: '1.5px solid #000000',
                   boxShadow: '1px 1px 0px 0px #000000',
@@ -286,7 +286,7 @@ export default function UserProfileDrawer({
                               borderRadius: '4px',
                             }}
                           >
-                            🎯 Próby: {a.attempts_count ?? 0}
+                            Próby: {a.attempts_count ?? 0}
                           </span>
                           {(a.attempts_count ?? 0) > 0 && (
                             <>
@@ -349,13 +349,13 @@ export default function UserProfileDrawer({
                               borderLeft: '2.5px solid var(--neo-yellow)',
                             }}
                           >
-                            💬 {a.note}
+                            {a.note}
                           </div>
                         )}
 
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '2px', fontSize: '0.64rem', color: '#4b5563', fontWeight: 700 }}>
                           <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                            🏫 {a.class_name}
+                            {a.class_name}
                           </span>
                           <span
                             style={{
@@ -375,7 +375,7 @@ export default function UserProfileDrawer({
 
                         {a.due_date && (
                           <div style={{ fontSize: '0.62rem', color: '#b91c1c', fontWeight: 800 }}>
-                            ⏰ Termin: {new Date(a.due_date).toLocaleDateString('pl-PL')}
+                            Termin: {new Date(a.due_date).toLocaleDateString('pl-PL')}
                           </div>
                         )}
                       </div>
@@ -484,7 +484,6 @@ export default function UserProfileDrawer({
                             textAlign: 'center',
                           }}
                         >
-                          <span>⏰</span>
                           <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                             {cls.schedule}
                           </span>
@@ -523,7 +522,6 @@ export default function UserProfileDrawer({
                             e.currentTarget.style.background = 'white';
                           }}
                         >
-                          <span>📹</span>
                           <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                             Google Meet &rarr;
                           </span>
