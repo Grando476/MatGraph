@@ -98,6 +98,15 @@ def get_supabase_client():
 
 class StorageService:
     @staticmethod
+    def get_subtopic_pdf_path(subtopic_id: str) -> str:
+        """
+        Returns the predefined object storage path for a subtopic's PDF.
+        Predefined path format: subtopics/<subtopic_id>/basic.pdf
+        """
+        clean_id = str(subtopic_id).strip()
+        return f"subtopics/{clean_id}/basic.pdf"
+
+    @staticmethod
     def generate_presigned_url(
         file_path: Optional[str],
         bucket: Optional[str] = None,

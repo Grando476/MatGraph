@@ -2,6 +2,7 @@ from psycopg2.extras import RealDictCursor
 from db.session import get_db_connection
 from schemas.node import NodePosition
 from typing import List
+from services.storage_service import StorageService
 
 class NodeService:
     @staticmethod
@@ -33,10 +34,12 @@ class NodeService:
         cur = conn.cursor(cursor_factory=RealDictCursor)
         try:
             cur.execute(
-                "SELECT id, name as title, importance, pdf_path FROM public.subtopics WHERE topic_id = %s ORDER BY created_at ASC;",
+                "SELECT id, name as title, importance FROM public.subtopics WHERE topic_id = %s ORDER BY created_at ASC;",
                 (node_id,)
             )
             lessons = cur.fetchall()
+            for lesson in lessons:
+                lesson["pdf_path"] = StorageService.get_subtopic_pdf_path(str(lesson["id"]))
             return {"lessons": lessons}
         finally:
             cur.close()

@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends
+from fastapi.responses import RedirectResponse
 from typing import Optional
 from services.lesson_service import LessonService
 from core.auth import get_optional_user
@@ -26,4 +27,19 @@ async def get_lesson_pdf_url(lesson_id: str):
         return LessonService.get_lesson_pdf_url(lesson_id)
     except Exception as e:
         return {"error": str(e)}
+
+
+@router.get("/{lesson_id}/pdf")
+async def download_lesson_pdf(lesson_id: str):
+    """
+    Directly redirects to the presigned download URL for the lesson's PDF.
+    """
+    try:
+        res = LessonService.get_lesson_pdf_url(lesson_id)
+        if res.get("pdf_url"):
+            return RedirectResponse(url=res["pdf_url"])
+        return res
+    except Exception as e:
+        return {"error": str(e)}
+
 

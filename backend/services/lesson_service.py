@@ -9,7 +9,7 @@ class LessonService:
         cur = conn.cursor(cursor_factory=RealDictCursor)
         try:
             cur.execute(
-                "SELECT id, topic_id, name as title, importance, sort_order, content_tex, pdf_path FROM public.subtopics WHERE id = %s;",
+                "SELECT id, topic_id, name as title, importance, sort_order, content_tex FROM public.subtopics WHERE id = %s;",
                 (lesson_id,)
             )
             lesson = cur.fetchone()
@@ -17,15 +17,13 @@ class LessonService:
             if not lesson:
                 return {"error": "Lesson not found"}
 
-            # Generate presigned URL for PDF if pdf_path is specified
-            pdf_path = lesson.get("pdf_path")
-            if pdf_path:
-                storage_res = StorageService.generate_presigned_url(pdf_path)
-                lesson["pdf_url"] = storage_res.get("url")
-                if storage_res.get("error"):
-                    lesson["pdf_error"] = storage_res.get("error")
-            else:
-                lesson["pdf_url"] = None
+            # Predefined PDF path in object storage: subtopics/<subtopic_id>/basic.pdf
+            pdf_path = StorageService.get_subtopic_pdf_path(lesson_id)
+            lesson["pdf_path"] = pdf_path
+            storage_res = StorageService.generate_presigned_url(pdf_path)
+            lesson["pdf_url"] = storage_res.get("url")
+            if storage_res.get("error"):
+                lesson["pdf_error"] = storage_res.get("error")
 
             if user_id:
                 cur.execute(
@@ -72,17 +70,14 @@ class LessonService:
         cur = conn.cursor(cursor_factory=RealDictCursor)
         try:
             cur.execute(
-                "SELECT id, pdf_path FROM public.subtopics WHERE id = %s;",
+                "SELECT id FROM public.subtopics WHERE id = %s;",
                 (lesson_id,)
             )
             lesson = cur.fetchone()
             if not lesson:
                 return {"error": "Lesson not found"}
 
-            pdf_path = lesson.get("pdf_path")
-            if not pdf_path:
-                return {"error": "No PDF associated with this lesson", "pdf_url": None}
-
+            pdf_path = StorageService.get_subtopic_pdf_path(lesson_id)
             storage_res = StorageService.generate_presigned_url(pdf_path)
             return {
                 "pdf_path": pdf_path,
