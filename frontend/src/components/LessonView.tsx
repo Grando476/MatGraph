@@ -208,6 +208,9 @@ export default function LessonView({ lessonId }: LessonViewProps) {
                       <span className="bg-black text-white text-[10px] font-black uppercase px-2 py-0.5 rounded tracking-wider inline-block mb-1">
                         PDF
                       </span>
+                      <h3 className="text-base font-black text-[var(--text-main)] truncate">
+                        Teoria - podstawa
+                      </h3>
                     </div>
                   </div>
 
