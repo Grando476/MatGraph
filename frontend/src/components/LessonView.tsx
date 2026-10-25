@@ -162,9 +162,8 @@ export default function LessonView({ lessonId }: LessonViewProps) {
       </header>
 
       <div className="p-6 sm:p-10 flex-1">
-        <div className={`mx-auto bg-[var(--bg-card)] border-3 border-[var(--border-dark)] p-6 sm:p-10 rounded-2xl shadow-[8px_8px_0px_0px_#000] transition-all duration-300 ${
-          isPdfExpanded ? "max-w-7xl" : showPdfPreview ? "max-w-6xl" : "max-w-4xl"
-        }`}>
+        <div className={`mx-auto bg-[var(--bg-card)] border-3 border-[var(--border-dark)] p-6 sm:p-10 rounded-2xl shadow-[8px_8px_0px_0px_#000] transition-all duration-300 ${isPdfExpanded ? "max-w-7xl" : showPdfPreview ? "max-w-6xl" : "max-w-4xl"
+          }`}>
 
           {/* Importance / Category Tag */}
           <div className="flex items-center gap-2 mb-4">
@@ -209,9 +208,6 @@ export default function LessonView({ lessonId }: LessonViewProps) {
                       <span className="bg-black text-white text-[10px] font-black uppercase px-2 py-0.5 rounded tracking-wider inline-block mb-1">
                         PDF
                       </span>
-                      <h3 className="text-base font-black text-[var(--text-main)] truncate">
-                        {lesson.pdf_path.split('/').pop()}
-                      </h3>
                     </div>
                   </div>
 
@@ -263,62 +259,62 @@ export default function LessonView({ lessonId }: LessonViewProps) {
                   </div>
                 </div>
 
-              {/* Error Notice */}
-              {pdfError && (
-                <div className="mt-4 p-3 bg-red-100 border-2 border-red-500 rounded-lg text-xs font-bold text-red-800 flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2">
-                    <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
-                    <span>Błąd pobierania pliku PDF: {pdfError}</span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={refreshPdfUrl}
-                    disabled={pdfLoading}
-                    className="bg-white hover:bg-black hover:text-white text-black px-2.5 py-1 rounded border border-black shadow-[1px_1px_0px_0px_#000] text-[11px] font-black uppercase transition-all shrink-0 cursor-pointer"
-                  >
-                    Spróbuj ponownie
-                  </button>
-                </div>
-              )}
-
-
-              {/* Embedded Viewer */}
-              {showPdfPreview && pdfUrl && (
-                <div 
-                  className="mt-5 border-2.5 border-black rounded-xl overflow-hidden shadow-[4px_4px_0px_0px_#000] bg-white select-none"
-                  onContextMenu={(e) => e.preventDefault()}
-                >
-                  <div className="bg-black text-white text-xs font-black uppercase px-4 py-2.5 flex items-center justify-between gap-4">
-                    <span className="truncate">Podgląd: {lesson.pdf_path.split('/').pop()}</span>
-                    <div className="flex items-center gap-3 shrink-0">
-                      <button
-                        type="button"
-                        onClick={() => setIsPdfExpanded(!isPdfExpanded)}
-                        className="text-white hover:text-[var(--neo-yellow)] font-black text-xs uppercase flex items-center gap-1.5 transition-colors cursor-pointer"
-                        title={isPdfExpanded ? "Standardowa szerokość" : "Pełna szerokość"}
-                      >
-                        {isPdfExpanded ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
-                        <span className="hidden sm:inline">{isPdfExpanded ? "Zwęż" : "Rozszerz"}</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setShowPdfPreview(false)}
-                        className="text-white hover:text-[var(--neo-yellow)] font-black text-xs uppercase transition-colors cursor-pointer"
-                      >
-                        Zamknij &times;
-                      </button>
+                {/* Error Notice */}
+                {pdfError && (
+                  <div className="mt-4 p-3 bg-red-100 border-2 border-red-500 rounded-lg text-xs font-bold text-red-800 flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
+                      <span>Błąd pobierania pliku PDF: {pdfError}</span>
                     </div>
+                    <button
+                      type="button"
+                      onClick={refreshPdfUrl}
+                      disabled={pdfLoading}
+                      className="bg-white hover:bg-black hover:text-white text-black px-2.5 py-1 rounded border border-black shadow-[1px_1px_0px_0px_#000] text-[11px] font-black uppercase transition-all shrink-0 cursor-pointer"
+                    >
+                      Spróbuj ponownie
+                    </button>
                   </div>
-                  <iframe
-                    src={`${pdfUrl}#toolbar=0&navpanes=0&view=FitH`}
-                    className="w-full h-[750px] sm:h-[850px] border-none"
-                    title={`Podgląd PDF: ${lesson.title}`}
-                  />
-                </div>
-              )}
+                )}
+
+
+                {/* Embedded Viewer */}
+                {showPdfPreview && pdfUrl && (
+                  <div
+                    className="mt-5 border-2.5 border-black rounded-xl overflow-hidden shadow-[4px_4px_0px_0px_#000] bg-white select-none"
+                    onContextMenu={(e) => e.preventDefault()}
+                  >
+                    <div className="bg-black text-white text-xs font-black uppercase px-4 py-2.5 flex items-center justify-between gap-4">
+                      <span className="truncate">Podgląd: {lesson.pdf_path.split('/').pop()}</span>
+                      <div className="flex items-center gap-3 shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => setIsPdfExpanded(!isPdfExpanded)}
+                          className="text-white hover:text-[var(--neo-yellow)] font-black text-xs uppercase flex items-center gap-1.5 transition-colors cursor-pointer"
+                          title={isPdfExpanded ? "Standardowa szerokość" : "Pełna szerokość"}
+                        >
+                          {isPdfExpanded ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
+                          <span className="hidden sm:inline">{isPdfExpanded ? "Zwęż" : "Rozszerz"}</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setShowPdfPreview(false)}
+                          className="text-white hover:text-[var(--neo-yellow)] font-black text-xs uppercase transition-colors cursor-pointer"
+                        >
+                          Zamknij &times;
+                        </button>
+                      </div>
+                    </div>
+                    <iframe
+                      src={`${pdfUrl}#toolbar=0&navpanes=0&view=FitH`}
+                      className="w-full h-[750px] sm:h-[850px] border-none"
+                      title={`Podgląd PDF: ${lesson.title}`}
+                    />
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
           {lesson.task_groups && lesson.task_groups.length > 0 && (
             <div className="mt-12 border-t-2 border-[var(--border-dark)] pt-8">
