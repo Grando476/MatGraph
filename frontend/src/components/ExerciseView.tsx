@@ -6,7 +6,7 @@ import "katex/dist/katex.min.css";
 import Footer from "@/components/Footer";
 import Logo from "@/components/Logo";
 import Scratchpad from "@/components/Scratchpad";
-import { getApiUrl, getAuthToken } from "@/utils/auth";
+import { getApiUrl, getAuthToken, getCurrentUser, UserProfile } from "@/utils/auth";
 import { ViewMode } from "./exercise/types";
 import ExerciseLobby from "./exercise/ExerciseLobby";
 import ExercisePractice from "./exercise/ExercisePractice";
@@ -17,6 +17,10 @@ interface ExerciseViewProps {
   exerciseId: string;
 }
 
+const getExamStorageKey = (exId: string, uId?: string | null) => {
+  return `matgraph_exam_${exId}_${uId || "guest"}`;
+};
+
 export default function ExerciseView({ exerciseId }: ExerciseViewProps) {
   const router = useRouter();
 
@@ -25,6 +29,7 @@ export default function ExerciseView({ exerciseId }: ExerciseViewProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [token, setToken] = useState<string | null>(null);
+  const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
 
   // App Mode
   const [viewMode, setViewMode] = useState<ViewMode>("LOBBY");
@@ -48,10 +53,17 @@ export default function ExerciseView({ exerciseId }: ExerciseViewProps) {
   const [examAnswers, setExamAnswers] = useState<Record<string, any>>({});
   const [examSubmitting, setExamSubmitting] = useState(false);
   const [examResult, setExamResult] = useState<any>(null);
+  const [cachedExam, setCachedExam] = useState<{
+    examTasks: any[];
+    examAnswers: Record<string, any>;
+    examIndex: number;
+    updatedAt?: number;
+  } | null>(null);
 
   const fetchTasks = useCallback(async () => {
     try {
-      const userToken = await getAuthToken();
+      const [u, userToken] = await Promise.all([getCurrentUser(), getAuthToken()]);
+      setCurrentUser(u);
       setToken(userToken);
 
       const headers: Record<string, string> = {};
@@ -81,6 +93,53 @@ export default function ExerciseView({ exerciseId }: ExerciseViewProps) {
   useEffect(() => {
     fetchTasks();
   }, [fetchTasks]);
+
+  // Load cached exam if exists
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const storageKey = getExamStorageKey(exerciseId, currentUser?.id);
+      const saved = localStorage.getItem(storageKey);
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (parsed.examTasks && Array.isArray(parsed.examTasks) && parsed.examTasks.length > 0) {
+            setCachedExam(parsed);
+            return;
+          }
+        } catch (e) {
+          console.error("Błąd odczytu zapisanego egzaminu:", e);
+        }
+      }
+      setCachedExam(null);
+    }
+  }, [exerciseId, currentUser]);
+
+  // Auto-save exam progress to localStorage
+  useEffect(() => {
+    if (viewMode === "EXAM" && examTasks.length > 0 && typeof window !== "undefined") {
+      const storageKey = getExamStorageKey(exerciseId, currentUser?.id);
+      const stateToSave = {
+        examTasks,
+        examAnswers,
+        examIndex,
+        updatedAt: Date.now(),
+      };
+      localStorage.setItem(storageKey, JSON.stringify(stateToSave));
+      setCachedExam(stateToSave);
+    }
+  }, [viewMode, examTasks, examAnswers, examIndex, exerciseId, currentUser]);
+
+  // Before unload warning during exam
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (viewMode === "EXAM" && examTasks.length > 0) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [viewMode, examTasks]);
 
   // Handle browser back / navigation
   const handleBack = () => {
@@ -160,10 +219,24 @@ export default function ExerciseView({ exerciseId }: ExerciseViewProps) {
     resetPracticeQuestionState();
   };
 
+  // Resume Exam Mode from cached state
+  const resumeExam = () => {
+    if (!cachedExam || !cachedExam.examTasks || cachedExam.examTasks.length === 0) return;
+    setExamTasks(cachedExam.examTasks);
+    setExamIndex(cachedExam.examIndex || 0);
+    setExamAnswers(cachedExam.examAnswers || {});
+    setExamResult(null);
+    setViewMode("EXAM");
+  };
+
   // Start Exam Mode
   const startExam = () => {
     if (!token) {
       router.push(`/login?redirect=/exercise/${exerciseId}`);
+      return;
+    }
+    if (cachedExam) {
+      resumeExam();
       return;
     }
     if (!taskGroup?.tasks || taskGroup.tasks.length === 0) return;
@@ -177,6 +250,19 @@ export default function ExerciseView({ exerciseId }: ExerciseViewProps) {
     setExamAnswers({});
     setExamResult(null);
     setViewMode("EXAM");
+
+    // Immediately cache the newly generated exam
+    if (typeof window !== "undefined") {
+      const storageKey = getExamStorageKey(exerciseId, currentUser?.id);
+      const stateToSave = {
+        examTasks: sample,
+        examAnswers: {},
+        examIndex: 0,
+        updatedAt: Date.now(),
+      };
+      localStorage.setItem(storageKey, JSON.stringify(stateToSave));
+      setCachedExam(stateToSave);
+    }
   };
 
   // Practice Handlers
@@ -293,6 +379,12 @@ export default function ExerciseView({ exerciseId }: ExerciseViewProps) {
       setExamResult(data);
       setViewMode("EXAM_RESULT");
 
+      if (typeof window !== "undefined") {
+        const storageKey = getExamStorageKey(exerciseId, currentUser?.id);
+        localStorage.removeItem(storageKey);
+        setCachedExam(null);
+      }
+
       fetchTasks();
     } catch (err: any) {
       alert(`Błąd: ${err.message}`);
@@ -372,6 +464,8 @@ export default function ExerciseView({ exerciseId }: ExerciseViewProps) {
               onStartPractice={startPractice}
               onStartExam={startExam}
               exerciseId={exerciseId}
+              cachedExam={cachedExam}
+              onResumeExam={resumeExam}
             />
           )}
 
