@@ -17,6 +17,9 @@ interface ExerciseLobbyProps {
   exerciseId: string;
   cachedExam?: any;
   onResumeExam?: () => void;
+  currentUser?: any;
+  adminPassing?: boolean;
+  onAdminQuickPass?: () => void;
 }
 
 export default function ExerciseLobby({
@@ -34,6 +37,9 @@ export default function ExerciseLobby({
   exerciseId,
   cachedExam,
   onResumeExam,
+  currentUser,
+  adminPassing,
+  onAdminQuickPass,
 }: ExerciseLobbyProps) {
   const router = useRouter();
 
@@ -73,10 +79,7 @@ export default function ExerciseLobby({
               <div className="flex flex-wrap items-center gap-3">
                 <span className="text-xs font-bold uppercase text-gray-600">Statystyki:</span>
                 <span className="bg-gray-100 border border-black px-2.5 py-1 rounded text-xs font-black">
-                  Łącznie podejść: {taskGroup.attempts_count}
-                </span>
-                <span className="bg-red-50 text-red-800 border border-red-500 px-2.5 py-1 rounded text-xs font-black">
-                  Nieudane: {taskGroup.failed_attempts_count}
+                  Ilość podejść: {taskGroup.attempts_count}
                 </span>
                 {taskGroup.best_score !== null && (
                   <span className="bg-green-50 text-green-900 border border-green-600 px-2.5 py-1 rounded text-xs font-black">
@@ -250,6 +253,17 @@ export default function ExerciseLobby({
               className="w-full py-3.5 bg-[var(--neo-green)] hover:bg-[#86efac] text-black font-black uppercase text-xs rounded-xl border-2.5 border-black shadow-[4px_4px_0px_0px_#000] hover:shadow-[2px_2px_0px_0px_#000] hover:translate-x-[2px] hover:translate-y-[2px] active:translate-x-[4px] active:translate-y-[4px] transition-all cursor-pointer text-center"
             >
               Rozpocznij zaliczenie ({examPoolSize} pytań)
+            </button>
+          )}
+
+          {currentUser?.role === "admin" && onAdminQuickPass && (
+            <button
+              type="button"
+              onClick={onAdminQuickPass}
+              disabled={adminPassing}
+              className="w-full mt-3 py-2.5 bg-amber-400 hover:bg-amber-500 disabled:opacity-60 text-black font-black uppercase text-xs rounded-xl border-2 border-black shadow-[3px_3px_0px_0px_#000] hover:shadow-[1px_1px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] transition-all cursor-pointer flex items-center justify-center gap-2"
+            >
+              <span>{adminPassing ? "Zaliczanie..." : "Zalicz natychmiast"}</span>
             </button>
           )}
         </div>

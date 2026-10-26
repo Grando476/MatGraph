@@ -231,7 +231,12 @@ export default function TopicMapView() {
     const fetchNodes = async () => {
       try {
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
-        const res = await fetch(`${apiUrl}/api/v1/nodes`);
+        const token = await getAuthToken();
+        const headers: Record<string, string> = {};
+        if (token) {
+          headers["Authorization"] = `Bearer ${token}`;
+        }
+        const res = await fetch(`${apiUrl}/api/v1/nodes`, { headers });
         if (res.ok) {
           const data = await res.json();
           if (!data.nodes || !data.edges) return;
@@ -244,7 +249,12 @@ export default function TopicMapView() {
             targetPosition: Position.Bottom,
             sourcePosition: Position.Top,
             position: { x: n.ui_x || 0, y: n.ui_y || 0 },
-            data: { label: n.name, subtasksCount: n.subtasks_count },
+            data: { 
+              label: n.name, 
+              subtasksCount: n.subtasks_count,
+              totalTaskGroups: Number(n.total_task_groups) || 0,
+              passedTaskGroups: Number(n.passed_task_groups) || 0,
+            },
             selected: initialNodeId ? n.id === initialNodeId : false,
           }));
 
@@ -286,7 +296,7 @@ export default function TopicMapView() {
       }
     };
     fetchNodes();
-  }, [setNodes, setEdges, fetchNodeLessons]);
+  }, [setNodes, setEdges, fetchNodeLessons, currentUser]);
 
   useEffect(() => {
     if (

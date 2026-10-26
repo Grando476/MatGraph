@@ -11,6 +11,9 @@ interface ExerciseExamProps {
   setExamAnswerForTask: (taskId: string, answerPayload: any) => void;
   examSubmitting: boolean;
   onExamSubmit: () => void;
+  currentUser?: any;
+  adminPassing?: boolean;
+  onAdminQuickPass?: () => void;
 }
 
 export default function ExerciseExam({
@@ -21,6 +24,9 @@ export default function ExerciseExam({
   setExamAnswerForTask,
   examSubmitting,
   onExamSubmit,
+  currentUser,
+  adminPassing,
+  onAdminQuickPass,
 }: ExerciseExamProps) {
   return (
     <div className="space-y-6">
@@ -35,6 +41,18 @@ export default function ExerciseExam({
             <span className="text-xs font-bold text-gray-700">
               Pytanie <strong className="text-black">{examIndex + 1}</strong> z <strong className="text-black">{examTasks.length}</strong>
             </span>
+
+            {currentUser?.role === "admin" && onAdminQuickPass && (
+              <button
+                type="button"
+                onClick={onAdminQuickPass}
+                disabled={adminPassing}
+                className="ml-2 px-2.5 py-0.5 bg-amber-400 hover:bg-amber-500 disabled:opacity-60 text-black font-black text-xs rounded border-2 border-black shadow-[2px_2px_0px_0px_#000] cursor-pointer"
+                title="Zalicz grupę zadań natychmiastowo na 100%"
+              >
+                {adminPassing ? "Zaliczanie..." : "Zalicz natychmiast"}
+              </button>
+            )}
           </div>
 
           <span className="text-xs font-black text-gray-600 bg-gray-100 border border-gray-400 px-2 py-0.5 rounded">

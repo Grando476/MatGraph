@@ -49,6 +49,31 @@ async def submit_test(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@router.post("/{task_group_id}/admin-quick-pass")
+async def admin_quick_pass(
+    task_group_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Umożliwia administratorowi natychmiastowe zaliczenie grupy zadań ze 100% wynikiem.
+    """
+    try:
+        if current_user.get("role") != "admin":
+            raise HTTPException(status_code=403, detail="Tylko administrator może natychmiast zaliczyć grupę zadań.")
+
+        user_id = current_user.get("user_id")
+        if not user_id:
+            raise HTTPException(status_code=401, detail="Wymagane logowanie.")
+
+        res = ExerciseService.admin_quick_pass(task_group_id, user_id)
+        if "error" in res:
+            raise HTTPException(status_code=400, detail=res["error"])
+        return res
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 @router.post("/verify")
 @router.post("/{task_id}/verify")
