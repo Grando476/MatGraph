@@ -15,6 +15,8 @@ interface ExerciseLobbyProps {
   onStartPractice: (diff: string) => void;
   onStartExam: () => void;
   exerciseId: string;
+  cachedExam?: any;
+  onResumeExam?: () => void;
 }
 
 export default function ExerciseLobby({
@@ -30,6 +32,8 @@ export default function ExerciseLobby({
   onStartPractice,
   onStartExam,
   exerciseId,
+  cachedExam,
+  onResumeExam,
 }: ExerciseLobbyProps) {
   const router = useRouter();
 
@@ -55,19 +59,12 @@ export default function ExerciseLobby({
             <span className="inline-flex items-center gap-1.5 bg-[var(--neo-yellow)] text-black font-black text-xs px-3 py-1.5 border-2 border-black rounded-md shadow-[2px_2px_0px_0px_#000] uppercase">
               W trakcie ({taskGroup.attempts_count} podejść, max {taskGroup.best_score || 0}%)
             </span>
-          ) : (
-            <span className="inline-flex items-center gap-1.5 bg-gray-100 text-gray-700 font-black text-xs px-3 py-1.5 border-2 border-black rounded-md shadow-[2px_2px_0px_0px_#000] uppercase">
-              Nowa (brak prób)
-            </span>
-          )}
+          ) : null}
         </div>
 
-        <h1 className="text-3xl sm:text-4xl font-black mb-3 text-[var(--text-main)] tracking-tight">
+        <h1 className="text-3xl sm:text-4xl font-black mb-6 text-[var(--text-main)] tracking-tight">
           {taskGroup.task_group_name}
         </h1>
-        <p className="text-sm font-semibold text-gray-600 mb-6">
-          W tej grupie znajduje się <strong className="text-black">{totalTasksInGroup}</strong> zadań o różnych poziomach trudności.
-        </p>
 
         {/* History & Statistics Pills */}
         {taskGroup.attempts_count > 0 && (
@@ -145,7 +142,7 @@ export default function ExerciseLobby({
               <h2 className="text-xl font-black uppercase tracking-tight">Ćwicz</h2>
             </div>
             <p className="text-xs text-gray-600 font-medium leading-relaxed mb-5">
-              Rozwiązuj zadania pojedynczo z natychmiastowym sprawdzaniem. Wyniki nie są zapisywane w historii.
+              Rozwiązuj zadania pojedynczo z natychmiastowym sprawdzaniem.
             </p>
 
             {/* Difficulty selector pills */}
@@ -201,7 +198,7 @@ export default function ExerciseLobby({
               <h2 className="text-xl font-black uppercase tracking-tight">Zaliczenie</h2>
             </div>
             <p className="text-xs text-gray-600 font-medium leading-relaxed mb-4">
-              Test z losowych zadań z grupy. Wymagane min. 80% do zaliczenia. Każde podejście jest rejestrowane.
+              Test z losowych zadań z grupy. Wymagane min. 80% do zaliczenia.
             </p>
 
             <div className="bg-[var(--bg-main)] border-2 border-black p-3.5 rounded-xl mb-6 space-y-1.5">
@@ -238,6 +235,15 @@ export default function ExerciseLobby({
             <div className="p-3 bg-gray-100 border-2 border-gray-400 text-gray-500 font-bold text-xs rounded-xl text-center">
               Brak zadań w tej grupie.
             </div>
+          ) : cachedExam ? (
+            <button
+              onClick={onResumeExam}
+              className="w-full py-3.5 bg-[var(--neo-green)] hover:bg-[#86efac] text-black font-black uppercase text-xs rounded-xl border-2.5 border-black shadow-[4px_4px_0px_0px_#000] hover:shadow-[2px_2px_0px_0px_#000] hover:translate-x-[2px] hover:translate-y-[2px] active:translate-x-[4px] active:translate-y-[4px] transition-all cursor-pointer text-center flex items-center justify-center gap-2"
+            >
+              <span>
+                Kontynuuj zaliczenie ({Object.keys(cachedExam.examAnswers || {}).length}/{cachedExam.examTasks?.length || 10} pytań) &rarr;
+              </span>
+            </button>
           ) : (
             <button
               onClick={onStartExam}

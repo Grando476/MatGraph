@@ -1,7 +1,7 @@
 "use client";
 
 import MixedMathText from "@/components/MixedMathText";
-import { parseTaskContent } from "./types";
+import { parseTaskContent, formatDifficulty } from "./types";
 
 interface ExercisePracticeProps {
   filteredPracticeTasks: any[];
@@ -139,7 +139,7 @@ export default function ExercisePractice({
                     Zadanie #{practiceIndex + 1}
                   </span>
                   <span className="bg-gray-100 text-black border border-black font-black text-xs uppercase px-2 py-0.5 rounded">
-                    {task.difficulty_level || "Medium"}
+                    {formatDifficulty(task.difficulty_level)}
                   </span>
                 </div>
               </div>

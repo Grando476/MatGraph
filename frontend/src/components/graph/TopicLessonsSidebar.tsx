@@ -45,22 +45,46 @@ export default function TopicLessonsSidebar({
         }}
       >
         <div style={{ flex: 1, minWidth: 0 }}>
-          <span
-            style={{
-              background: 'var(--neo-yellow)',
-              border: '1.5px solid #000000',
-              borderRadius: '4px',
-              padding: '2px 7px',
-              fontSize: '0.68rem',
-              fontWeight: 900,
-              textTransform: 'uppercase',
-              boxShadow: '1px 1px 0px 0px #000000',
-              display: 'inline-block',
-              marginBottom: '4px',
-            }}
-          >
-            Temat
-          </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+            <span
+              style={{
+                background: 'var(--neo-yellow)',
+                border: '1.5px solid #000000',
+                borderRadius: '4px',
+                padding: '2px 7px',
+                fontSize: '0.68rem',
+                fontWeight: 900,
+                textTransform: 'uppercase',
+                boxShadow: '1px 1px 0px 0px #000000',
+                display: 'inline-block',
+              }}
+            >
+              Temat
+            </span>
+            {(() => {
+              const nodeData = selectedNode.data as any;
+              const passed = Number(nodeData?.passedTaskGroups) || 0;
+              const total = Number(nodeData?.totalTaskGroups) || 0;
+              const isDone = total > 0 && passed >= total;
+              return (
+                <span
+                  style={{
+                    background: isDone ? 'var(--neo-green)' : 'var(--neo-yellow)',
+                    border: '1.5px solid #000000',
+                    borderRadius: '4px',
+                    padding: '2px 7px',
+                    fontSize: '0.68rem',
+                    fontWeight: 900,
+                    textTransform: 'uppercase',
+                    boxShadow: '1px 1px 0px 0px #000000',
+                    display: 'inline-block',
+                  }}
+                >
+                  Zaliczone grupy: {passed}/{total}
+                </span>
+              );
+            })()}
+          </div>
           <h2
             style={{
               fontSize: '1.2rem',

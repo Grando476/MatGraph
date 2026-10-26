@@ -21,3 +21,11 @@ export const parseTaskContent = (task: any): ParsedTaskContent => {
   const isMcq = !isTrueFalse && !isOpen;
   return { contentObj, taskType, isTrueFalse, isOpen, isMcq };
 };
+
+export const formatDifficulty = (level?: string): string => {
+  if (!level) return "Średnie";
+  const lower = level.toLowerCase();
+  if (lower === "easy" || lower === "łatwe" || lower === "latwe") return "Łatwe";
+  if (lower === "hard" || lower === "trudne") return "Trudne";
+  return "Średnie";
+};

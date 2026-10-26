@@ -1,7 +1,7 @@
 "use client";
 
 import MixedMathText from "@/components/MixedMathText";
-import { parseTaskContent } from "./types";
+import { parseTaskContent, formatDifficulty } from "./types";
 
 interface ExerciseExamProps {
   examTasks: any[];
@@ -81,7 +81,7 @@ export default function ExerciseExam({
                 Pytanie {examIndex + 1}
               </span>
               <span className="text-xs font-bold text-gray-500 uppercase">
-                Trudność: {task.difficulty_level || "Medium"}
+                Trudność: {formatDifficulty(task.difficulty_level)}
               </span>
             </div>
 

@@ -1,7 +1,7 @@
 "use client";
 
 import MixedMathText from "@/components/MixedMathText";
-import { parseTaskContent } from "./types";
+import { parseTaskContent, formatDifficulty } from "./types";
 
 interface ExerciseExamResultProps {
   examResult: any;
@@ -84,7 +84,7 @@ export default function ExerciseExamResult({
               >
                 <div className="flex items-center justify-between mb-3">
                   <span className="font-black text-xs uppercase">
-                    Zadanie {idx + 1} ({t.difficulty_level || "Medium"})
+                    Zadanie {idx + 1} ({formatDifficulty(t.difficulty_level)})
                   </span>
                   <span
                     className={`px-2.5 py-1 rounded text-xs font-black uppercase border border-black ${

@@ -4,6 +4,10 @@ export const NODE_WIDTH = 190;
 export const NODE_HEIGHT = 125;
 
 export const NeobrutalNode = ({ data, selected }: any) => {
+  const totalTg = data.totalTaskGroups ?? 0;
+  const passedTg = data.passedTaskGroups ?? 0;
+  const isAllPassed = totalTg > 0 && passedTg >= totalTg;
+
   return (
     <div
       style={{
@@ -40,7 +44,7 @@ export const NeobrutalNode = ({ data, selected }: any) => {
       <div
         style={{
           height: '8px',
-          background: selected ? '#000000' : 'var(--neo-green)',
+          background: selected ? '#000000' : isAllPassed ? 'var(--neo-green)' : 'var(--neo-yellow)',
           borderBottom: '2.5px solid #000000',
           width: '100%',
         }}
@@ -78,7 +82,11 @@ export const NeobrutalNode = ({ data, selected }: any) => {
           style={{
             fontFamily: 'var(--font-node), Outfit, sans-serif',
             fontSize: '0.7rem',
-            background: selected ? '#000000' : 'var(--neo-yellow)',
+            background: selected
+              ? '#000000'
+              : isAllPassed
+              ? 'var(--neo-green)'
+              : 'var(--neo-yellow)',
             color: selected ? '#ffffff' : '#000000',
             border: '2px solid #000000',
             borderRadius: '9999px',
@@ -91,7 +99,7 @@ export const NeobrutalNode = ({ data, selected }: any) => {
             gap: '3px',
           }}
         >
-          {data.subtasksCount ? `${data.subtasksCount}/${data.subtasksCount}` : '0/0'}
+          {totalTg > 0 ? `${passedTg}/${totalTg}` : data.subtasksCount ? `${data.subtasksCount}/${data.subtasksCount}` : '0/0'}
         </span>
       </div>
 
