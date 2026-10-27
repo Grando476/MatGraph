@@ -9,7 +9,7 @@ router = APIRouter(prefix="/api/v1/lessons", tags=["Lessons"])
 @router.get("/{lesson_id}")
 async def get_lesson_details(lesson_id: str, current_user: Optional[dict] = Depends(get_optional_user)):
     """
-    Pulls details for a specific lesson (subtopic), including content_tex, task_groups (with pass status), and presigned pdf_url.
+    Pulls details for a specific lesson (subtopic), including task_groups (with pass status), and presigned pdf_url.
     """
     try:
         user_id = current_user.get("user_id") if current_user else None

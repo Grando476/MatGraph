@@ -282,7 +282,7 @@ def get_tree_data():
 def _build_context(tg_id):
     """Buduje kontekst edukacyjny dla danej grupy zadaniowej."""
     res = supabase.table("task_groups").select(
-        "name, subtopics(id, name, content_tex, task_groups(name), topics(name, content_tex, chapters(name)))"
+        "name, subtopics(id, name, task_groups(name), topics(name, chapters(name)))"
     ).eq("id", tg_id).single().execute()
     
     d = res.data
@@ -301,7 +301,7 @@ def _build_context(tg_id):
     
     known_subtopics_theories = []
     for st in known_subtopics_data:
-        known_subtopics_theories.append(f"{st.get('name')}: {st.get('content_tex', '')}")
+        known_subtopics_theories.append(f"{st.get('name')}")
 
     sibling_task_groups = [tg['name'] for tg in d['subtopics'].get('task_groups', []) if tg['name'] != d['name']]
 
@@ -310,8 +310,8 @@ def _build_context(tg_id):
         "topic": d['subtopics']['topics']['name'],
         "subtopic": d['subtopics']['name'],
         "group": d['name'],
-        "topic_theory": d['subtopics']['topics'].get('content_tex', '') or "Brak",
-        "subtopic_theory": d['subtopics'].get('content_tex', '') or "Brak",
+        "topic_theory": "Brak",
+        "subtopic_theory": "Brak",
         "known_topics_names": ", ".join(known_topics_names) if known_topics_names else "Brak",
         "known_subtopics_theories": " | ".join(known_subtopics_theories) if known_subtopics_theories else "Brak",
         "unknown_topics_names": ", ".join(unknown_topics_names) if unknown_topics_names else "Brak",

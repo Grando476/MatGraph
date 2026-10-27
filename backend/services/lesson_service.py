@@ -9,7 +9,7 @@ class LessonService:
         cur = conn.cursor(cursor_factory=RealDictCursor)
         try:
             cur.execute(
-                "SELECT id, topic_id, name as title, importance, sort_order, content_tex FROM public.subtopics WHERE id = %s;",
+                "SELECT id, topic_id, name as title, importance, sort_order FROM public.subtopics WHERE id = %s;",
                 (lesson_id,)
             )
             lesson = cur.fetchone()
