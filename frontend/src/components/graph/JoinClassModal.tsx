@@ -112,7 +112,7 @@ export default function JoinClassModal({
                 fontSize: '1rem',
               }}
             >
-              🏫
+
             </div>
             <div>
               <h3 style={{ fontSize: '1.05rem', fontWeight: 900, textTransform: 'uppercase', color: '#000000', margin: 0 }}>

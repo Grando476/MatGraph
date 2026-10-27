@@ -194,9 +194,6 @@ export default function TutorPage() {
           </div>
         ) : classes.length === 0 ? (
           <div className="bg-white border-3 border-black rounded-2xl p-10 text-center max-w-xl mx-auto shadow-[6px_6px_0px_0px_#000] space-y-4">
-            <div className="w-16 h-16 mx-auto bg-[var(--neo-yellow)] border-2 border-black rounded-2xl flex items-center justify-center text-3xl shadow-[3px_3px_0px_0px_#000]">
-              🏫
-            </div>
             <h2 className="text-xl font-black text-black uppercase">Nie masz jeszcze żadnych klas</h2>
             <p className="text-xs sm:text-sm text-gray-600 font-semibold max-w-md mx-auto">
               Utwórz swoją pierwszą klasę, określ godziny spotkań oraz link do Google Meet, aby wygenerować kod dla uczniów.

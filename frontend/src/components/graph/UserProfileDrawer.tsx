@@ -208,7 +208,7 @@ export default function UserProfileDrawer({
                     fontWeight: 600,
                   }}
                 >
-                  Brak przydzielonych zadań ✨
+                  Brak przydzielonych zadań
                 </div>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '190px', overflowY: 'auto', paddingRight: '2px' }}>
@@ -273,70 +273,6 @@ export default function UserProfileDrawer({
                           </div>
                         </div>
 
-                        {/* Statystyki prób zaliczenia */}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap', marginTop: '1px' }}>
-                          <span
-                            style={{
-                              fontSize: '0.6rem',
-                              fontWeight: 800,
-                              background: (a.attempts_count ?? 0) > 0 ? '#e0f2fe' : '#f3f4f6',
-                              color: (a.attempts_count ?? 0) > 0 ? '#0369a1' : '#6b7280',
-                              border: '1px solid #000',
-                              padding: '1px 4px',
-                              borderRadius: '4px',
-                            }}
-                          >
-                            Próby: {a.attempts_count ?? 0}
-                          </span>
-                          {(a.attempts_count ?? 0) > 0 && (
-                            <>
-                              <span
-                                style={{
-                                  fontSize: '0.6rem',
-                                  fontWeight: 800,
-                                  background: (a.success_count ?? 0) > 0 ? '#dcfce7' : '#f3f4f6',
-                                  color: (a.success_count ?? 0) > 0 ? '#15803d' : '#6b7280',
-                                  border: '1px solid #000',
-                                  padding: '1px 4px',
-                                  borderRadius: '4px',
-                                }}
-                              >
-                                ✓ {a.success_count ?? 0}
-                              </span>
-                              {(a.failed_count ?? 0) > 0 && (
-                                <span
-                                  style={{
-                                    fontSize: '0.6rem',
-                                    fontWeight: 800,
-                                    background: '#fee2e2',
-                                    color: '#b91c1c',
-                                    border: '1px solid #000',
-                                    padding: '1px 4px',
-                                    borderRadius: '4px',
-                                  }}
-                                >
-                                  ✕ {a.failed_count}
-                                </span>
-                              )}
-                              {a.best_score != null && (
-                                <span
-                                  style={{
-                                    fontSize: '0.6rem',
-                                    fontWeight: 800,
-                                    background: '#fef3c7',
-                                    color: '#92400e',
-                                    border: '1px solid #000',
-                                    padding: '1px 4px',
-                                    borderRadius: '4px',
-                                  }}
-                                >
-                                  Max: {a.best_score}%
-                                </span>
-                              )}
-                            </>
-                          )}
-                        </div>
-
                         {a.note && (
                           <div
                             style={{
@@ -356,20 +292,6 @@ export default function UserProfileDrawer({
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '2px', fontSize: '0.64rem', color: '#4b5563', fontWeight: 700 }}>
                           <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                             {a.class_name}
-                          </span>
-                          <span
-                            style={{
-                              background: isDone ? 'var(--neo-green)' : 'var(--neo-yellow)',
-                              border: '1px solid #000',
-                              padding: '1px 5px',
-                              borderRadius: '4px',
-                              fontWeight: 900,
-                              color: '#000',
-                              flexShrink: 0,
-                              letterSpacing: '0.02em',
-                            }}
-                          >
-                            {a.task_count} {a.task_count === 1 ? 'zadanie' : a.task_count < 5 ? 'zadania' : 'zadań'} &rarr;
                           </span>
                         </div>
 
