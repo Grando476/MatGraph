@@ -163,13 +163,6 @@ export default function LessonView({ lessonId }: LessonViewProps) {
         <div className={`mx-auto bg-[var(--bg-card)] border-3 border-[var(--border-dark)] p-6 sm:p-10 rounded-2xl shadow-[8px_8px_0px_0px_#000] transition-all duration-300 ${isPdfExpanded ? "max-w-7xl" : showPdfPreview ? "max-w-6xl" : "max-w-4xl"
           }`}>
 
-          {/* Importance / Category Tag */}
-          <div className="flex items-center gap-2 mb-4">
-            <span className="bg-[var(--neo-blue)] text-black font-extrabold text-xs px-3 py-1 border-2 border-black rounded-md shadow-[2px_2px_0px_0px_#000] uppercase">
-              Zagadnienie
-            </span>
-          </div>
-
           <h1 className="text-3xl sm:text-4xl font-black mb-6 text-[var(--text-main)] tracking-tight">
             {lesson.title}
           </h1>
@@ -292,15 +285,6 @@ export default function LessonView({ lessonId }: LessonViewProps) {
                   Materiały teoretyczne do tej lekcji są jeszcze w przygotowaniu. Możesz od razu przejść do rozwiązywania powiązanych zadań!
                 </p>
                 <div className="flex items-center justify-center gap-3 flex-wrap">
-                  {lesson.task_groups && lesson.task_groups.length > 0 && (
-                    <a
-                      href="#task-groups"
-                      className="inline-flex items-center gap-2 bg-[var(--neo-green)] hover:bg-[#72e89f] text-black font-black text-xs uppercase tracking-wider px-4 py-2.5 rounded-xl border-2 border-black shadow-[3px_3px_0px_0px_#000] hover:shadow-[1px_1px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] transition-all cursor-pointer"
-                    >
-                      <span>Przejdź do zadań</span>
-                      <span>&darr;</span>
-                    </a>
-                  )}
                   <button
                     type="button"
                     onClick={refreshPdfUrl}

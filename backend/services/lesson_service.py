@@ -19,9 +19,11 @@ class LessonService:
 
             # Predefined PDF path in object storage: subtopics/<subtopic_id>/basic.pdf
             pdf_path = StorageService.get_subtopic_pdf_path(lesson_id)
-            lesson["pdf_path"] = pdf_path
             storage_res = StorageService.generate_presigned_url(pdf_path)
-            lesson["pdf_url"] = storage_res.get("url")
+            pdf_url = storage_res.get("url")
+            lesson["pdf_url"] = pdf_url
+            lesson["has_pdf"] = bool(pdf_url)
+            lesson["pdf_path"] = pdf_path if pdf_url else None
             if storage_res.get("error"):
                 lesson["pdf_error"] = storage_res.get("error")
 

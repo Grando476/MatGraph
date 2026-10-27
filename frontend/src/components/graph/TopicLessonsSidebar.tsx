@@ -208,7 +208,7 @@ export default function TopicLessonsSidebar({
                         >
                           Lekcja {index + 1}
                         </span>
-                        {lesson.pdf_path && (
+                        {(Boolean(lesson.has_pdf) || Boolean(lesson.pdf_url)) && (
                           <span
                             style={{
                               fontSize: '0.65rem',

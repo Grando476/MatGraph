@@ -65,7 +65,18 @@ class NodeService:
             )
             lessons = cur.fetchall()
             for lesson in lessons:
-                lesson["pdf_path"] = StorageService.get_subtopic_pdf_path(str(lesson["id"]))
+                subtopic_id = str(lesson["id"])
+                pdf_path = StorageService.get_subtopic_pdf_path(subtopic_id)
+                storage_res = StorageService.generate_presigned_url(pdf_path)
+                pdf_url = storage_res.get("url")
+                if pdf_url:
+                    lesson["pdf_path"] = pdf_path
+                    lesson["pdf_url"] = pdf_url
+                    lesson["has_pdf"] = True
+                else:
+                    lesson["pdf_path"] = None
+                    lesson["pdf_url"] = None
+                    lesson["has_pdf"] = False
             return {"lessons": lessons}
         finally:
             cur.close()
