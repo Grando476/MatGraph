@@ -49,7 +49,7 @@ export default function TutorPage() {
     try {
       setLoadingTaskGroups(true);
       const token = await getAuthToken();
-      const res = await fetch(`${getApiUrl()}/api/v1/tutor/available-task-groups`, {
+      const res = await fetch(`${getApiUrl()}/api/v1/tutor/task-groups`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
       if (res.ok) {
