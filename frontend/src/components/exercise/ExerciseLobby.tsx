@@ -169,13 +169,12 @@ export default function ExerciseLobby({
                       type="button"
                       disabled={isDisabled}
                       onClick={() => setSelectedDifficulty(d.id)}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-black border-2 border-black transition-all ${
-                        isDisabled
+                      className={`px-3 py-1.5 rounded-lg text-xs font-black border-2 border-black transition-all ${isDisabled
                           ? "bg-gray-300 text-gray-500 shadow-[3px_3px_0px_0px_#000] cursor-not-allowed"
                           : isSelected
-                          ? "bg-[var(--neo-yellow)] text-black shadow-[2px_2px_0px_0px_#000] translate-x-[1px] translate-y-[1px]"
-                          : "bg-white text-black hover:bg-gray-100 shadow-[3px_3px_0px_0px_#000] cursor-pointer"
-                      }`}
+                            ? "bg-[var(--neo-yellow)] text-black shadow-[2px_2px_0px_0px_#000] translate-x-[1px] translate-y-[1px]"
+                            : "bg-white text-black hover:bg-gray-100 shadow-[3px_3px_0px_0px_#000] cursor-pointer"
+                        }`}
                     >
                       {d.label}
                     </button>
@@ -214,10 +213,6 @@ export default function ExerciseLobby({
               <div className="flex items-center justify-between text-xs font-bold">
                 <span className="text-gray-600 uppercase">Próg zdania:</span>
                 <span className="font-black text-green-700">80.0%</span>
-              </div>
-              <div className="flex items-center justify-between text-xs font-bold">
-                <span className="text-gray-600 uppercase">Zapis prób:</span>
-                <span className="font-black text-red-600">Rejestracja w historii</span>
               </div>
             </div>
           </div>
