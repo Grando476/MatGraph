@@ -1,8 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import 'katex/dist/katex.min.css';
-import { BlockMath } from 'react-katex';
 import { useEffect, useState, useCallback } from "react";
 import { FileText, Download, ExternalLink, Eye, EyeOff, AlertCircle, Loader2, Maximize2, Minimize2 } from "lucide-react";
 import Footer from "@/components/Footer";
@@ -175,18 +173,6 @@ export default function LessonView({ lessonId }: LessonViewProps) {
           <h1 className="text-3xl sm:text-4xl font-black mb-6 text-[var(--text-main)] tracking-tight">
             {lesson.title}
           </h1>
-
-          {/* Theoretical Content (LaTeX) - only displayed if present */}
-          {lesson.content_tex && (
-            <div className="mb-8">
-              <div className="inline-block bg-[var(--neo-yellow)] px-3 py-1 border-2 border-black rounded-md font-black text-xs uppercase tracking-wider mb-4 shadow-[2px_2px_0px_0px_#000]">
-                Treść lekcji
-              </div>
-              <div className="p-6 bg-[var(--bg-deep)] border-2.5 border-[var(--border-dark)] rounded-xl text-center overflow-x-auto text-[var(--text-main)] shadow-[4px_4px_0px_0px_#000] font-medium">
-                <BlockMath math={lesson.content_tex} />
-              </div>
-            </div>
-          )}
 
           {/* PDF Materials Section */}
           {lesson.pdf_path && (
