@@ -27,19 +27,16 @@ class NodeService:
         NodeService.ensure_is_hidden_column()
         conn = get_db_connection()
         cur = conn.cursor(cursor_factory=RealDictCursor)
-        is_admin = (role == "admin")
         try:
-            # For non-admin users, hidden nodes are completely filtered out
-            hidden_filter = "" if is_admin else "WHERE COALESCE(t.is_hidden, false) = false"
-
             if user_id:
-                query = f"""
+                query = """
                     SELECT 
                         t.id, 
                         t.name, 
                         t.ui_x, 
                         t.ui_y, 
                         COALESCE(t.is_hidden, false) as is_hidden,
+                        COALESCE(t.is_hidden, false) as is_blocked,
                         COUNT(DISTINCT s.id) as subtasks_count,
                         COUNT(DISTINCT tg.id) as total_task_groups,
                         COUNT(DISTINCT CASE WHEN ta.passed = true THEN tg.id END) as passed_task_groups
@@ -48,42 +45,31 @@ class NodeService:
                     LEFT JOIN public.task_groups tg ON s.id = tg.subtopic_id
                     LEFT JOIN public.task_group_test_attempts ta 
                         ON tg.id = ta.task_group_id AND ta.student_id = %s
-                    {hidden_filter}
                     GROUP BY t.id, t.name, t.ui_x, t.ui_y, t.is_hidden;
                 """
                 cur.execute(query, (user_id,))
             else:
-                query = f"""
+                query = """
                     SELECT 
                         t.id, 
                         t.name, 
                         t.ui_x, 
                         t.ui_y, 
                         COALESCE(t.is_hidden, false) as is_hidden,
+                        COALESCE(t.is_hidden, false) as is_blocked,
                         COUNT(DISTINCT s.id) as subtasks_count,
                         COUNT(DISTINCT tg.id) as total_task_groups,
                         0 as passed_task_groups
                     FROM public.topics t
                     LEFT JOIN public.subtopics s ON t.id = s.topic_id
                     LEFT JOIN public.task_groups tg ON s.id = tg.subtopic_id
-                    {hidden_filter}
                     GROUP BY t.id, t.name, t.ui_x, t.ui_y, t.is_hidden;
                 """
                 cur.execute(query)
             nodes = cur.fetchall()
 
-            # Fetch edges (topic_edges). For non-admin users, omit edges to/from hidden topics
-            if is_admin:
-                cur.execute("SELECT parent_id as source, child_id as target FROM public.topic_edges;")
-            else:
-                cur.execute("""
-                    SELECT e.parent_id as source, e.child_id as target 
-                    FROM public.topic_edges e
-                    JOIN public.topics tp ON e.parent_id = tp.id
-                    JOIN public.topics tc ON e.child_id = tc.id
-                    WHERE COALESCE(tp.is_hidden, false) = false 
-                      AND COALESCE(tc.is_hidden, false) = false;
-                """)
+            # Always fetch all edges for all users
+            cur.execute("SELECT parent_id as source, child_id as target FROM public.topic_edges;")
             edges = cur.fetchall()
 
             return {"nodes": nodes, "edges": edges}

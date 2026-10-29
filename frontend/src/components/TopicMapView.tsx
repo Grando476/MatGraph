@@ -255,6 +255,8 @@ export default function TopicMapView() {
             totalTaskGroups: Number(n.total_task_groups) || 0,
             passedTaskGroups: Number(n.passed_task_groups) || 0,
             isHidden: Boolean(n.is_hidden ?? n.is_blocked),
+            isBlocked: Boolean(n.is_hidden ?? n.is_blocked),
+            isAdmin: currentUser?.role === 'admin',
           },
           selected: initialNodeId ? n.id === initialNodeId : false,
         }));
@@ -416,7 +418,7 @@ export default function TopicMapView() {
   };
 
   const handleHideNodesWithoutPdf = async () => {
-    if (!confirm("Czy na pewno chcesz ukryć wszystkie węzły, które nie mają wrzuconego pliku PDF do chociaż jednej ze swoich lekcji przed zwykłymi użytkownikami?")) {
+    if (!confirm("Czy na pewno chcesz zablokować lekcje we wszystkich węzłach bez pliku PDF dla uczniów?")) {
       return;
     }
     setHidingNodes(true);
@@ -442,17 +444,17 @@ export default function TopicMapView() {
       }
       const data = await res.json();
       await fetchNodes();
-      alert(data.message || `Operacja zakończona! Ukryto węzłów: ${data.hidden_count}, Widocznych: ${data.visible_count}`);
+      alert(data.message || `Operacja zakończona! Zablokowano węzłów: ${data.hidden_count ?? data.blocked_count}, Dostępnych: ${data.visible_count ?? data.unblocked_count}`);
     } catch (err: any) {
-      console.error("Error hiding nodes:", err);
-      alert(`Nie udało się ukryć węzłów: ${err.message}`);
+      console.error("Error blocking nodes:", err);
+      alert(`Nie udało się zablokować węzłów: ${err.message}`);
     } finally {
       setHidingNodes(false);
     }
   };
 
   const handleUnhideAllNodes = async () => {
-    if (!confirm("Czy na pewno chcesz odkryć wszystkie ukryte węzły dla wszystkich użytkowników?")) {
+    if (!confirm("Czy na pewno chcesz odblokować wszystkie węzły dla uczniów?")) {
       return;
     }
     setHidingNodes(true);
@@ -478,10 +480,10 @@ export default function TopicMapView() {
       }
       const data = await res.json();
       await fetchNodes();
-      alert(data.message || `Wszystkie węzły zostały odkryte! Liczba odkrytych węzłów: ${data.unhidden_count}`);
+      alert(data.message || `Wszystkie węzły zostały odblokowane! Liczba odblokowanych węzłów: ${data.unhidden_count ?? data.unblocked_count}`);
     } catch (err: any) {
-      console.error("Error unhiding nodes:", err);
-      alert(`Nie udało się odkryć węzłów: ${err.message}`);
+      console.error("Error unblocking nodes:", err);
+      alert(`Nie udało się odblokować węzłów: ${err.message}`);
     } finally {
       setHidingNodes(false);
     }

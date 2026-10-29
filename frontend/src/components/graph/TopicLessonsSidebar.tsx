@@ -49,7 +49,7 @@ export default function TopicLessonsSidebar({
         style={{
           padding: '18px 20px',
           borderBottom: '2.5px solid #000000',
-          background: isHidden ? '#fef3c7' : 'var(--bg-deep)',
+          background: (isHidden && isAdmin) ? '#fef3c7' : 'var(--bg-deep)',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
@@ -60,8 +60,8 @@ export default function TopicLessonsSidebar({
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px', flexWrap: 'wrap' }}>
             <span
               style={{
-                background: isHidden ? '#fde68a' : 'var(--neo-yellow)',
-                color: isHidden ? '#92400e' : '#000000',
+                background: (isHidden && isAdmin) ? '#fde68a' : 'var(--neo-yellow)',
+                color: (isHidden && isAdmin) ? '#92400e' : '#000000',
                 border: '1.5px solid #000000',
                 borderRadius: '4px',
                 padding: '2px 7px',
@@ -74,7 +74,7 @@ export default function TopicLessonsSidebar({
             >
               Temat
             </span>
-            {isHidden && (
+            {isHidden && isAdmin && (
               <span
                 style={{
                   background: '#fef3c7',
@@ -88,14 +88,10 @@ export default function TopicLessonsSidebar({
                   boxShadow: '1px 1px 0px 0px #000000',
                   display: 'inline-flex',
                   alignItems: 'center',
-                  gap: '3px',
+                  gap: '4px',
                 }}
               >
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
-                  <line x1="1" y1="1" x2="23" y2="23" />
-                </svg>
-                Ukryty przed uczniami
+                🔒 Zablokowany dla uczniów
               </span>
             )}
             {(() => {
@@ -180,7 +176,33 @@ export default function TopicLessonsSidebar({
 
       {/* Content */}
       <div style={{ padding: '20px', overflowY: 'auto', flex: 1 }}>
-        {/* Hidden Alert Banner for Admin */}
+        {/* Blocked Alert Banner for Students / Non-admin */}
+        {isHidden && !isAdmin && (
+          <div
+            style={{
+              marginBottom: '16px',
+              padding: '12px 14px',
+              background: '#fef3c7',
+              border: '2px solid #000000',
+              borderRadius: '10px',
+              boxShadow: '3px 3px 0px 0px #000000',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+              color: '#92400e',
+            }}
+          >
+            <span style={{ fontSize: '1.25rem' }}>🔒</span>
+            <div>
+              <div style={{ fontSize: '0.84rem', fontWeight: 900 }}>Lekcje są obecnie niedostępne</div>
+              <div style={{ fontSize: '0.72rem', fontWeight: 600, color: '#78350f', marginTop: '2px' }}>
+                Materiały dla tego tematu są w trakcie przygotowywania.
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Blocked Alert Banner for Admin */}
         {isHidden && isAdmin && (
           <div
             style={{
@@ -197,13 +219,13 @@ export default function TopicLessonsSidebar({
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.82rem', fontWeight: 900, color: '#92400e' }}>
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
-                <line x1="1" y1="1" x2="23" y2="23" />
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
               </svg>
-              <span>Węzeł ukryty przed uczniami</span>
+              <span>Węzeł zablokowany dla uczniów</span>
             </div>
             <p style={{ margin: 0, fontSize: '0.74rem', color: '#451a03', fontWeight: 600, lineHeight: 1.35 }}>
-              Ten węzeł nie jest widoczny dla zwykłych użytkowników na mapie wiedzy. Widzisz go jako administrator.
+              Uczniowie widzą ten węzeł na mapie, ale przyciski lekcji są dla nich zablokowane (brak pliku PDF).
             </p>
             {toggleVisibilityHandler && (
               <button
@@ -233,16 +255,16 @@ export default function TopicLessonsSidebar({
                 }}
               >
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                  <circle cx="12" cy="12" r="3" />
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                  <path d="M7 11V7a5 5 0 0 1 9.9-1" />
                 </svg>
-                <span>Odkryj ten węzeł</span>
+                <span>Odblokuj ten węzeł</span>
               </button>
             )}
           </div>
         )}
 
-        {/* Admin manual hide button if node is currently visible */}
+        {/* Admin manual block button if node is currently unblocked */}
         {!isHidden && isAdmin && toggleVisibilityHandler && (
           <div style={{ marginBottom: '16px' }}>
             <button
@@ -272,10 +294,10 @@ export default function TopicLessonsSidebar({
               }}
             >
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
-                <line x1="1" y1="1" x2="23" y2="23" />
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
               </svg>
-              <span>Ukryj ten węzeł przed uczniami</span>
+              <span>Zablokuj ten węzeł dla uczniów</span>
             </button>
           </div>
         )}
@@ -313,6 +335,7 @@ export default function TopicLessonsSidebar({
                     opacity: (isHidden && !isAdmin) ? 0.65 : 1,
                     boxShadow: (isHidden && !isAdmin) ? '2px 2px 0px 0px #000000' : '4px 4px 0px 0px #000000',
                   }}
+                  title={isHidden && !isAdmin ? "Lekcje w tym temacie są obecnie zablokowane" : undefined}
                   onClick={() => {
                     if (isHidden && !isAdmin) return;
                     onSelectLesson(lesson.id);
@@ -341,7 +364,7 @@ export default function TopicLessonsSidebar({
                             textTransform: 'uppercase',
                             letterSpacing: '0.04em',
                             display: 'inline-block',
-                            background: 'var(--neo-green)',
+                            background: (isHidden && !isAdmin) ? '#e5e7eb' : 'var(--neo-green)',
                             border: '1.5px solid #000000',
                             borderRadius: '4px',
                             padding: '1px 7px',
@@ -369,11 +392,15 @@ export default function TopicLessonsSidebar({
                           </span>
                         )}
                       </div>
-                      <h4 style={{ margin: 0, color: '#000000', fontSize: '0.98rem', fontWeight: 800, lineHeight: '1.25' }}>
+                      <h4 style={{ margin: 0, color: (isHidden && !isAdmin) ? '#6b7280' : '#000000', fontSize: '0.98rem', fontWeight: 800, lineHeight: '1.25' }}>
                         {lesson.title}
                       </h4>
                     </div>
-                    <span style={{ fontSize: '1.1rem', fontWeight: 900 }}>&rarr;</span>
+                    {isHidden && !isAdmin ? (
+                      <span title="Lekcja zablokowana" style={{ fontSize: '1.1rem' }}>🔒</span>
+                    ) : (
+                      <span style={{ fontSize: '1.1rem', fontWeight: 900 }}>&rarr;</span>
+                    )}
                   </div>
                 </li>
 

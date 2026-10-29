@@ -38,6 +38,7 @@ async def hide_nodes_without_pdf(current_user: dict = Depends(get_current_user))
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/unhide-all")
+@router.post("/unblock-all")
 async def unhide_all_nodes(current_user: dict = Depends(get_current_user)):
     """
     Przywraca widoczność wszystkich węzłów dla użytkowników.
