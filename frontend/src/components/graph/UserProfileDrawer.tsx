@@ -17,6 +17,9 @@ interface UserProfileDrawerProps {
   onToggleMoveNodes: () => void;
   savingLayout: boolean;
   onSaveLayout: () => void;
+  hidingNodes?: boolean;
+  onHideNodesWithoutPdf?: () => void;
+  onUnhideAllNodes?: () => void;
   onLogout: () => void;
 }
 
@@ -34,6 +37,9 @@ export default function UserProfileDrawer({
   onToggleMoveNodes,
   savingLayout,
   onSaveLayout,
+  hidingNodes = false,
+  onHideNodesWithoutPdf,
+  onUnhideAllNodes,
   onLogout,
 }: UserProfileDrawerProps) {
   const router = useRouter();
@@ -574,6 +580,88 @@ export default function UserProfileDrawer({
                 </svg>
                 {savingLayout ? 'Zapisywanie...' : 'Zapisz układ'}
               </button>
+
+              {onHideNodesWithoutPdf && (
+                <button
+                  onClick={onHideNodesWithoutPdf}
+                  disabled={hidingNodes}
+                  title="Ukryj przed użytkownikami wszystkie węzły, które nie mają wrzuconego pliku PDF w żadnej ze swoich lekcji"
+                  style={{
+                    width: '100%',
+                    padding: '8px 12px',
+                    background: hidingNodes ? '#e5e7eb' : '#fee2e2',
+                    color: '#991b1b',
+                    border: '2px solid #000000',
+                    borderRadius: '8px',
+                    fontWeight: 800,
+                    fontSize: '0.78rem',
+                    cursor: hidingNodes ? 'not-allowed' : 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px',
+                    boxShadow: '2px 2px 0px 0px #000000',
+                    transition: 'all 0.15s',
+                  }}
+                  onMouseEnter={(e: any) => {
+                    if (!hidingNodes) {
+                      e.currentTarget.style.transform = 'translate(-1px, -1px)';
+                      e.currentTarget.style.boxShadow = '3.5px 3.5px 0px 0px #000000';
+                    }
+                  }}
+                  onMouseLeave={(e: any) => {
+                    e.currentTarget.style.transform = 'none';
+                    e.currentTarget.style.boxShadow = '2px 2px 0px 0px #000000';
+                  }}
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                    <line x1="1" y1="1" x2="23" y2="23" />
+                  </svg>
+                  <span>{hidingNodes ? 'Ukrywanie węzłów...' : 'Ukryj węzły bez PDF'}</span>
+                </button>
+              )}
+
+              {onUnhideAllNodes && (
+                <button
+                  onClick={onUnhideAllNodes}
+                  disabled={hidingNodes}
+                  title="Przywróć widoczność wszystkich węzłów dla użytkowników"
+                  style={{
+                    width: '100%',
+                    padding: '8px 12px',
+                    background: hidingNodes ? '#e5e7eb' : '#ffffff',
+                    color: '#000000',
+                    border: '2px solid #000000',
+                    borderRadius: '8px',
+                    fontWeight: 800,
+                    fontSize: '0.78rem',
+                    cursor: hidingNodes ? 'not-allowed' : 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px',
+                    boxShadow: '2px 2px 0px 0px #000000',
+                    transition: 'all 0.15s',
+                  }}
+                  onMouseEnter={(e: any) => {
+                    if (!hidingNodes) {
+                      e.currentTarget.style.transform = 'translate(-1px, -1px)';
+                      e.currentTarget.style.boxShadow = '3.5px 3.5px 0px 0px #000000';
+                    }
+                  }}
+                  onMouseLeave={(e: any) => {
+                    e.currentTarget.style.transform = 'none';
+                    e.currentTarget.style.boxShadow = '2px 2px 0px 0px #000000';
+                  }}
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                    <circle cx="12" cy="12" r="3" />
+                  </svg>
+                  <span>Odkryj wszystkie węzły</span>
+                </button>
+              )}
             </div>
           )}
 

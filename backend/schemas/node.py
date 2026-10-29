@@ -8,3 +8,9 @@ class NodePosition(BaseModel):
 
 class UpdatePositionsRequest(BaseModel):
     positions: List[NodePosition]
+
+class ToggleVisibilityRequest(BaseModel):
+    is_hidden: bool
+
+class BlockNodeRequest(BaseModel):
+    is_blocked: bool

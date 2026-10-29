@@ -62,6 +62,7 @@ export default function TopicMapView() {
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const [loading, setLoading] = useState(true);
   const [savingLayout, setSavingLayout] = useState(false);
+  const [hidingNodes, setHidingNodes] = useState(false);
   const [canMoveNodes, setCanMoveNodes] = useState(false);
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
   const [sidebarLessons, setSidebarLessons] = useState<any[]>([]);
@@ -227,76 +228,78 @@ export default function TopicMapView() {
     }
   }, []);
 
-  useEffect(() => {
-    const fetchNodes = async () => {
-      try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
-        const token = await getAuthToken();
-        const headers: Record<string, string> = {};
-        if (token) {
-          headers["Authorization"] = `Bearer ${token}`;
-        }
-        const res = await fetch(`${apiUrl}/api/v1/nodes`, { headers });
-        if (res.ok) {
-          const data = await res.json();
-          if (!data.nodes || !data.edges) return;
+  const fetchNodes = useCallback(async () => {
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+      const token = await getAuthToken();
+      const headers: Record<string, string> = {};
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+      const res = await fetch(`${apiUrl}/api/v1/nodes`, { headers });
+      if (res.ok) {
+        const data = await res.json();
+        if (!data.nodes || !data.edges) return;
 
-          const initialNodeId = getInitialNodeId();
+        const initialNodeId = getInitialNodeId();
 
-          const rawNodes: Node[] = data.nodes.map((n: any) => ({
-            id: n.id,
-            type: 'cyber',
-            targetPosition: Position.Bottom,
-            sourcePosition: Position.Top,
-            position: { x: n.ui_x || 0, y: n.ui_y || 0 },
-            data: { 
-              label: n.name, 
-              subtasksCount: n.subtasks_count,
-              totalTaskGroups: Number(n.total_task_groups) || 0,
-              passedTaskGroups: Number(n.passed_task_groups) || 0,
-            },
-            selected: initialNodeId ? n.id === initialNodeId : false,
-          }));
+        const rawNodes: Node[] = data.nodes.map((n: any) => ({
+          id: n.id,
+          type: 'cyber',
+          targetPosition: Position.Bottom,
+          sourcePosition: Position.Top,
+          position: { x: n.ui_x || 0, y: n.ui_y || 0 },
+          data: { 
+            label: n.name, 
+            subtasksCount: n.subtasks_count,
+            totalTaskGroups: Number(n.total_task_groups) || 0,
+            passedTaskGroups: Number(n.passed_task_groups) || 0,
+            isHidden: Boolean(n.is_hidden ?? n.is_blocked),
+          },
+          selected: initialNodeId ? n.id === initialNodeId : false,
+        }));
 
-          const rawEdges: Edge[] = data.edges.map((e: any, idx: number) => ({
-            id: `e${e.source}-${e.target}-${idx}`,
-            source: e.source,
-            target: e.target,
-            type: 'default',
-            animated: false,
-            style: {
-              stroke: '#000000',
-              strokeWidth: 2.5,
-            }
-          }));
+        const rawEdges: Edge[] = data.edges.map((e: any, idx: number) => ({
+          id: `e${e.source}-${e.target}-${idx}`,
+          source: e.source,
+          target: e.target,
+          type: 'default',
+          animated: false,
+          style: {
+            stroke: '#000000',
+            strokeWidth: 2.5,
+          }
+        }));
 
-          setNodes(rawNodes);
-          setEdges(rawEdges);
-          setTranslateExtent(calculateExtent(rawNodes));
+        setNodes(rawNodes);
+        setEdges(rawEdges);
+        setTranslateExtent(calculateExtent(rawNodes));
 
-          if (initialNodeId) {
-            const matchedNode = rawNodes.find((n) => n.id === initialNodeId);
-            if (matchedNode) {
-              setSelectedNode(matchedNode);
-              restoredNodeIdRef.current = initialNodeId;
-              fetchNodeLessons(initialNodeId);
-            } else {
-              setInitialFitView(true);
-              if (typeof window !== "undefined") {
-                sessionStorage.removeItem("graph_selected_node_id");
-                sessionStorage.removeItem("graph_zoom");
-              }
+        if (initialNodeId) {
+          const matchedNode = rawNodes.find((n) => n.id === initialNodeId);
+          if (matchedNode) {
+            setSelectedNode(matchedNode);
+            restoredNodeIdRef.current = initialNodeId;
+            fetchNodeLessons(initialNodeId);
+          } else {
+            setInitialFitView(true);
+            if (typeof window !== "undefined") {
+              sessionStorage.removeItem("graph_selected_node_id");
+              sessionStorage.removeItem("graph_zoom");
             }
           }
         }
-      } catch (err) {
-        console.error("Error fetching nodes:", err);
-      } finally {
-        setLoading(false);
       }
-    };
+    } catch (err) {
+      console.error("Error fetching nodes:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, [setNodes, setEdges, fetchNodeLessons]);
+
+  useEffect(() => {
     fetchNodes();
-  }, [setNodes, setEdges, fetchNodeLessons, currentUser]);
+  }, [fetchNodes, currentUser]);
 
   useEffect(() => {
     if (
@@ -409,6 +412,107 @@ export default function TopicMapView() {
       alert(`Nie udało się zapisać stanu.\n\nSzczegóły: ${err.message}`);
     } finally {
       setSavingLayout(false);
+    }
+  };
+
+  const handleHideNodesWithoutPdf = async () => {
+    if (!confirm("Czy na pewno chcesz ukryć wszystkie węzły, które nie mają wrzuconego pliku PDF do chociaż jednej ze swoich lekcji przed zwykłymi użytkownikami?")) {
+      return;
+    }
+    setHidingNodes(true);
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+      const token = await getAuthToken();
+      const res = await fetch(`${apiUrl}/api/v1/nodes/hide-without-pdf`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      });
+      if (!res.ok) {
+        let errText = "Błąd serwera";
+        try {
+          const errData = await res.json();
+          errText = errData.detail || errData.error || JSON.stringify(errData);
+        } catch {
+          errText = await res.text();
+        }
+        throw new Error(errText);
+      }
+      const data = await res.json();
+      await fetchNodes();
+      alert(data.message || `Operacja zakończona! Ukryto węzłów: ${data.hidden_count}, Widocznych: ${data.visible_count}`);
+    } catch (err: any) {
+      console.error("Error hiding nodes:", err);
+      alert(`Nie udało się ukryć węzłów: ${err.message}`);
+    } finally {
+      setHidingNodes(false);
+    }
+  };
+
+  const handleUnhideAllNodes = async () => {
+    if (!confirm("Czy na pewno chcesz odkryć wszystkie ukryte węzły dla wszystkich użytkowników?")) {
+      return;
+    }
+    setHidingNodes(true);
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+      const token = await getAuthToken();
+      const res = await fetch(`${apiUrl}/api/v1/nodes/unhide-all`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      });
+      if (!res.ok) {
+        let errText = "Błąd serwera";
+        try {
+          const errData = await res.json();
+          errText = errData.detail || errData.error || JSON.stringify(errData);
+        } catch {
+          errText = await res.text();
+        }
+        throw new Error(errText);
+      }
+      const data = await res.json();
+      await fetchNodes();
+      alert(data.message || `Wszystkie węzły zostały odkryte! Liczba odkrytych węzłów: ${data.unhidden_count}`);
+    } catch (err: any) {
+      console.error("Error unhiding nodes:", err);
+      alert(`Nie udało się odkryć węzłów: ${err.message}`);
+    } finally {
+      setHidingNodes(false);
+    }
+  };
+
+  const handleToggleNodeVisibility = async (nodeId: string, currentHidden: boolean) => {
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+      const token = await getAuthToken();
+      const res = await fetch(`${apiUrl}/api/v1/nodes/${nodeId}/visibility`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ is_hidden: !currentHidden }),
+      });
+      if (res.ok) {
+        await fetchNodes();
+        setSelectedNode((prev) =>
+          prev && prev.id === nodeId
+            ? { ...prev, data: { ...prev.data, isHidden: !currentHidden } }
+            : prev
+        );
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        alert(errData.detail || "Nie udało się zmienić widoczności węzła.");
+      }
+    } catch (err: any) {
+      console.error("Błąd zmiany widoczności węzła:", err);
+      alert(`Błąd: ${err.message}`);
     }
   };
 
@@ -588,6 +692,9 @@ export default function TopicMapView() {
                   onToggleMoveNodes={() => setCanMoveNodes(!canMoveNodes)}
                   savingLayout={savingLayout}
                   onSaveLayout={saveLayout}
+                  hidingNodes={hidingNodes}
+                  onHideNodesWithoutPdf={handleHideNodesWithoutPdf}
+                  onUnhideAllNodes={handleUnhideAllNodes}
                   onLogout={handleLogout}
                 />
               )}
@@ -636,6 +743,8 @@ export default function TopicMapView() {
         selectedNode={selectedNode}
         sidebarLessons={sidebarLessons}
         loadingLessons={loadingLessons}
+        currentUser={currentUser}
+        onToggleNodeVisibility={handleToggleNodeVisibility}
         onClose={() => {
           setSelectedNode(null);
           setNodes((prev) => prev.map((n) => ({ ...n, selected: false })));

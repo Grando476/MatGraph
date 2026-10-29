@@ -2,11 +2,15 @@
 
 import { Fragment } from "react";
 import { Node } from "@xyflow/react";
+import { UserProfile } from "@/utils/auth";
 
 interface TopicLessonsSidebarProps {
   selectedNode: Node | null;
   sidebarLessons: any[];
   loadingLessons: boolean;
+  currentUser?: UserProfile | null;
+  onToggleNodeVisibility?: (nodeId: string, currentHidden: boolean) => void;
+  onToggleNodeBlock?: (nodeId: string, currentBlocked: boolean) => void; // alias
   onClose: () => void;
   onSelectLesson: (lessonId: string) => void;
 }
@@ -15,10 +19,18 @@ export default function TopicLessonsSidebar({
   selectedNode,
   sidebarLessons,
   loadingLessons,
+  currentUser,
+  onToggleNodeVisibility,
+  onToggleNodeBlock,
   onClose,
   onSelectLesson,
 }: TopicLessonsSidebarProps) {
   if (!selectedNode) return null;
+
+  const toggleVisibilityHandler = onToggleNodeVisibility || onToggleNodeBlock;
+  const nodeData = selectedNode.data as any;
+  const isHidden = Boolean(nodeData?.isHidden ?? nodeData?.isBlocked);
+  const isAdmin = currentUser?.role === "admin";
 
   return (
     <div
@@ -37,7 +49,7 @@ export default function TopicLessonsSidebar({
         style={{
           padding: '18px 20px',
           borderBottom: '2.5px solid #000000',
-          background: 'var(--bg-deep)',
+          background: isHidden ? '#fef3c7' : 'var(--bg-deep)',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
@@ -45,10 +57,11 @@ export default function TopicLessonsSidebar({
         }}
       >
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px', flexWrap: 'wrap' }}>
             <span
               style={{
-                background: 'var(--neo-yellow)',
+                background: isHidden ? '#fde68a' : 'var(--neo-yellow)',
+                color: isHidden ? '#92400e' : '#000000',
                 border: '1.5px solid #000000',
                 borderRadius: '4px',
                 padding: '2px 7px',
@@ -61,8 +74,31 @@ export default function TopicLessonsSidebar({
             >
               Temat
             </span>
+            {isHidden && (
+              <span
+                style={{
+                  background: '#fef3c7',
+                  color: '#92400e',
+                  border: '1.5px solid #000000',
+                  borderRadius: '4px',
+                  padding: '2px 7px',
+                  fontSize: '0.68rem',
+                  fontWeight: 900,
+                  textTransform: 'uppercase',
+                  boxShadow: '1px 1px 0px 0px #000000',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '3px',
+                }}
+              >
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                  <line x1="1" y1="1" x2="23" y2="23" />
+                </svg>
+                Ukryty przed uczniami
+              </span>
+            )}
             {(() => {
-              const nodeData = selectedNode.data as any;
               const passed = Number(nodeData?.passedTaskGroups) || 0;
               const total = Number(nodeData?.totalTaskGroups) || 0;
               const isDone = total > 0 && passed >= total;
@@ -80,7 +116,7 @@ export default function TopicLessonsSidebar({
                     display: 'inline-block',
                   }}
                 >
-                  Zaliczone grupy: {passed}/{total}
+                  Zaliczone: {passed}/{total}
                 </span>
               );
             })()}
@@ -144,6 +180,106 @@ export default function TopicLessonsSidebar({
 
       {/* Content */}
       <div style={{ padding: '20px', overflowY: 'auto', flex: 1 }}>
+        {/* Hidden Alert Banner for Admin */}
+        {isHidden && isAdmin && (
+          <div
+            style={{
+              marginBottom: '16px',
+              padding: '12px 14px',
+              background: '#fef3c7',
+              border: '2px solid #000000',
+              borderRadius: '10px',
+              boxShadow: '3px 3px 0px 0px #000000',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '8px',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.82rem', fontWeight: 900, color: '#92400e' }}>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                <line x1="1" y1="1" x2="23" y2="23" />
+              </svg>
+              <span>Węzeł ukryty przed uczniami</span>
+            </div>
+            <p style={{ margin: 0, fontSize: '0.74rem', color: '#451a03', fontWeight: 600, lineHeight: 1.35 }}>
+              Ten węzeł nie jest widoczny dla zwykłych użytkowników na mapie wiedzy. Widzisz go jako administrator.
+            </p>
+            {toggleVisibilityHandler && (
+              <button
+                onClick={() => toggleVisibilityHandler(selectedNode.id, isHidden)}
+                style={{
+                  alignSelf: 'flex-start',
+                  marginTop: '2px',
+                  padding: '5px 12px',
+                  background: '#ffffff',
+                  color: '#000000',
+                  border: '1.5px solid #000000',
+                  borderRadius: '6px',
+                  fontSize: '0.74rem',
+                  fontWeight: 900,
+                  cursor: 'pointer',
+                  boxShadow: '2px 2px 0px 0px #000000',
+                  transition: 'all 0.15s',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '5px',
+                }}
+                onMouseEnter={(e: any) => {
+                  e.currentTarget.style.background = 'var(--neo-green)';
+                }}
+                onMouseLeave={(e: any) => {
+                  e.currentTarget.style.background = '#ffffff';
+                }}
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+                <span>Odkryj ten węzeł</span>
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Admin manual hide button if node is currently visible */}
+        {!isHidden && isAdmin && toggleVisibilityHandler && (
+          <div style={{ marginBottom: '16px' }}>
+            <button
+              onClick={() => toggleVisibilityHandler(selectedNode.id, isHidden)}
+              style={{
+                width: '100%',
+                padding: '6px 10px',
+                background: '#ffffff',
+                color: '#92400e',
+                border: '1.5px solid #000000',
+                borderRadius: '8px',
+                fontSize: '0.74rem',
+                fontWeight: 800,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px',
+                boxShadow: '2px 2px 0px 0px #000000',
+                transition: 'all 0.15s',
+              }}
+              onMouseEnter={(e: any) => {
+                e.currentTarget.style.background = '#fef3c7';
+              }}
+              onMouseLeave={(e: any) => {
+                e.currentTarget.style.background = '#ffffff';
+              }}
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                <line x1="1" y1="1" x2="23" y2="23" />
+              </svg>
+              <span>Ukryj ten węzeł przed uczniami</span>
+            </button>
+          </div>
+        )}
+
         <h3
           style={{
             fontSize: '0.82rem',
@@ -171,18 +307,24 @@ export default function TopicLessonsSidebar({
                     padding: '16px',
                     border: '2.5px solid #000000',
                     borderRadius: '12px',
-                    cursor: 'pointer',
+                    cursor: (isHidden && !isAdmin) ? 'not-allowed' : 'pointer',
                     transition: 'all 0.15s ease',
-                    background: '#ffffff',
-                    boxShadow: '4px 4px 0px 0px #000000',
+                    background: (isHidden && !isAdmin) ? '#f3f4f6' : '#ffffff',
+                    opacity: (isHidden && !isAdmin) ? 0.65 : 1,
+                    boxShadow: (isHidden && !isAdmin) ? '2px 2px 0px 0px #000000' : '4px 4px 0px 0px #000000',
                   }}
-                  onClick={() => onSelectLesson(lesson.id)}
+                  onClick={() => {
+                    if (isHidden && !isAdmin) return;
+                    onSelectLesson(lesson.id);
+                  }}
                   onMouseEnter={(e: any) => {
+                    if (isHidden && !isAdmin) return;
                     e.currentTarget.style.background = 'var(--neo-yellow)';
                     e.currentTarget.style.transform = 'translate(2px, 2px)';
                     e.currentTarget.style.boxShadow = '2px 2px 0px 0px #000000';
                   }}
                   onMouseLeave={(e: any) => {
+                    if (isHidden && !isAdmin) return;
                     e.currentTarget.style.background = '#ffffff';
                     e.currentTarget.style.transform = 'none';
                     e.currentTarget.style.boxShadow = '4px 4px 0px 0px #000000';

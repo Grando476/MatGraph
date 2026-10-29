@@ -157,3 +157,74 @@ class StorageService:
             error_msg = f"Błąd generowania presigned URL: {str(e)}"
             logger.error(f"StorageService error for path '{file_path}': {e}")
             return {"url": None, "error": error_msg}
+
+    @staticmethod
+    def check_subtopic_has_pdf(subtopic_id: str) -> bool:
+        """
+        Checks whether a single subtopic has a PDF uploaded.
+        """
+        pdf_path = StorageService.get_subtopic_pdf_path(subtopic_id)
+        res = StorageService.generate_presigned_url(pdf_path)
+        return bool(res.get("url") and not res.get("error"))
+
+    @staticmethod
+    def get_subtopics_with_pdf() -> set:
+        """
+        Returns a set of subtopic_ids (strings) that have a PDF file available.
+        Checks PostgreSQL storage.objects first for performance, then Supabase storage listing.
+        """
+        configured_bucket = (os.getenv("SUPABASE_STORAGE_BUCKET") or DEFAULT_BUCKET).strip().strip('"').strip("'")
+        found_subtopic_ids = set()
+
+        # Step 1: Check PostgreSQL storage.objects if available
+        conn = None
+        try:
+            from db.session import get_db_connection
+            conn = get_db_connection()
+            cur = conn.cursor()
+            cur.execute(
+                "SELECT name FROM storage.objects WHERE bucket_id = %s AND name LIKE 'subtopics/%';",
+                (configured_bucket,)
+            )
+            rows = cur.fetchall()
+            for (obj_name,) in rows:
+                if not obj_name:
+                    continue
+                parts = str(obj_name).strip("/").split("/")
+                if len(parts) >= 2 and parts[0] == "subtopics":
+                    found_subtopic_ids.add(parts[1])
+            cur.close()
+            if found_subtopic_ids:
+                return found_subtopic_ids
+        except Exception:
+            if conn:
+                try:
+                    conn.rollback()
+                except Exception:
+                    pass
+        finally:
+            if conn:
+                try:
+                    conn.close()
+                except Exception:
+                    pass
+
+        # Step 2: Check via Supabase client if available
+        client, init_error = get_supabase_client()
+        if client:
+            try:
+                items = client.storage.from_(configured_bucket).list("subtopics", {"limit": 1000})
+                if isinstance(items, list):
+                    for item in items:
+                        name = item.get("name") if isinstance(item, dict) else getattr(item, "name", None)
+                        if name and name != ".emptyFolderPlaceholder":
+                            sub_files = client.storage.from_(configured_bucket).list(f"subtopics/{name}")
+                            if isinstance(sub_files, list) and any(
+                                (f.get("name") if isinstance(f, dict) else getattr(f, "name", "")).endswith(".pdf")
+                                for f in sub_files
+                            ):
+                                found_subtopic_ids.add(str(name))
+            except Exception as e:
+                logger.warning(f"Error checking Supabase storage subtopics: {e}")
+
+        return found_subtopic_ids

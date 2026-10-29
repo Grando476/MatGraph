@@ -9,7 +9,13 @@ class LessonService:
         cur = conn.cursor(cursor_factory=RealDictCursor)
         try:
             cur.execute(
-                "SELECT id, topic_id, name as title, importance, sort_order FROM public.subtopics WHERE id = %s;",
+                """
+                SELECT s.id, s.topic_id, s.name as title, s.importance, s.sort_order,
+                       COALESCE(t.is_hidden, false) as is_topic_hidden
+                FROM public.subtopics s
+                LEFT JOIN public.topics t ON s.topic_id = t.id
+                WHERE s.id = %s;
+                """,
                 (lesson_id,)
             )
             lesson = cur.fetchone()
