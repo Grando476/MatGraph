@@ -297,7 +297,7 @@ export default function TopicMapView() {
     } finally {
       setLoading(false);
     }
-  }, [setNodes, setEdges, fetchNodeLessons]);
+  }, [setNodes, setEdges, fetchNodeLessons, currentUser?.role]);
 
   useEffect(() => {
     fetchNodes();
@@ -531,11 +531,11 @@ export default function TopicMapView() {
         ) : (
           <>
             {/* Top-Left Logo & Search Panel */}
-            <div style={{
-              position: 'absolute', top: 20, left: 24, zIndex: 100,
-              display: 'flex', flexDirection: 'column', gap: '10px',
-              width: '160px'
-            }}>
+            <div
+              className={`absolute top-4 left-4 md:top-5 md:left-6 z-[100] flex-col gap-2.5 w-[160px] ${
+                selectedNode ? "hidden md:flex" : "flex"
+              }`}
+            >
               <div style={{
                 background: '#ffffff',
                 border: '2.5px solid #000000',
@@ -617,37 +617,22 @@ export default function TopicMapView() {
 
             {/* Admin Move Status Badge */}
             {canDragNodes && (
-              <div style={{
-                position: 'absolute',
-                top: 20,
-                left: '50%',
-                transform: 'translateX(-50%)',
-                zIndex: 90,
-                background: 'var(--neo-yellow)',
-                border: '2.5px solid #000000',
-                borderRadius: '9999px',
-                padding: '6px 18px',
-                color: '#000000',
-                fontSize: '0.78rem',
-                fontWeight: 900,
-                textTransform: 'uppercase',
-                letterSpacing: '0.05em',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                boxShadow: '3px 3px 0px 0px #000000',
-                pointerEvents: 'none',
-              }}>
+              <div
+                className={`absolute top-4 md:top-5 left-1/2 -translate-x-1/2 z-[90] bg-[var(--neo-yellow)] border-2.5 border-black rounded-full px-4 py-1.5 text-black text-xs font-black uppercase tracking-wider items-center gap-2 shadow-[3px_3px_0px_0px_#000] pointer-events-none ${
+                  selectedNode ? "hidden md:flex" : "flex"
+                }`}
+              >
                 <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#000000', display: 'inline-block' }} />
                 Tryb Edycji Grafu Aktywny
               </div>
             )}
 
             {/* Top-Right User Actions */}
-            <div style={{
-              position: 'absolute', top: 20, right: 20, zIndex: 100,
-              display: 'flex', gap: '10px', alignItems: 'center'
-            }}>
+            <div
+              className={`absolute top-4 right-4 md:top-5 md:right-5 z-[100] gap-2.5 items-center ${
+                selectedNode ? "hidden md:flex" : "flex"
+              }`}
+            >
               {!currentUser ? (
                 <button
                   onClick={() => router.push('/login')}

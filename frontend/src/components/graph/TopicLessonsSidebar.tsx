@@ -34,15 +34,7 @@ export default function TopicLessonsSidebar({
 
   return (
     <div
-      style={{
-        width: '360px',
-        background: '#ffffff',
-        borderLeft: '3px solid #000000',
-        boxShadow: '-6px 0px 0px 0px #000000',
-        display: 'flex',
-        flexDirection: 'column',
-        zIndex: 10,
-      }}
+      className="fixed inset-0 w-full h-full z-50 flex flex-col bg-white md:relative md:w-[360px] md:h-full md:shrink-0 md:z-10 md:border-l-3 md:border-black md:shadow-[-6px_0px_0px_0px_#000]"
     >
       {/* Header */}
       <div
