@@ -99,6 +99,16 @@ export default function ExerciseExamResult({
                   <MixedMathText text={contentObj.question || ""} />
                 </div>
 
+                {/* Correct answer for open questions if available */}
+                {(taskRes?.correct_answer !== undefined || contentObj.correct_answer !== undefined) && (
+                  <div className="text-xs font-bold mb-3 flex items-center gap-1.5 flex-wrap">
+                    <span className="text-gray-600 uppercase">Prawidłowa odpowiedź:</span>
+                    <span className="font-black text-black">
+                      <MixedMathText text={taskRes?.correct_answer ?? contentObj.correct_answer} />
+                    </span>
+                  </div>
+                )}
+
                 {/* Exemplary solution if available */}
                 {t.exemplary_solution && (
                   <div className="mt-3 pt-3 border-t border-black/10">

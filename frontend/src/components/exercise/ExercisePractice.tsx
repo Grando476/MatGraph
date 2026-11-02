@@ -26,6 +26,7 @@ interface ExercisePracticeProps {
   practiceOpenVerifying: boolean;
   onCheckOpen: (taskId: string) => void;
   nextPracticeQuestion: () => void;
+  onReshuffle?: () => void;
 }
 
 export default function ExercisePractice({
@@ -51,6 +52,7 @@ export default function ExercisePractice({
   practiceOpenVerifying,
   onCheckOpen,
   nextPracticeQuestion,
+  onReshuffle,
 }: ExercisePracticeProps) {
   return (
     <div className="space-y-6">
@@ -89,38 +91,26 @@ export default function ExercisePractice({
           })}
         </div>
 
-        <div className="flex items-center gap-3">
-          {filteredPracticeTasks.length > 0 ? (
-            <span className="text-xs font-bold text-gray-600">
-              Zadanie <strong className="text-black">{practiceIndex + 1}</strong> z <strong className="text-black">{filteredPracticeTasks.length}</strong>
-            </span>
-          ) : (
-            <span className="text-xs font-bold text-gray-500">
-              Brak zadań (0 z 0)
-            </span>
-          )}
-
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => {
-                if (practiceIndex > 0) {
-                  setPracticeIndex((prev) => prev - 1);
-                  resetPracticeQuestionState();
-                }
-              }}
-              disabled={practiceIndex === 0 || filteredPracticeTasks.length === 0}
-              className="px-3 py-1.5 bg-white disabled:opacity-40 border-2 border-black rounded-lg text-xs font-black shadow-[2px_2px_0px_0px_#000] hover:bg-gray-100 disabled:cursor-not-allowed"
-            >
-              &larr; Poprzednie
-            </button>
-            <button
-              onClick={nextPracticeQuestion}
-              disabled={filteredPracticeTasks.length <= 1 || practiceIndex >= filteredPracticeTasks.length - 1}
-              className="px-3 py-1.5 bg-[var(--neo-yellow)] disabled:opacity-40 border-2 border-black rounded-lg text-xs font-black shadow-[2px_2px_0px_0px_#000] hover:bg-[#fde047] disabled:cursor-not-allowed"
-            >
-              Następne &rarr;
-            </button>
-          </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => {
+              if (practiceIndex > 0) {
+                setPracticeIndex((prev) => prev - 1);
+                resetPracticeQuestionState();
+              }
+            }}
+            disabled={practiceIndex === 0 || filteredPracticeTasks.length === 0}
+            className="px-3 py-1.5 bg-white disabled:opacity-40 border-2 border-black rounded-lg text-xs font-black shadow-[2px_2px_0px_0px_#000] hover:bg-gray-100 disabled:cursor-not-allowed"
+          >
+            &larr; Poprzednie
+          </button>
+          <button
+            onClick={nextPracticeQuestion}
+            disabled={filteredPracticeTasks.length <= 1}
+            className="px-3 py-1.5 bg-[var(--neo-yellow)] disabled:opacity-40 border-2 border-black rounded-lg text-xs font-black shadow-[2px_2px_0px_0px_#000] hover:bg-[#fde047] disabled:cursor-not-allowed"
+          >
+            {practiceIndex >= filteredPracticeTasks.length - 1 ? "Od nowa ↺" : "Następne →"}
+          </button>
         </div>
       </div>
 
@@ -264,11 +254,14 @@ export default function ExercisePractice({
 
                   {practiceOpenResult && (
                     <div className="p-4 rounded-xl border-2 border-black bg-gray-50">
-                      <p className="font-black text-sm mb-2">
-                        {practiceOpenResult.is_correct
-                          ? `✓ Brawo! Poprawna odpowiedź: ${practiceOpenResult.correct_answer}`
-                          : `✕ Błąd. Prawidłowa odpowiedź: ${practiceOpenResult.correct_answer}`}
-                      </p>
+                      <div className="font-black text-sm mb-2 flex items-center gap-1.5 flex-wrap">
+                        <span>
+                          {practiceOpenResult.is_correct
+                            ? "✓ Brawo! Poprawna odpowiedź: "
+                            : "✕ Błąd. Prawidłowa odpowiedź: "}
+                        </span>
+                        <MixedMathText text={practiceOpenResult.correct_answer} />
+                      </div>
                       {task.exemplary_solution && (
                         <div className="text-xs bg-white p-3 rounded-lg border border-black font-medium leading-relaxed">
                           <MixedMathText text={task.exemplary_solution} />

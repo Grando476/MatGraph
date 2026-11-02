@@ -1327,12 +1327,26 @@
         function updP(srcId, dstId) {
             const s = document.getElementById(srcId), d = document.getElementById(dstId);
             if (!s || !d) return;
-            d.textContent = s.value;
+            const val = s.value || '';
+            d.textContent = val;
+
             if (typeof renderMathInElement === 'function') {
+                const hasDelim = val.includes('$') || val.includes('\\[') || val.includes('\\(');
+                if (!hasDelim && /\\[a-zA-Z]+/.test(val) && typeof katex !== 'undefined' && typeof katex.render === 'function') {
+                    try {
+                        katex.render(val.trim(), d, { throwOnError: false });
+                        return;
+                    } catch (e) {
+                        d.textContent = val;
+                    }
+                }
+
                 renderMathInElement(d, {
                     delimiters: [
                         { left: '$$', right: '$$', display: true },
-                        { left: '$', right: '$', display: false }
+                        { left: '$', right: '$', display: false },
+                        { left: '\\[', right: '\\]', display: true },
+                        { left: '\\(', right: '\\)', display: false }
                     ],
                     throwOnError: false
                 });
@@ -1376,6 +1390,15 @@
             document.getElementById('st-text').textContent = t;
             document.getElementById('st-prog').textContent = p || '';
         }
+
+        window.addEventListener('load', () => {
+            if (typeof renderMathInElement === 'function') {
+                document.querySelectorAll('.lp').forEach(el => {
+                    const src = document.getElementById(el.id.replace('-p', '-'));
+                    if (src) updP(src.id, el.id);
+                });
+            }
+        });
 
         init();
     </script>

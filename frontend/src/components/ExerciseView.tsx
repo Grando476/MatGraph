@@ -37,8 +37,14 @@ export default function ExerciseView({ exerciseId }: ExerciseViewProps) {
   const [selectedDifficulty, setSelectedDifficulty] = useState<string>("ALL");
   const [showHistory, setShowHistory] = useState(false);
 
-  // Practice State
-  const [practiceIndex, setPracticeIndex] = useState(0);
+  // Practice State (shuffled playlists and preserved positions per difficulty)
+  const [practicePlaylists, setPracticePlaylists] = useState<Record<string, any[]>>({});
+  const [practiceIndices, setPracticeIndices] = useState<Record<string, number>>({
+    ALL: 0,
+    Easy: 0,
+    Medium: 0,
+    Hard: 0,
+  });
   const [practiceSelectedMcq, setPracticeSelectedMcq] = useState<number | undefined>(undefined);
   const [practiceCheckedMcq, setPracticeCheckedMcq] = useState(false);
   const [practiceTfAnswers, setPracticeTfAnswers] = useState<Record<string | number, boolean>>({});
@@ -183,14 +189,61 @@ export default function ExerciseView({ exerciseId }: ExerciseViewProps) {
     return counts;
   }, [taskGroup]);
 
-  // Filtered tasks for Practice Mode
+  // Fisher-Yates shuffle algorithm
+  const shuffleArray = useCallback(<T,>(array: T[]): T[] => {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  }, []);
+
+  // Initialize practice playlists for all difficulties
+  const initPracticePlaylists = useCallback((tasks: any[]) => {
+    if (!tasks || tasks.length === 0) return;
+    const allShuffled = shuffleArray(tasks);
+    const easyShuffled = shuffleArray(tasks.filter((t: any) => (t.difficulty_level || "Medium").toLowerCase() === "easy"));
+    const medShuffled = shuffleArray(tasks.filter((t: any) => (t.difficulty_level || "Medium").toLowerCase() === "medium"));
+    const hardShuffled = shuffleArray(tasks.filter((t: any) => (t.difficulty_level || "Medium").toLowerCase() === "hard"));
+
+    setPracticePlaylists({
+      ALL: allShuffled,
+      Easy: easyShuffled,
+      Medium: medShuffled,
+      Hard: hardShuffled,
+    });
+    setPracticeIndices({
+      ALL: 0,
+      Easy: 0,
+      Medium: 0,
+      Hard: 0,
+    });
+  }, [shuffleArray]);
+
+  // Filtered tasks for Practice Mode (reads from the current difficulty shuffled playlist)
   const filteredPracticeTasks = useMemo(() => {
+    const playlist = practicePlaylists[selectedDifficulty];
+    if (playlist && playlist.length > 0) return playlist;
     if (!taskGroup?.tasks) return [];
     if (selectedDifficulty === "ALL") return taskGroup.tasks;
     return taskGroup.tasks.filter(
       (t: any) => (t.difficulty_level || "Medium").toLowerCase() === selectedDifficulty.toLowerCase()
     );
-  }, [taskGroup, selectedDifficulty]);
+  }, [practicePlaylists, selectedDifficulty, taskGroup]);
+
+  const currentPracticeIndex = practiceIndices[selectedDifficulty] || 0;
+
+  const handleSetPracticeIndex: React.Dispatch<React.SetStateAction<number>> = useCallback((updater) => {
+    setPracticeIndices((prev) => {
+      const cur = prev[selectedDifficulty] || 0;
+      const nextVal = typeof updater === "function" ? (updater as (p: number) => number)(cur) : updater;
+      return {
+        ...prev,
+        [selectedDifficulty]: Math.max(0, nextVal),
+      };
+    });
+  }, [selectedDifficulty]);
 
   // Reset practice question state
   const resetPracticeQuestionState = () => {
@@ -204,21 +257,44 @@ export default function ExerciseView({ exerciseId }: ExerciseViewProps) {
     setPracticeOpenVerifying(false);
   };
 
-  // Start Practice Mode
+  // Start Practice Mode (creates brand-new shuffled playlists for each category)
   const startPractice = (diff: string = "ALL") => {
     const validDiff = (difficultyCounts[diff] ?? 0) > 0 ? diff : "ALL";
     setSelectedDifficulty(validDiff);
-    setPracticeIndex(0);
+    if (taskGroup?.tasks) {
+      initPracticePlaylists(taskGroup.tasks);
+    }
     resetPracticeQuestionState();
     setViewMode("PRACTICE");
   };
 
+  // Switching difficulty preserves the shuffled order and position of each difficulty
   const switchPracticeDifficulty = (diff: string) => {
     if ((difficultyCounts[diff] ?? 0) === 0) return;
     setSelectedDifficulty(diff);
-    setPracticeIndex(0);
     resetPracticeQuestionState();
   };
+
+  // Reshuffle only the currently active difficulty playlist on demand
+  const handleReshufflePractice = useCallback(() => {
+    if (!taskGroup?.tasks) return;
+    const rawTasks = selectedDifficulty === "ALL"
+      ? taskGroup.tasks
+      : taskGroup.tasks.filter(
+          (t: any) => (t.difficulty_level || "Medium").toLowerCase() === selectedDifficulty.toLowerCase()
+        );
+
+    const reshuffled = shuffleArray(rawTasks);
+    setPracticePlaylists((prev) => ({
+      ...prev,
+      [selectedDifficulty]: reshuffled,
+    }));
+    setPracticeIndices((prev) => ({
+      ...prev,
+      [selectedDifficulty]: 0,
+    }));
+    resetPracticeQuestionState();
+  }, [selectedDifficulty, taskGroup, shuffleArray]);
 
   // Resume Exam Mode from cached state
   const resumeExam = () => {
@@ -317,13 +393,19 @@ export default function ExerciseView({ exerciseId }: ExerciseViewProps) {
   };
 
   const nextPracticeQuestion = () => {
-    if (filteredPracticeTasks.length === 0) return;
-    if (practiceIndex < filteredPracticeTasks.length - 1) {
-      setPracticeIndex((prev) => prev + 1);
+    const currentList = filteredPracticeTasks;
+    if (currentList.length === 0) return;
+    const currentIndex = practiceIndices[selectedDifficulty] || 0;
+
+    if (currentIndex < currentList.length - 1) {
+      setPracticeIndices((prev) => ({
+        ...prev,
+        [selectedDifficulty]: currentIndex + 1,
+      }));
       resetPracticeQuestionState();
     } else {
-      setPracticeIndex(0);
-      resetPracticeQuestionState();
+      // Reached the end: reshuffle this category and loop back to start
+      handleReshufflePractice();
     }
   };
 
@@ -510,12 +592,13 @@ export default function ExerciseView({ exerciseId }: ExerciseViewProps) {
           {viewMode === "PRACTICE" && (
             <ExercisePractice
               filteredPracticeTasks={filteredPracticeTasks}
-              practiceIndex={practiceIndex}
-              setPracticeIndex={setPracticeIndex}
+              practiceIndex={currentPracticeIndex}
+              setPracticeIndex={handleSetPracticeIndex}
               selectedDifficulty={selectedDifficulty}
               difficultyCounts={difficultyCounts}
               switchPracticeDifficulty={switchPracticeDifficulty}
               resetPracticeQuestionState={resetPracticeQuestionState}
+              onReshuffle={handleReshufflePractice}
               practiceSelectedMcq={practiceSelectedMcq}
               practiceCheckedMcq={practiceCheckedMcq}
               onSelectMcq={handlePracticeMcqSelect}
