@@ -388,6 +388,7 @@ def update_tutor_class(class_id: str, body: UpdateClassRequest, current_user: di
         conn.close()
 
 @router.get("/task-groups")
+@router.get("/available-task-groups")
 def get_available_task_groups(current_user: dict = Depends(get_current_user)):
     """
     Returns all task groups grouped with chapter, topic and subtopic context for assigning.

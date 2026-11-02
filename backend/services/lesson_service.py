@@ -9,7 +9,13 @@ class LessonService:
         cur = conn.cursor(cursor_factory=RealDictCursor)
         try:
             cur.execute(
-                "SELECT id, topic_id, name as title, importance, sort_order, content_tex FROM public.subtopics WHERE id = %s;",
+                """
+                SELECT s.id, s.topic_id, s.name as title, s.importance, s.sort_order,
+                       COALESCE(t.is_hidden, false) as is_topic_hidden
+                FROM public.subtopics s
+                LEFT JOIN public.topics t ON s.topic_id = t.id
+                WHERE s.id = %s;
+                """,
                 (lesson_id,)
             )
             lesson = cur.fetchone()
@@ -19,9 +25,11 @@ class LessonService:
 
             # Predefined PDF path in object storage: subtopics/<subtopic_id>/basic.pdf
             pdf_path = StorageService.get_subtopic_pdf_path(lesson_id)
-            lesson["pdf_path"] = pdf_path
             storage_res = StorageService.generate_presigned_url(pdf_path)
-            lesson["pdf_url"] = storage_res.get("url")
+            pdf_url = storage_res.get("url")
+            lesson["pdf_url"] = pdf_url
+            lesson["has_pdf"] = bool(pdf_url)
+            lesson["pdf_path"] = pdf_path if pdf_url else None
             if storage_res.get("error"):
                 lesson["pdf_error"] = storage_res.get("error")
 

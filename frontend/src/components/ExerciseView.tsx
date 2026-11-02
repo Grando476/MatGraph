@@ -30,6 +30,7 @@ export default function ExerciseView({ exerciseId }: ExerciseViewProps) {
   const [error, setError] = useState("");
   const [token, setToken] = useState<string | null>(null);
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
+  const [adminPassing, setAdminPassing] = useState(false);
 
   // App Mode
   const [viewMode, setViewMode] = useState<ViewMode>("LOBBY");
@@ -393,6 +394,40 @@ export default function ExerciseView({ exerciseId }: ExerciseViewProps) {
     }
   };
 
+  // Admin Quick Pass (100% pass instantly)
+  const handleAdminQuickPass = async () => {
+    const userToken = token || (await getAuthToken());
+    if (!userToken) {
+      alert("Musisz być zalogowany jako administrator.");
+      return;
+    }
+    setAdminPassing(true);
+    try {
+      const res = await fetch(`${getApiUrl()}/api/v1/exercises/${exerciseId}/admin-quick-pass`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${userToken}`,
+          "Content-Type": "application/json",
+        },
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.detail || data.error || "Błąd szybkiego zaliczenia");
+      }
+      if (typeof window !== "undefined") {
+        const storageKey = getExamStorageKey(exerciseId, currentUser?.id);
+        localStorage.removeItem(storageKey);
+        setCachedExam(null);
+      }
+      await fetchTasks();
+      setViewMode("LOBBY");
+    } catch (err: any) {
+      alert(`Błąd: ${err.message}`);
+    } finally {
+      setAdminPassing(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-[var(--bg-main)] text-[var(--text-main)] p-8 flex justify-center items-center">
@@ -466,6 +501,9 @@ export default function ExerciseView({ exerciseId }: ExerciseViewProps) {
               exerciseId={exerciseId}
               cachedExam={cachedExam}
               onResumeExam={resumeExam}
+              currentUser={currentUser}
+              adminPassing={adminPassing}
+              onAdminQuickPass={handleAdminQuickPass}
             />
           )}
 
@@ -505,6 +543,9 @@ export default function ExerciseView({ exerciseId }: ExerciseViewProps) {
               setExamAnswerForTask={setExamAnswerForTask}
               examSubmitting={examSubmitting}
               onExamSubmit={handleExamSubmit}
+              currentUser={currentUser}
+              adminPassing={adminPassing}
+              onAdminQuickPass={handleAdminQuickPass}
             />
           )}
 

@@ -7,6 +7,8 @@ export const NeobrutalNode = ({ data, selected }: any) => {
   const totalTg = data.totalTaskGroups ?? 0;
   const passedTg = data.passedTaskGroups ?? 0;
   const isAllPassed = totalTg > 0 && passedTg >= totalTg;
+  const isBlocked = Boolean(data.isHidden ?? data.isBlocked);
+  const isAdmin = Boolean(data.isAdmin);
 
   return (
     <div
@@ -14,7 +16,9 @@ export const NeobrutalNode = ({ data, selected }: any) => {
         position: 'relative',
         width: `${NODE_WIDTH}px`,
         height: `${NODE_HEIGHT}px`,
-        background: selected ? 'var(--neo-yellow)' : '#ffffff',
+        background: selected
+          ? isBlocked ? '#fef3c7' : 'var(--neo-yellow)'
+          : isBlocked ? '#fafaf9' : '#ffffff',
         border: '3px solid #000000',
         borderRadius: '14px',
         boxShadow: selected ? '7px 7px 0px 0px #000000' : '4px 4px 0px 0px #000000',
@@ -26,6 +30,7 @@ export const NeobrutalNode = ({ data, selected }: any) => {
         justifyContent: 'space-between',
         overflow: 'hidden',
         userSelect: 'none',
+        opacity: isBlocked ? 0.88 : 1,
       }}
     >
       <Handle
@@ -44,11 +49,44 @@ export const NeobrutalNode = ({ data, selected }: any) => {
       <div
         style={{
           height: '8px',
-          background: selected ? '#000000' : isAllPassed ? 'var(--neo-green)' : 'var(--neo-yellow)',
+          background: isBlocked
+            ? '#f59e0b'
+            : selected
+            ? '#000000'
+            : isAllPassed
+            ? 'var(--neo-green)'
+            : 'var(--neo-yellow)',
           borderBottom: '2.5px solid #000000',
           width: '100%',
         }}
       />
+
+      {/* Blocked indicator badge (top-right corner) */}
+      {isBlocked && (
+        <div
+          title={isAdmin ? "Węzeł zablokowany dla uczniów (brak materiałów PDF)" : "W tym temacie nie ma jeszcze treści"}
+          style={{
+            position: 'absolute',
+            top: '12px',
+            right: '8px',
+            background: '#fef3c7',
+            border: '1.5px solid #000000',
+            borderRadius: '6px',
+            width: '20px',
+            height: '20px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: '#92400e',
+            boxShadow: '1.5px 1.5px 0px 0px #000000',
+          }}
+        >
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+          </svg>
+        </div>
+      )}
 
       {/* Node Content */}
       <div
@@ -70,37 +108,63 @@ export const NeobrutalNode = ({ data, selected }: any) => {
             fontWeight: 800,
             lineHeight: '1.2',
             letterSpacing: '-0.01em',
-            color: '#000000',
+            color: isBlocked ? '#4b5563' : '#000000',
             wordBreak: 'break-word',
           }}
         >
           {data.label}
         </span>
 
-        {/* Progress pill tag */}
-        <span
-          style={{
-            fontFamily: 'var(--font-node), Outfit, sans-serif',
-            fontSize: '0.7rem',
-            background: selected
-              ? '#000000'
-              : isAllPassed
-              ? 'var(--neo-green)'
-              : 'var(--neo-yellow)',
-            color: selected ? '#ffffff' : '#000000',
-            border: '2px solid #000000',
-            borderRadius: '9999px',
-            padding: '1.5px 8px',
-            fontWeight: 900,
-            letterSpacing: '0.02em',
-            boxShadow: selected ? 'none' : '2px 2px 0px 0px #000000',
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '3px',
-          }}
-        >
-          {totalTg > 0 ? `${passedTg}/${totalTg}` : data.subtasksCount ? `${data.subtasksCount}/${data.subtasksCount}` : '0/0'}
-        </span>
+        {/* Progress pill tag or Blocked pill */}
+        {isBlocked ? (
+          <span
+            style={{
+              fontFamily: 'var(--font-node), Outfit, sans-serif',
+              fontSize: '0.67rem',
+              background: '#fef3c7',
+              color: '#92400e',
+              border: '1.5px solid #000000',
+              borderRadius: '9999px',
+              padding: '1.5px 7px',
+              fontWeight: 800,
+              letterSpacing: '0.02em',
+              boxShadow: selected ? 'none' : '1.5px 1.5px 0px 0px #000000',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '4px',
+            }}
+          >
+            <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+            </svg>
+            Brak treści
+          </span>
+        ) : (
+          <span
+            style={{
+              fontFamily: 'var(--font-node), Outfit, sans-serif',
+              fontSize: '0.7rem',
+              background: selected
+                ? '#000000'
+                : isAllPassed
+                ? 'var(--neo-green)'
+                : 'var(--neo-yellow)',
+              color: selected ? '#ffffff' : '#000000',
+              border: '2px solid #000000',
+              borderRadius: '9999px',
+              padding: '1.5px 8px',
+              fontWeight: 900,
+              letterSpacing: '0.02em',
+              boxShadow: selected ? 'none' : '2px 2px 0px 0px #000000',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '3px',
+            }}
+          >
+            {totalTg > 0 ? `${passedTg}/${totalTg}` : data.subtasksCount ? `${data.subtasksCount}/${data.subtasksCount}` : '0/0'}
+          </span>
+        )}
       </div>
 
       <Handle

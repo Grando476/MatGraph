@@ -280,3 +280,74 @@ class ExerciseService:
             cur.close()
             conn.close()
 
+    @staticmethod
+    def admin_quick_pass(task_group_id: str, user_id: str):
+        """
+        Natychmiastowe zaliczenie grupy zadań przez administratora (100%).
+        """
+        conn = get_db_connection()
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+        try:
+            cur.execute(
+                """
+                INSERT INTO public.task_group_test_attempts 
+                    (student_id, task_group_id, score_percentage, correct_count, total_count, passed)
+                VALUES (%s, %s, 100.0, 10, 10, true)
+                RETURNING id, completed_at;
+                """,
+                (user_id, task_group_id)
+            )
+            attempt_row = cur.fetchone()
+
+            if attempt_row:
+                try:
+                    cur.execute(
+                        """
+                        INSERT INTO public.assignment_completions (assignment_id, student_id, completed_at)
+                        SELECT ca.id, %s, %s
+                        FROM public.class_assignments ca
+                        JOIN public.class_members cm ON ca.class_id = cm.class_id
+                        WHERE ca.task_group_id = %s AND cm.student_id = %s
+                        ON CONFLICT (assignment_id, student_id) DO NOTHING;
+                        """,
+                        (user_id, attempt_row["completed_at"], task_group_id, user_id)
+                    )
+                except Exception as comp_err:
+                    print(f"Warning: could not sync assignment_completions: {comp_err}")
+
+            conn.commit()
+
+            cur.execute(
+                """
+                SELECT 
+                    COUNT(*) as total_attempts,
+                    COUNT(*) FILTER (WHERE NOT passed) as failed_attempts,
+                    COALESCE(BOOL_OR(passed), false) as is_passed,
+                    MAX(score_percentage) as best_score
+                FROM public.task_group_test_attempts
+                WHERE student_id = %s AND task_group_id = %s;
+                """,
+                (user_id, task_group_id)
+            )
+            stats_row = cur.fetchone()
+
+            return {
+                "attempt_id": str(attempt_row["id"]),
+                "completed_at": attempt_row["completed_at"].isoformat() if attempt_row.get("completed_at") else None,
+                "passed": True,
+                "score_percentage": 100.0,
+                "correct_count": 10,
+                "total_count": 10,
+                "attempts_count": stats_row["total_attempts"] or 0,
+                "failed_attempts_count": stats_row["failed_attempts"] or 0,
+                "is_passed": True,
+                "best_score": 100.0,
+                "task_results": {}
+            }
+        except Exception as e:
+            conn.rollback()
+            raise e
+        finally:
+            cur.close()
+            conn.close()
+

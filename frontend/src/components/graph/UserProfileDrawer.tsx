@@ -17,6 +17,9 @@ interface UserProfileDrawerProps {
   onToggleMoveNodes: () => void;
   savingLayout: boolean;
   onSaveLayout: () => void;
+  hidingNodes?: boolean;
+  onHideNodesWithoutPdf?: () => void;
+  onUnhideAllNodes?: () => void;
   onLogout: () => void;
 }
 
@@ -34,6 +37,9 @@ export default function UserProfileDrawer({
   onToggleMoveNodes,
   savingLayout,
   onSaveLayout,
+  hidingNodes = false,
+  onHideNodesWithoutPdf,
+  onUnhideAllNodes,
   onLogout,
 }: UserProfileDrawerProps) {
   const router = useRouter();
@@ -208,7 +214,7 @@ export default function UserProfileDrawer({
                     fontWeight: 600,
                   }}
                 >
-                  Brak przydzielonych zadań ✨
+                  Brak przydzielonych zadań
                 </div>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '190px', overflowY: 'auto', paddingRight: '2px' }}>
@@ -273,70 +279,6 @@ export default function UserProfileDrawer({
                           </div>
                         </div>
 
-                        {/* Statystyki prób zaliczenia */}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap', marginTop: '1px' }}>
-                          <span
-                            style={{
-                              fontSize: '0.6rem',
-                              fontWeight: 800,
-                              background: (a.attempts_count ?? 0) > 0 ? '#e0f2fe' : '#f3f4f6',
-                              color: (a.attempts_count ?? 0) > 0 ? '#0369a1' : '#6b7280',
-                              border: '1px solid #000',
-                              padding: '1px 4px',
-                              borderRadius: '4px',
-                            }}
-                          >
-                            Próby: {a.attempts_count ?? 0}
-                          </span>
-                          {(a.attempts_count ?? 0) > 0 && (
-                            <>
-                              <span
-                                style={{
-                                  fontSize: '0.6rem',
-                                  fontWeight: 800,
-                                  background: (a.success_count ?? 0) > 0 ? '#dcfce7' : '#f3f4f6',
-                                  color: (a.success_count ?? 0) > 0 ? '#15803d' : '#6b7280',
-                                  border: '1px solid #000',
-                                  padding: '1px 4px',
-                                  borderRadius: '4px',
-                                }}
-                              >
-                                ✓ {a.success_count ?? 0}
-                              </span>
-                              {(a.failed_count ?? 0) > 0 && (
-                                <span
-                                  style={{
-                                    fontSize: '0.6rem',
-                                    fontWeight: 800,
-                                    background: '#fee2e2',
-                                    color: '#b91c1c',
-                                    border: '1px solid #000',
-                                    padding: '1px 4px',
-                                    borderRadius: '4px',
-                                  }}
-                                >
-                                  ✕ {a.failed_count}
-                                </span>
-                              )}
-                              {a.best_score != null && (
-                                <span
-                                  style={{
-                                    fontSize: '0.6rem',
-                                    fontWeight: 800,
-                                    background: '#fef3c7',
-                                    color: '#92400e',
-                                    border: '1px solid #000',
-                                    padding: '1px 4px',
-                                    borderRadius: '4px',
-                                  }}
-                                >
-                                  Max: {a.best_score}%
-                                </span>
-                              )}
-                            </>
-                          )}
-                        </div>
-
                         {a.note && (
                           <div
                             style={{
@@ -356,20 +298,6 @@ export default function UserProfileDrawer({
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '2px', fontSize: '0.64rem', color: '#4b5563', fontWeight: 700 }}>
                           <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                             {a.class_name}
-                          </span>
-                          <span
-                            style={{
-                              background: isDone ? 'var(--neo-green)' : 'var(--neo-yellow)',
-                              border: '1px solid #000',
-                              padding: '1px 5px',
-                              borderRadius: '4px',
-                              fontWeight: 900,
-                              color: '#000',
-                              flexShrink: 0,
-                              letterSpacing: '0.02em',
-                            }}
-                          >
-                            {a.task_count} {a.task_count === 1 ? 'zadanie' : a.task_count < 5 ? 'zadania' : 'zadań'} &rarr;
                           </span>
                         </div>
 
@@ -610,7 +538,7 @@ export default function UserProfileDrawer({
                       <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
                       <path d="M7 11V7a5 5 0 0 1 9.9-1" />
                     </svg>
-                    <span>Zablokuj węzły</span>
+                    <span>Koniec edycji węzłów</span>
                   </>
                 ) : (
                   <>
@@ -618,7 +546,7 @@ export default function UserProfileDrawer({
                       <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
                       <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                     </svg>
-                    <span>Odblokuj węzły</span>
+                    <span>Edycja węzłów</span>
                   </>
                 )}
               </button>
@@ -652,6 +580,88 @@ export default function UserProfileDrawer({
                 </svg>
                 {savingLayout ? 'Zapisywanie...' : 'Zapisz układ'}
               </button>
+
+              {onHideNodesWithoutPdf && (
+                <button
+                  onClick={onHideNodesWithoutPdf}
+                  disabled={hidingNodes}
+                  title="Zablokuj uczniom dostęp do lekcji w węzłach, które nie mają wrzuconego pliku PDF w żadnej ze swoich lekcji"
+                  style={{
+                    width: '100%',
+                    padding: '8px 12px',
+                    background: hidingNodes ? '#e5e7eb' : '#fee2e2',
+                    color: '#991b1b',
+                    border: '2px solid #000000',
+                    borderRadius: '8px',
+                    fontWeight: 800,
+                    fontSize: '0.78rem',
+                    cursor: hidingNodes ? 'not-allowed' : 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px',
+                    boxShadow: '2px 2px 0px 0px #000000',
+                    transition: 'all 0.15s',
+                  }}
+                  onMouseEnter={(e: any) => {
+                    if (!hidingNodes) {
+                      e.currentTarget.style.transform = 'translate(-1px, -1px)';
+                      e.currentTarget.style.boxShadow = '3.5px 3.5px 0px 0px #000000';
+                    }
+                  }}
+                  onMouseLeave={(e: any) => {
+                    e.currentTarget.style.transform = 'none';
+                    e.currentTarget.style.boxShadow = '2px 2px 0px 0px #000000';
+                  }}
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                  </svg>
+                  <span>{hidingNodes ? 'Blokowanie węzłów...' : 'Zablokuj węzły bez PDF'}</span>
+                </button>
+              )}
+
+              {onUnhideAllNodes && (
+                <button
+                  onClick={onUnhideAllNodes}
+                  disabled={hidingNodes}
+                  title="Odblokuj dostęp do lekcji we wszystkich węzłach dla uczniów"
+                  style={{
+                    width: '100%',
+                    padding: '8px 12px',
+                    background: hidingNodes ? '#e5e7eb' : '#ffffff',
+                    color: '#000000',
+                    border: '2px solid #000000',
+                    borderRadius: '8px',
+                    fontWeight: 800,
+                    fontSize: '0.78rem',
+                    cursor: hidingNodes ? 'not-allowed' : 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px',
+                    boxShadow: '2px 2px 0px 0px #000000',
+                    transition: 'all 0.15s',
+                  }}
+                  onMouseEnter={(e: any) => {
+                    if (!hidingNodes) {
+                      e.currentTarget.style.transform = 'translate(-1px, -1px)';
+                      e.currentTarget.style.boxShadow = '3.5px 3.5px 0px 0px #000000';
+                    }
+                  }}
+                  onMouseLeave={(e: any) => {
+                    e.currentTarget.style.transform = 'none';
+                    e.currentTarget.style.boxShadow = '2px 2px 0px 0px #000000';
+                  }}
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                    <path d="M7 11V7a5 5 0 0 1 9.9-1" />
+                  </svg>
+                  <span>Odblokuj wszystkie węzły</span>
+                </button>
+              )}
             </div>
           )}
 

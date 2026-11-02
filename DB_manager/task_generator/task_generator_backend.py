@@ -281,33 +281,19 @@ def get_tree_data():
 
 def _build_context(tg_id):
     """Buduje kontekst edukacyjny dla danej grupy zadaniowej."""
+    res = supabase.table("task_groups").select(
+        "name, subtopics(id, name, task_groups(name), topics(name, chapters(name)))"
+    ).eq("id", tg_id).single().execute()
+    
+    d = res.data
+    subtopic_id = d['subtopics']['id']
+    
     try:
-        res = supabase.table("task_groups").select(
-            "name, subtopics(*, task_groups(name), topics(*, chapters(name)))"
-        ).eq("id", tg_id).single().execute()
-    except Exception:
-        res = supabase.table("task_groups").select(
-            "name, subtopics(id, name, task_groups(name), topics(name, chapters(name)))"
-        ).eq("id", tg_id).single().execute()
-    
-    d = res.data or {}
-    subtopic_raw = d.get('subtopics')
-    if isinstance(subtopic_raw, list):
-        subtopic = subtopic_raw[0] if subtopic_raw else {}
-    elif isinstance(subtopic_raw, dict):
-        subtopic = subtopic_raw
-    else:
-        subtopic = {}
-
-    subtopic_id = subtopic.get('id')
-    
-    prior_knowledge = {}
-    if subtopic_id:
-        try:
-            pk_res = supabase.rpc("get_prior_knowledge", {"p_subtopic_id": subtopic_id}).execute()
-            prior_knowledge = pk_res.data or {}
-        except Exception as e:
-            print(f"Warning: Failed to fetch prior knowledge: {e}")
+        pk_res = supabase.rpc("get_prior_knowledge", {"p_subtopic_id": subtopic_id}).execute()
+        prior_knowledge = pk_res.data or {}
+    except Exception as e:
+        print(f"Warning: Failed to fetch prior knowledge: {e}")
+        prior_knowledge = {}
 
     known_topics_names = prior_knowledge.get("known_topics_names") or []
     known_subtopics_data = prior_knowledge.get("known_subtopics") or []
@@ -315,34 +301,17 @@ def _build_context(tg_id):
     
     known_subtopics_theories = []
     for st in known_subtopics_data:
-        known_subtopics_theories.append(f"{st.get('name')}: {st.get('content_tex', '')}")
+        known_subtopics_theories.append(f"{st.get('name')}")
 
-    raw_sibling_tgs = subtopic.get('task_groups', [])
-    sibling_task_groups = [tg['name'] for tg in raw_sibling_tgs if isinstance(tg, dict) and tg.get('name') != d.get('name')]
-
-    topic_raw = subtopic.get('topics')
-    if isinstance(topic_raw, list):
-        topic = topic_raw[0] if topic_raw else {}
-    elif isinstance(topic_raw, dict):
-        topic = topic_raw
-    else:
-        topic = {}
-
-    chapter_raw = topic.get('chapters')
-    if isinstance(chapter_raw, list):
-        chapter = chapter_raw[0] if chapter_raw else {}
-    elif isinstance(chapter_raw, dict):
-        chapter = chapter_raw
-    else:
-        chapter = {}
+    sibling_task_groups = [tg['name'] for tg in d['subtopics'].get('task_groups', []) if tg['name'] != d['name']]
 
     return {
-        "chapter": chapter.get('name', 'Brak'),
-        "topic": topic.get('name', 'Brak'),
-        "subtopic": subtopic.get('name', 'Brak'),
-        "group": d.get('name', 'Brak'),
-        "topic_theory": topic.get('content_tex', '') or "Brak",
-        "subtopic_theory": subtopic.get('content_tex', '') or "Brak",
+        "chapter": d['subtopics']['topics']['chapters']['name'],
+        "topic": d['subtopics']['topics']['name'],
+        "subtopic": d['subtopics']['name'],
+        "group": d['name'],
+        "topic_theory": "Brak",
+        "subtopic_theory": "Brak",
         "known_topics_names": ", ".join(known_topics_names) if known_topics_names else "Brak",
         "known_subtopics_theories": " | ".join(known_subtopics_theories) if known_subtopics_theories else "Brak",
         "unknown_topics_names": ", ".join(unknown_topics_names) if unknown_topics_names else "Brak",

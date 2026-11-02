@@ -192,16 +192,6 @@ export default function ClassCard({
                           {assignment.task_group_name}
                         </div>
                       </div>
-                      <div className="flex items-center gap-2 shrink-0">
-                        <span className="bg-[var(--neo-yellow)] text-black border-1.5 border-black text-xs font-black px-2.5 py-1 rounded-lg shadow-[1.5px_1.5px_0px_#000]">
-                          {assignment.task_count}{" "}
-                          {assignment.task_count === 1
-                            ? "zadanie"
-                            : assignment.task_count < 5
-                            ? "zadania"
-                            : "zadań"}
-                        </span>
-                      </div>
                     </div>
 
                     {/* Due date and note */}
@@ -226,13 +216,12 @@ export default function ClassCard({
                         <span className="flex items-center gap-2">
                           <span className="uppercase tracking-wider text-black">Status oddania:</span>
                           <span
-                            className={`px-2.5 py-0.5 rounded-lg border border-black shadow-[1px_1px_0px_#000] ${
-                              isAllCompleted
-                                ? "bg-[var(--neo-green)] text-black"
-                                : isPartiallyCompleted
+                            className={`px-2.5 py-0.5 rounded-lg border border-black shadow-[1px_1px_0px_#000] ${isAllCompleted
+                              ? "bg-[var(--neo-green)] text-black"
+                              : isPartiallyCompleted
                                 ? "bg-[var(--neo-yellow)] text-black"
                                 : "bg-gray-100 text-gray-700"
-                            }`}
+                              }`}
                           >
                             {completedStudents.length} / {studentsCount} (
                             {studentsCount > 0
@@ -240,9 +229,6 @@ export default function ClassCard({
                               : 0}
                             %)
                           </span>
-                        </span>
-                        <span className="text-[11px] text-gray-600 font-bold hidden sm:inline">
-                          Zaliczenie: test min. 80%
                         </span>
                       </div>
 
@@ -292,9 +278,8 @@ export default function ClassCard({
                                   <span
                                     key={s.id}
                                     className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white border-1.5 border-emerald-700 rounded-lg text-xs font-black text-black shadow-[1px_1px_0px_#059669]"
-                                    title={`Test zdany! Najlepszy wynik: ${as?.best_score ?? 0}%, próby: ${
-                                      as?.attempts_count ?? 1
-                                    }`}
+                                    title={`Test zdany! Najlepszy wynik: ${as?.best_score ?? 0}%, próby: ${as?.attempts_count ?? 1
+                                      }`}
                                   >
                                     <span>✓</span>
                                     <span>{s.name}</span>
@@ -346,16 +331,14 @@ export default function ClassCard({
                                 return (
                                   <span
                                     key={s.id}
-                                    className={`inline-flex items-center gap-1.5 px-2.5 py-1 border-1.5 rounded-lg text-xs font-black shadow-[1px_1px_0px_#000] ${
-                                      attempts > 0
-                                        ? "bg-rose-50 border-red-500 text-red-950"
-                                        : "bg-white border-amber-600 text-gray-900"
-                                    }`}
+                                    className={`inline-flex items-center gap-1.5 px-2.5 py-1 border-1.5 rounded-lg text-xs font-black shadow-[1px_1px_0px_#000] ${attempts > 0
+                                      ? "bg-rose-50 border-red-500 text-red-950"
+                                      : "bg-white border-amber-600 text-gray-900"
+                                      }`}
                                     title={
                                       attempts > 0
-                                        ? `Podejścia: ${attempts}, niezdane: ${failed}, najlepszy wynik: ${
-                                            as?.best_score ?? 0
-                                          }%`
+                                        ? `Podejścia: ${attempts}, niezdane: ${failed}, najlepszy wynik: ${as?.best_score ?? 0
+                                        }%`
                                         : "Uczeń nie podszedł jeszcze do testu"
                                     }
                                   >
@@ -483,13 +466,12 @@ export default function ClassCard({
                       <div className="flex items-center gap-2.5 shrink-0">
                         {totalAssignments > 0 ? (
                           <span
-                            className={`text-xs sm:text-sm font-black px-3.5 py-1.5 rounded-xl border-2 border-black shadow-[1.5px_1.5px_0px_#000] ${
-                              allCompleted
-                                ? "bg-[var(--neo-green)] text-black"
-                                : someCompleted
+                            className={`text-xs sm:text-sm font-black px-3.5 py-1.5 rounded-xl border-2 border-black shadow-[1.5px_1.5px_0px_#000] ${allCompleted
+                              ? "bg-[var(--neo-green)] text-black"
+                              : someCompleted
                                 ? "bg-[var(--neo-yellow)] text-black"
                                 : "bg-red-100 text-red-900"
-                            }`}
+                              }`}
                             title={`Uczeń zaliczył ${completedCount} z ${totalAssignments} zadań`}
                           >
                             Zaliczone: {completedCount}/{totalAssignments}
@@ -540,11 +522,10 @@ export default function ClassCard({
                                     [studentKey]: "all",
                                   }))
                                 }
-                                className={`px-2.5 py-1 text-xs font-black rounded-lg border border-black shadow-[1px_1px_0px_#000] cursor-pointer transition-all ${
-                                  currentFilter === "all"
-                                    ? "bg-black text-white"
-                                    : "bg-white text-black hover:bg-gray-100"
-                                }`}
+                                className={`px-2.5 py-1 text-xs font-black rounded-lg border border-black shadow-[1px_1px_0px_#000] cursor-pointer transition-all ${currentFilter === "all"
+                                  ? "bg-black text-white"
+                                  : "bg-white text-black hover:bg-gray-100"
+                                  }`}
                               >
                                 Wszystkie ({totalAssignments})
                               </button>
@@ -556,11 +537,10 @@ export default function ClassCard({
                                     [studentKey]: "completed",
                                   }))
                                 }
-                                className={`px-2.5 py-1 text-xs font-black rounded-lg border border-black shadow-[1px_1px_0px_#000] cursor-pointer transition-all ${
-                                  currentFilter === "completed"
-                                    ? "bg-emerald-600 text-white"
-                                    : "bg-[#f0fdf4] text-emerald-900 hover:bg-emerald-100"
-                                }`}
+                                className={`px-2.5 py-1 text-xs font-black rounded-lg border border-black shadow-[1px_1px_0px_#000] cursor-pointer transition-all ${currentFilter === "completed"
+                                  ? "bg-emerald-600 text-white"
+                                  : "bg-[#f0fdf4] text-emerald-900 hover:bg-emerald-100"
+                                  }`}
                               >
                                 Zaliczone ({completedCount})
                               </button>
@@ -572,11 +552,10 @@ export default function ClassCard({
                                     [studentKey]: "pending",
                                   }))
                                 }
-                                className={`px-2.5 py-1 text-xs font-black rounded-lg border border-black shadow-[1px_1px_0px_#000] cursor-pointer transition-all ${
-                                  currentFilter === "pending"
-                                    ? "bg-amber-500 text-black"
-                                    : "bg-[#fffbeb] text-amber-950 hover:bg-amber-100"
-                                }`}
+                                className={`px-2.5 py-1 text-xs font-black rounded-lg border border-black shadow-[1px_1px_0px_#000] cursor-pointer transition-all ${currentFilter === "pending"
+                                  ? "bg-amber-500 text-black"
+                                  : "bg-[#fffbeb] text-amber-950 hover:bg-amber-100"
+                                  }`}
                               >
                                 Do zaliczenia ({pendingCount})
                               </button>
@@ -595,13 +574,12 @@ export default function ClassCard({
                               return (
                                 <div
                                   key={as.assignment_id}
-                                  className={`p-3.5 border-2.5 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-[2px_2px_0px_#000] transition-all ${
-                                    isDone
-                                      ? "bg-[#f0fdf4] border-emerald-600 shadow-[2px_2px_0px_#059669]"
-                                      : isOverdue
+                                  className={`p-3.5 border-2.5 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-[2px_2px_0px_#000] transition-all ${isDone
+                                    ? "bg-[#f0fdf4] border-emerald-600 shadow-[2px_2px_0px_#059669]"
+                                    : isOverdue
                                       ? "bg-rose-50 border-red-500 shadow-[2px_2px_0px_#b91c1c]"
                                       : "bg-[#fffbeb] border-amber-500 shadow-[2px_2px_0px_#d97706]"
-                                  }`}
+                                    }`}
                                 >
                                   <div className="min-w-0 flex-1 space-y-1">
                                     <div className="text-xs font-bold text-gray-600 uppercase tracking-wider truncate">
@@ -613,11 +591,10 @@ export default function ClassCard({
                                     </div>
                                     {as.due_date && (
                                       <div
-                                        className={`text-xs font-bold flex items-center gap-1.5 ${
-                                          isOverdue
-                                            ? "text-red-700 font-black"
-                                            : "text-gray-700"
-                                        }`}
+                                        className={`text-xs font-bold flex items-center gap-1.5 ${isOverdue
+                                          ? "text-red-700 font-black"
+                                          : "text-gray-700"
+                                          }`}
                                       >
                                         <span>
                                           Termin: {new Date(as.due_date).toLocaleDateString("pl-PL")}{" "}
@@ -632,11 +609,10 @@ export default function ClassCard({
                                         Próby: <b>{as.attempts_count ?? 0}</b>
                                       </span>
                                       <span
-                                        className={`px-2 py-0.5 border border-black rounded-md text-[11px] font-black shadow-[1px_1px_0px_#000] ${
-                                          (as.success_count ?? 0) > 0
-                                            ? "bg-[var(--neo-green)] text-black"
-                                            : "bg-gray-100 text-gray-600"
-                                        }`}
+                                        className={`px-2 py-0.5 border border-black rounded-md text-[11px] font-black shadow-[1px_1px_0px_#000] ${(as.success_count ?? 0) > 0
+                                          ? "bg-[var(--neo-green)] text-black"
+                                          : "bg-gray-100 text-gray-600"
+                                          }`}
                                       >
                                         ✓ Zdane: <b>{as.success_count ?? 0}</b>
                                       </span>
@@ -696,8 +672,8 @@ export default function ClassCard({
                             {currentFilter === "completed"
                               ? "zaliczone"
                               : currentFilter === "pending"
-                              ? "do zaliczenia"
-                              : "wszystkie"}
+                                ? "do zaliczenia"
+                                : "wszystkie"}
                             ).
                           </div>
                         )}

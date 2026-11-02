@@ -1,10 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import 'katex/dist/katex.min.css';
-import { BlockMath } from 'react-katex';
 import { useEffect, useState, useCallback } from "react";
-import { FileText, Download, ExternalLink, Eye, EyeOff, AlertCircle, Loader2, Maximize2, Minimize2 } from "lucide-react";
+import { FileText, Download, ExternalLink, Eye, EyeOff, Loader2, Maximize2, Minimize2, BookOpen, RotateCcw } from "lucide-react";
 import Footer from "@/components/Footer";
 import Logo from "@/components/Logo";
 import Scratchpad from "@/components/Scratchpad";
@@ -165,39 +163,27 @@ export default function LessonView({ lessonId }: LessonViewProps) {
         <div className={`mx-auto bg-[var(--bg-card)] border-3 border-[var(--border-dark)] p-6 sm:p-10 rounded-2xl shadow-[8px_8px_0px_0px_#000] transition-all duration-300 ${isPdfExpanded ? "max-w-7xl" : showPdfPreview ? "max-w-6xl" : "max-w-4xl"
           }`}>
 
-          {/* Importance / Category Tag */}
-          <div className="flex items-center gap-2 mb-4">
-            <span className="bg-[var(--neo-blue)] text-black font-extrabold text-xs px-3 py-1 border-2 border-black rounded-md shadow-[2px_2px_0px_0px_#000] uppercase">
-              Zagadnienie
-            </span>
-          </div>
-
           <h1 className="text-3xl sm:text-4xl font-black mb-6 text-[var(--text-main)] tracking-tight">
             {lesson.title}
           </h1>
 
-          {/* Theoretical Content (LaTeX) - only displayed if present */}
-          {lesson.content_tex && (
-            <div className="mb-8">
-              <div className="inline-block bg-[var(--neo-yellow)] px-3 py-1 border-2 border-black rounded-md font-black text-xs uppercase tracking-wider mb-4 shadow-[2px_2px_0px_0px_#000]">
-                Treść lekcji
-              </div>
-              <div className="p-6 bg-[var(--bg-deep)] border-2.5 border-[var(--border-dark)] rounded-xl text-center overflow-x-auto text-[var(--text-main)] shadow-[4px_4px_0px_0px_#000] font-medium">
-                <BlockMath math={lesson.content_tex} />
-              </div>
+          {/* Materials Section */}
+          <div className="mt-8">
+            <div className="flex items-center gap-3 mb-4">
+              <span className="w-3 h-3 bg-[var(--neo-yellow)] border border-black rounded-sm shadow-[1px_1px_0px_0px_#000]" />
+              <h2 className="text-2xl font-black text-[var(--text-main)] tracking-tight uppercase">
+                Teoria
+              </h2>
             </div>
-          )}
 
-          {/* PDF Materials Section */}
-          {lesson.pdf_path && (
-            <div className="mt-8">
-              <div className="flex items-center gap-3 mb-4">
-                <span className="w-3 h-3 bg-[var(--neo-yellow)] border border-black rounded-sm shadow-[1px_1px_0px_0px_#000]" />
-                <h2 className="text-2xl font-black text-[var(--text-main)] tracking-tight uppercase">
-                  Teoria
-                </h2>
+            {pdfLoading ? (
+              <div className="p-8 bg-[var(--bg-deep)] border-2.5 border-[var(--border-dark)] rounded-2xl shadow-[4px_4px_0px_0px_#000] flex flex-col items-center justify-center text-center">
+                <Loader2 className="w-8 h-8 animate-spin text-black mb-3" />
+                <p className="text-xs font-black uppercase tracking-wider text-black">
+                  Sprawdzanie materiałów teoretycznych...
+                </p>
               </div>
-
+            ) : pdfUrl ? (
               <div className="p-6 bg-[var(--bg-deep)] border-2.5 border-[var(--border-dark)] rounded-xl shadow-[4px_4px_0px_0px_#000]">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div className="flex items-center gap-3 min-w-0">
@@ -216,70 +202,40 @@ export default function LessonView({ lessonId }: LessonViewProps) {
 
                   {/* Actions */}
                   <div className="flex items-center gap-2 shrink-0 flex-wrap sm:flex-nowrap">
-                    {pdfLoading && (
-                      <div className="flex items-center gap-2 text-xs font-black uppercase px-3 py-2 bg-white border-2 border-black rounded-lg shadow-[2px_2px_0px_0px_#000]">
-                        <Loader2 className="w-4 h-4 animate-spin text-black" />
-                        <span>Generowanie...</span>
-                      </div>
-                    )}
-
-                    {pdfUrl && (
-                      <>
-                        <button
-                          type="button"
-                          onClick={() => setShowPdfPreview(!showPdfPreview)}
-                          className="flex items-center gap-1.5 bg-white hover:bg-[var(--neo-yellow)] text-black font-black text-xs uppercase tracking-wider px-3 py-2 rounded-xl border-2 border-black shadow-[3px_3px_0px_0px_#000] hover:shadow-[1px_1px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] transition-all cursor-pointer whitespace-nowrap shrink-0"
-                        >
-                          {showPdfPreview ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                          <span>{showPdfPreview ? "Ukryj podgląd" : "Podgląd"}</span>
-                        </button>
-
-                        <a
-                          href={pdfUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-1.5 bg-white hover:bg-[var(--neo-blue)] text-black font-black text-xs uppercase tracking-wider px-3 py-2 rounded-xl border-2 border-black shadow-[3px_3px_0px_0px_#000] hover:shadow-[1px_1px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] transition-all cursor-pointer whitespace-nowrap shrink-0"
-                        >
-                          <ExternalLink className="w-4 h-4" />
-                          <span>Nowe okno</span>
-                        </a>
-
-                        <button
-                          type="button"
-                          onClick={handleDownload}
-                          disabled={downloading}
-                          className="flex items-center gap-1.5 bg-[var(--neo-green)] hover:bg-[#16a34a] hover:text-white text-black font-black text-xs uppercase tracking-wider px-3.5 py-2 rounded-xl border-2 border-black shadow-[3px_3px_0px_0px_#000] hover:shadow-[1px_1px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] transition-all cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed whitespace-nowrap shrink-0"
-                        >
-                          {downloading ? (
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                          ) : (
-                            <Download className="w-4 h-4" />
-                          )}
-                          <span>{downloading ? "Pobieranie..." : "Pobierz"}</span>
-                        </button>
-                      </>
-                    )}
-                  </div>
-                </div>
-
-                {/* Error Notice */}
-                {pdfError && (
-                  <div className="mt-4 p-3 bg-red-100 border-2 border-red-500 rounded-lg text-xs font-bold text-red-800 flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2">
-                      <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
-                      <span>Błąd pobierania pliku PDF: {pdfError}</span>
-                    </div>
                     <button
                       type="button"
-                      onClick={refreshPdfUrl}
-                      disabled={pdfLoading}
-                      className="bg-white hover:bg-black hover:text-white text-black px-2.5 py-1 rounded border border-black shadow-[1px_1px_0px_0px_#000] text-[11px] font-black uppercase transition-all shrink-0 cursor-pointer"
+                      onClick={() => setShowPdfPreview(!showPdfPreview)}
+                      className="flex items-center gap-1.5 bg-white hover:bg-[var(--neo-yellow)] text-black font-black text-xs uppercase tracking-wider px-3 py-2 rounded-xl border-2 border-black shadow-[3px_3px_0px_0px_#000] hover:shadow-[1px_1px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] transition-all cursor-pointer whitespace-nowrap shrink-0"
                     >
-                      Spróbuj ponownie
+                      {showPdfPreview ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      <span>{showPdfPreview ? "Ukryj podgląd" : "Podgląd"}</span>
+                    </button>
+
+                    <a
+                      href={pdfUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1.5 bg-white hover:bg-[var(--neo-blue)] text-black font-black text-xs uppercase tracking-wider px-3 py-2 rounded-xl border-2 border-black shadow-[3px_3px_0px_0px_#000] hover:shadow-[1px_1px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] transition-all cursor-pointer whitespace-nowrap shrink-0"
+                    >
+                      <ExternalLink className="w-4 h-4" />
+                      <span>Nowe okno</span>
+                    </a>
+
+                    <button
+                      type="button"
+                      onClick={handleDownload}
+                      disabled={downloading}
+                      className="flex items-center gap-1.5 bg-[var(--neo-green)] hover:bg-[#16a34a] hover:text-white text-black font-black text-xs uppercase tracking-wider px-3.5 py-2 rounded-xl border-2 border-black shadow-[3px_3px_0px_0px_#000] hover:shadow-[1px_1px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] transition-all cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed whitespace-nowrap shrink-0"
+                    >
+                      {downloading ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Download className="w-4 h-4" />
+                      )}
+                      <span>{downloading ? "Pobieranie..." : "Pobierz"}</span>
                     </button>
                   </div>
-                )}
-
+                </div>
 
                 {/* Embedded Viewer */}
                 {showPdfPreview && pdfUrl && (
@@ -288,7 +244,7 @@ export default function LessonView({ lessonId }: LessonViewProps) {
                     onContextMenu={(e) => e.preventDefault()}
                   >
                     <div className="bg-black text-white text-xs font-black uppercase px-4 py-2.5 flex items-center justify-between gap-4">
-                      <span className="truncate">Podgląd: {lesson.pdf_path.split('/').pop()}</span>
+                      <span className="truncate">Podgląd: {lesson?.pdf_path ? lesson.pdf_path.split('/').pop() : 'materialy.pdf'}</span>
                       <div className="flex items-center gap-3 shrink-0">
                         <button
                           type="button"
@@ -316,11 +272,35 @@ export default function LessonView({ lessonId }: LessonViewProps) {
                   </div>
                 )}
               </div>
-            </div>
-          )}
+            ) : (
+              /* Fallback view when PDF is not available */
+              <div className="p-7 sm:p-9 bg-[var(--bg-deep)] border-2.5 border-[var(--border-dark)] rounded-2xl shadow-[4px_4px_0px_0px_#000] text-center">
+                <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-[var(--neo-yellow)] border-2 border-black shadow-[3px_3px_0px_0px_#000] mb-4">
+                  <BookOpen className="w-7 h-7 text-black" />
+                </div>
+                <h3 className="text-xl sm:text-2xl font-black text-[var(--text-main)] uppercase tracking-tight mb-2">
+                  Chwilowo brak teorii, wróć później
+                </h3>
+                <p className="text-xs sm:text-sm font-bold text-gray-700 max-w-md mx-auto mb-6 leading-relaxed">
+                  Materiały teoretyczne do tej lekcji są jeszcze w przygotowaniu. Możesz od razu przejść do rozwiązywania powiązanych zadań!
+                </p>
+                <div className="flex items-center justify-center gap-3 flex-wrap">
+                  <button
+                    type="button"
+                    onClick={refreshPdfUrl}
+                    disabled={pdfLoading}
+                    className="inline-flex items-center gap-1.5 bg-white hover:bg-gray-100 text-black font-black text-xs uppercase tracking-wider px-4 py-2.5 rounded-xl border-2 border-black shadow-[2px_2px_0px_0px_#000] hover:shadow-[1px_1px_0px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] transition-all cursor-pointer disabled:opacity-50"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                    <span>Sprawdź ponownie</span>
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
 
           {lesson.task_groups && lesson.task_groups.length > 0 && (
-            <div className="mt-12 border-t-2 border-[var(--border-dark)] pt-8">
+            <div id="task-groups" className="mt-12 border-t-2 border-[var(--border-dark)] pt-8">
               <div className="flex items-center gap-3 mb-6">
                 <span className="w-3 h-3 bg-[var(--neo-green)] border border-black rounded-sm shadow-[1px_1px_0px_0px_#000]" />
                 <h2 className="text-2xl font-black text-[var(--text-main)] tracking-tight uppercase">

@@ -62,6 +62,7 @@ export default function TopicMapView() {
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const [loading, setLoading] = useState(true);
   const [savingLayout, setSavingLayout] = useState(false);
+  const [hidingNodes, setHidingNodes] = useState(false);
   const [canMoveNodes, setCanMoveNodes] = useState(false);
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
   const [sidebarLessons, setSidebarLessons] = useState<any[]>([]);
@@ -227,66 +228,80 @@ export default function TopicMapView() {
     }
   }, []);
 
-  useEffect(() => {
-    const fetchNodes = async () => {
-      try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
-        const res = await fetch(`${apiUrl}/api/v1/nodes`);
-        if (res.ok) {
-          const data = await res.json();
-          if (!data.nodes || !data.edges) return;
+  const fetchNodes = useCallback(async () => {
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+      const token = await getAuthToken();
+      const headers: Record<string, string> = {};
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+      const res = await fetch(`${apiUrl}/api/v1/nodes`, { headers });
+      if (res.ok) {
+        const data = await res.json();
+        if (!data.nodes || !data.edges) return;
 
-          const initialNodeId = getInitialNodeId();
+        const initialNodeId = getInitialNodeId();
 
-          const rawNodes: Node[] = data.nodes.map((n: any) => ({
-            id: n.id,
-            type: 'cyber',
-            targetPosition: Position.Bottom,
-            sourcePosition: Position.Top,
-            position: { x: n.ui_x || 0, y: n.ui_y || 0 },
-            data: { label: n.name, subtasksCount: n.subtasks_count },
-            selected: initialNodeId ? n.id === initialNodeId : false,
-          }));
+        const rawNodes: Node[] = data.nodes.map((n: any) => ({
+          id: n.id,
+          type: 'cyber',
+          targetPosition: Position.Bottom,
+          sourcePosition: Position.Top,
+          position: { x: n.ui_x || 0, y: n.ui_y || 0 },
+          data: { 
+            label: n.name, 
+            subtasksCount: n.subtasks_count,
+            totalTaskGroups: Number(n.total_task_groups) || 0,
+            passedTaskGroups: Number(n.passed_task_groups) || 0,
+            isHidden: Boolean(n.is_hidden ?? n.is_blocked),
+            isBlocked: Boolean(n.is_hidden ?? n.is_blocked),
+            isAdmin: currentUser?.role === 'admin',
+          },
+          selected: initialNodeId ? n.id === initialNodeId : false,
+        }));
 
-          const rawEdges: Edge[] = data.edges.map((e: any, idx: number) => ({
-            id: `e${e.source}-${e.target}-${idx}`,
-            source: e.source,
-            target: e.target,
-            type: 'default',
-            animated: false,
-            style: {
-              stroke: '#000000',
-              strokeWidth: 2.5,
-            }
-          }));
+        const rawEdges: Edge[] = data.edges.map((e: any, idx: number) => ({
+          id: `e${e.source}-${e.target}-${idx}`,
+          source: e.source,
+          target: e.target,
+          type: 'default',
+          animated: false,
+          style: {
+            stroke: '#000000',
+            strokeWidth: 2.5,
+          }
+        }));
 
-          setNodes(rawNodes);
-          setEdges(rawEdges);
-          setTranslateExtent(calculateExtent(rawNodes));
+        setNodes(rawNodes);
+        setEdges(rawEdges);
+        setTranslateExtent(calculateExtent(rawNodes));
 
-          if (initialNodeId) {
-            const matchedNode = rawNodes.find((n) => n.id === initialNodeId);
-            if (matchedNode) {
-              setSelectedNode(matchedNode);
-              restoredNodeIdRef.current = initialNodeId;
-              fetchNodeLessons(initialNodeId);
-            } else {
-              setInitialFitView(true);
-              if (typeof window !== "undefined") {
-                sessionStorage.removeItem("graph_selected_node_id");
-                sessionStorage.removeItem("graph_zoom");
-              }
+        if (initialNodeId) {
+          const matchedNode = rawNodes.find((n) => n.id === initialNodeId);
+          if (matchedNode) {
+            setSelectedNode(matchedNode);
+            restoredNodeIdRef.current = initialNodeId;
+            fetchNodeLessons(initialNodeId);
+          } else {
+            setInitialFitView(true);
+            if (typeof window !== "undefined") {
+              sessionStorage.removeItem("graph_selected_node_id");
+              sessionStorage.removeItem("graph_zoom");
             }
           }
         }
-      } catch (err) {
-        console.error("Error fetching nodes:", err);
-      } finally {
-        setLoading(false);
       }
-    };
+    } catch (err) {
+      console.error("Error fetching nodes:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, [setNodes, setEdges, fetchNodeLessons, currentUser?.role]);
+
+  useEffect(() => {
     fetchNodes();
-  }, [setNodes, setEdges, fetchNodeLessons]);
+  }, [fetchNodes, currentUser]);
 
   useEffect(() => {
     if (
@@ -402,6 +417,107 @@ export default function TopicMapView() {
     }
   };
 
+  const handleHideNodesWithoutPdf = async () => {
+    if (!confirm("Czy na pewno chcesz zablokować lekcje we wszystkich węzłach bez pliku PDF dla uczniów?")) {
+      return;
+    }
+    setHidingNodes(true);
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+      const token = await getAuthToken();
+      const res = await fetch(`${apiUrl}/api/v1/nodes/hide-without-pdf`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      });
+      if (!res.ok) {
+        let errText = "Błąd serwera";
+        try {
+          const errData = await res.json();
+          errText = errData.detail || errData.error || JSON.stringify(errData);
+        } catch {
+          errText = await res.text();
+        }
+        throw new Error(errText);
+      }
+      const data = await res.json();
+      await fetchNodes();
+      alert(data.message || `Operacja zakończona! Zablokowano węzłów: ${data.hidden_count ?? data.blocked_count}, Dostępnych: ${data.visible_count ?? data.unblocked_count}`);
+    } catch (err: any) {
+      console.error("Error blocking nodes:", err);
+      alert(`Nie udało się zablokować węzłów: ${err.message}`);
+    } finally {
+      setHidingNodes(false);
+    }
+  };
+
+  const handleUnhideAllNodes = async () => {
+    if (!confirm("Czy na pewno chcesz odblokować wszystkie węzły dla uczniów?")) {
+      return;
+    }
+    setHidingNodes(true);
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+      const token = await getAuthToken();
+      const res = await fetch(`${apiUrl}/api/v1/nodes/unhide-all`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      });
+      if (!res.ok) {
+        let errText = "Błąd serwera";
+        try {
+          const errData = await res.json();
+          errText = errData.detail || errData.error || JSON.stringify(errData);
+        } catch {
+          errText = await res.text();
+        }
+        throw new Error(errText);
+      }
+      const data = await res.json();
+      await fetchNodes();
+      alert(data.message || `Wszystkie węzły zostały odblokowane! Liczba odblokowanych węzłów: ${data.unhidden_count ?? data.unblocked_count}`);
+    } catch (err: any) {
+      console.error("Error unblocking nodes:", err);
+      alert(`Nie udało się odblokować węzłów: ${err.message}`);
+    } finally {
+      setHidingNodes(false);
+    }
+  };
+
+  const handleToggleNodeVisibility = async (nodeId: string, currentHidden: boolean) => {
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+      const token = await getAuthToken();
+      const res = await fetch(`${apiUrl}/api/v1/nodes/${nodeId}/visibility`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ is_hidden: !currentHidden }),
+      });
+      if (res.ok) {
+        await fetchNodes();
+        setSelectedNode((prev) =>
+          prev && prev.id === nodeId
+            ? { ...prev, data: { ...prev.data, isHidden: !currentHidden } }
+            : prev
+        );
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        alert(errData.detail || "Nie udało się zmienić widoczności węzła.");
+      }
+    } catch (err: any) {
+      console.error("Błąd zmiany widoczności węzła:", err);
+      alert(`Błąd: ${err.message}`);
+    }
+  };
+
   return (
     <div style={{ width: '100vw', height: '100vh', background: 'var(--bg-main)', display: 'flex' }}>
       <div style={{ flex: 1, position: 'relative' }}>
@@ -415,11 +531,11 @@ export default function TopicMapView() {
         ) : (
           <>
             {/* Top-Left Logo & Search Panel */}
-            <div style={{
-              position: 'absolute', top: 20, left: 24, zIndex: 100,
-              display: 'flex', flexDirection: 'column', gap: '10px',
-              width: '160px'
-            }}>
+            <div
+              className={`absolute top-4 left-4 md:top-5 md:left-6 z-[100] flex-col gap-2.5 w-[160px] ${
+                selectedNode ? "hidden md:flex" : "flex"
+              }`}
+            >
               <div style={{
                 background: '#ffffff',
                 border: '2.5px solid #000000',
@@ -501,37 +617,22 @@ export default function TopicMapView() {
 
             {/* Admin Move Status Badge */}
             {canDragNodes && (
-              <div style={{
-                position: 'absolute',
-                top: 20,
-                left: '50%',
-                transform: 'translateX(-50%)',
-                zIndex: 90,
-                background: 'var(--neo-yellow)',
-                border: '2.5px solid #000000',
-                borderRadius: '9999px',
-                padding: '6px 18px',
-                color: '#000000',
-                fontSize: '0.78rem',
-                fontWeight: 900,
-                textTransform: 'uppercase',
-                letterSpacing: '0.05em',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                boxShadow: '3px 3px 0px 0px #000000',
-                pointerEvents: 'none',
-              }}>
+              <div
+                className={`absolute top-4 md:top-5 left-1/2 -translate-x-1/2 z-[90] bg-[var(--neo-yellow)] border-2.5 border-black rounded-full px-4 py-1.5 text-black text-xs font-black uppercase tracking-wider items-center gap-2 shadow-[3px_3px_0px_0px_#000] pointer-events-none ${
+                  selectedNode ? "hidden md:flex" : "flex"
+                }`}
+              >
                 <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#000000', display: 'inline-block' }} />
                 Tryb Edycji Grafu Aktywny
               </div>
             )}
 
             {/* Top-Right User Actions */}
-            <div style={{
-              position: 'absolute', top: 20, right: 20, zIndex: 100,
-              display: 'flex', gap: '10px', alignItems: 'center'
-            }}>
+            <div
+              className={`absolute top-4 right-4 md:top-5 md:right-5 z-[100] gap-2.5 items-center ${
+                selectedNode ? "hidden md:flex" : "flex"
+              }`}
+            >
               {!currentUser ? (
                 <button
                   onClick={() => router.push('/login')}
@@ -578,6 +679,9 @@ export default function TopicMapView() {
                   onToggleMoveNodes={() => setCanMoveNodes(!canMoveNodes)}
                   savingLayout={savingLayout}
                   onSaveLayout={saveLayout}
+                  hidingNodes={hidingNodes}
+                  onHideNodesWithoutPdf={handleHideNodesWithoutPdf}
+                  onUnhideAllNodes={handleUnhideAllNodes}
                   onLogout={handleLogout}
                 />
               )}
@@ -626,6 +730,8 @@ export default function TopicMapView() {
         selectedNode={selectedNode}
         sidebarLessons={sidebarLessons}
         loadingLessons={loadingLessons}
+        currentUser={currentUser}
+        onToggleNodeVisibility={handleToggleNodeVisibility}
         onClose={() => {
           setSelectedNode(null);
           setNodes((prev) => prev.map((n) => ({ ...n, selected: false })));
