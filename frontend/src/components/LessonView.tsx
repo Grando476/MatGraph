@@ -350,7 +350,7 @@ export default function LessonView({ lessonId }: LessonViewProps) {
                       </span>
                     </div>
                     <p className="text-[var(--text-muted)] font-semibold text-xs mt-3 uppercase tracking-wider group-hover:text-black">
-                      {group.is_passed ? "Przejdź do grupy (Zaliczona)" : "Przejdź do zadań"}
+                      Przejdź do zadań
                     </p>
 
                   </Link>
