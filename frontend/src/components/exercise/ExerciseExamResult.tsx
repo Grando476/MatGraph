@@ -6,6 +6,7 @@ import { parseTaskContent, formatDifficulty } from "./types";
 interface ExerciseExamResultProps {
   examResult: any;
   examTasks: any[];
+  examAnswers?: Record<string, any>;
   onRetryExam: () => void;
   onStartPractice: (diff: string) => void;
   onBack: () => void;
@@ -14,6 +15,7 @@ interface ExerciseExamResultProps {
 export default function ExerciseExamResult({
   examResult,
   examTasks,
+  examAnswers = {},
   onRetryExam,
   onStartPractice,
   onBack,
@@ -101,11 +103,23 @@ export default function ExerciseExamResult({
 
                 {/* Correct answer for open questions if available */}
                 {(taskRes?.correct_answer !== undefined || contentObj.correct_answer !== undefined) && (
-                  <div className="text-xs font-bold mb-3 flex items-center gap-1.5 flex-wrap">
-                    <span className="text-gray-600 uppercase">Prawidłowa odpowiedź:</span>
-                    <span className="font-black text-black">
-                      <MixedMathText text={taskRes?.correct_answer ?? contentObj.correct_answer} />
-                    </span>
+                  <div className="text-xs font-bold mb-3 space-y-1">
+                    {/* User's answer */}
+                    {examAnswers[t.id]?.user_answer !== undefined && (
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="text-gray-600 uppercase">Twoja odpowiedź:</span>
+                        <span className={`font-black ${isCorrect ? "text-green-700" : "text-red-600"}`}>
+                          <MixedMathText text={examAnswers[t.id].user_answer || "(brak)"} />
+                        </span>
+                      </div>
+                    )}
+                    {/* Correct answer */}
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="text-gray-600 uppercase">Prawidłowa odpowiedź:</span>
+                      <span className="font-black text-black">
+                        <MixedMathText text={taskRes?.correct_answer ?? contentObj.correct_answer} />
+                      </span>
+                    </div>
                   </div>
                 )}
 

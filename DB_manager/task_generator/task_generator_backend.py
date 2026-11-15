@@ -299,9 +299,9 @@ def _build_context(tg_id):
     known_subtopics_data = prior_knowledge.get("known_subtopics") or []
     unknown_topics_names = prior_knowledge.get("unknown_topics_names") or []
     
-    known_subtopics_theories = []
+    known_subtopics_names = []
     for st in known_subtopics_data:
-        known_subtopics_theories.append(f"{st.get('name')}")
+        known_subtopics_names.append(f"{st.get('name')}")
 
     sibling_task_groups = [tg['name'] for tg in d['subtopics'].get('task_groups', []) if tg['name'] != d['name']]
 
@@ -310,10 +310,8 @@ def _build_context(tg_id):
         "topic": d['subtopics']['topics']['name'],
         "subtopic": d['subtopics']['name'],
         "group": d['name'],
-        "topic_theory": "Brak",
-        "subtopic_theory": "Brak",
         "known_topics_names": ", ".join(known_topics_names) if known_topics_names else "Brak",
-        "known_subtopics_theories": " | ".join(known_subtopics_theories) if known_subtopics_theories else "Brak",
+        "known_subtopics_names": " | ".join(known_subtopics_names) if known_subtopics_names else "Brak",
         "unknown_topics_names": ", ".join(unknown_topics_names) if unknown_topics_names else "Brak",
         "sibling_task_groups": ", ".join(sibling_task_groups) if sibling_task_groups else "Brak"
     }

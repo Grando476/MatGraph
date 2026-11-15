@@ -2,6 +2,7 @@ import json
 from typing import Optional
 from psycopg2.extras import RealDictCursor
 from db.session import get_db_connection
+from services.answer_normalizer import answers_are_equal
 
 class ExerciseService:
     @staticmethod
@@ -121,10 +122,21 @@ class ExerciseService:
             if not task:
                 return {"error": "Task not found"}
 
-            task_type = task["task_type"]
+            task_type = (task["task_type"] or "").upper()
             content = task["content"]
             if isinstance(content, str):
                 content = json.loads(content)
+
+            if not task_type:
+                if isinstance(content, dict):
+                    if content.get("statements"):
+                        task_type = "TRUE_FALSE"
+                    elif content.get("options"):
+                        task_type = "MCQ"
+                    else:
+                        task_type = "OPEN"
+                else:
+                    task_type = "OPEN"
 
             if task_type == "TRUE_FALSE":
                 statements = content.get("statements", [])
@@ -161,7 +173,7 @@ class ExerciseService:
                     "exemplary_solution": task["exemplary_solution"]
                 }
 
-            elif task_type in ("MCQ", "single_choice"):
+            elif task_type in ("MCQ", "SINGLE_CHOICE"):
                 correct_idx = content.get("correct_index")
                 user_opt = answers.get("selected_option") if isinstance(answers, dict) else answers
                 is_correct = (user_opt == correct_idx)
@@ -175,8 +187,9 @@ class ExerciseService:
 
             elif task_type == "OPEN":
                 correct_ans = str(content.get("correct_answer", "")).strip()
-                user_ans = str(answers.get("user_answer", "") if isinstance(answers, dict) else answers).strip()
-                is_correct = (user_ans.lower() == correct_ans.lower())
+                tolerance = float(content.get("tolerance", 0))
+                user_ans = str(answers.get("user_answer", "") if isinstance(answers, dict) else (answers or "")).strip()
+                is_correct = answers_are_equal(user_ans, correct_ans, tolerance=tolerance)
                 return {
                     "task_id": task_id,
                     "task_type": "OPEN",

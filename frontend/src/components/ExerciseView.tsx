@@ -636,6 +636,7 @@ export default function ExerciseView({ exerciseId }: ExerciseViewProps) {
             <ExerciseExamResult
               examResult={examResult}
               examTasks={examTasks}
+              examAnswers={examAnswers}
               onRetryExam={startExam}
               onStartPractice={startPractice}
               onBack={handleBack}

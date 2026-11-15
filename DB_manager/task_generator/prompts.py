@@ -7,12 +7,11 @@ Ty nie rozwiązujesz zadań, ani nie tworzysz dokładnych odpowiedzi (tym zajmie
 
 KONTEKST ZADANIA (GŁÓWNY CEL):
 Ścieżka: {chapter} > {topic} > {subtopic} > {group}
-Teoria bieżąca: {topic_theory}, {subtopic_theory}
 Inne (sąsiednie) grupy zadań w tym podtemacie: {sibling_task_groups}
 
 WIEDZA UPRZEDNIA UCZNIA (MOŻESZ Z NIEJ KORZYSTAĆ):
 Poprzednie tematy ucznia: {known_topics_names}
-Poprzednie podtematy z tego działu: {known_subtopics_theories}
+Poprzednie podtematy z tego działu: {known_subtopics_names}
 
 ZAKAZANY MATERIAŁ (ABSOLUTNY ZAKAZ UŻYWANIA):
 Nieznane tematy: {unknown_topics_names}
@@ -52,8 +51,7 @@ LISTA SZKICÓW ZADAŃ DO ZREALIZOWANIA (ZAPLANOWANE PRZEZ METODYKA W FORMACIE JS
 
 KONTEKST EDUKACYJNY (DO ZACHOWANIA ZGODNOŚCI):
 Ścieżka: {chapter} > {topic} > {subtopic} > {group}
-Teoria bieżąca: {topic_theory}, {subtopic_theory}
-Wiedza uprzednia ucznia: {known_topics_names} | {known_subtopics_theories}
+Wiedza uprzednia ucznia: {known_topics_names} | {known_subtopics_names}
 ZAKAZANY MATERIAŁ (Absolutny zakaz pojęć z tych działów): {unknown_topics_names}
 
 TWOJE WYTYCZNE DLA KAŻDEGO SZKICU:
@@ -80,8 +78,7 @@ Jesteś rygorystycznym matematykiem i egzaminatorem. Otrzymujesz surową paczkę
 
 KONTEKST EDUKACYJNY UCZNIA:
 Ścieżka: {chapter} > {topic} > {subtopic} > {group}
-Teoria bieżąca: {topic_theory}, {subtopic_theory}
-Wiedza uprzednia ucznia (Z tego możesz korzystać): {known_topics_names} | {known_subtopics_theories}
+Wiedza uprzednia ucznia (Z tego możesz korzystać): {known_topics_names} | {known_subtopics_names}
 Nieznane tematy (ABSOLUTNY ZAKAZ UŻYWANIA): {unknown_topics_names}
 
 SUROWA PACZKA ZADAŃ (JSON):
@@ -90,7 +87,7 @@ SUROWA PACZKA ZADAŃ (JSON):
 ZADANIE DLA KAŻDEGO ELEMENTU Z PACZKI:
 1. Rozwiąż zadanie od zera krok po kroku, nie patrząc na "correct_index" sugerowany przez AI.
 2. Pisz BARDZO PROSTYM i zrozumiałym językiem. Tłumacz rozwiązanie tak, jakbyś mówił do ucznia szkoły średniej. Unikaj sztywnego, akademickiego żargonu.
-3. OGRANICZENIA WIEDZY (KRYTYCZNE): Uczeń zna TYLKO zagadnienia z bieżącej teorii i wiedzy uprzedniej. Absolutnie nie wolno Ci w rozwiązaniu używać pojęć, twierdzeń, ani notacji z tematów nieznanych (np. nie używaj wartości bezwzględnej / modułu przy obliczaniu odległości, jeśli uczeń nie poznał wprost tego pojęcia). Rozwiązanie musi być oparte na najprostszych, aktualnie dostępnych dla ucznia metodach krok po kroku!
+3. OGRANICZENIA WIEDZY (KRYTYCZNE): Uczeń zna TYLKO zagadnienia z bieżącego tematu i wiedzy uprzedniej. Absolutnie nie wolno Ci w rozwiązaniu używać pojęć, twierdzeń, ani notacji z tematów nieznanych (np. nie używaj wartości bezwzględnej / modułu przy obliczaniu odległości, jeśli uczeń nie poznał wprost tego pojęcia). Rozwiązanie musi być oparte na najprostszych, aktualnie dostępnych dla ucznia metodach krok po kroku!
 4. Zadania z danymi w tabeli: Jeśli zadanie zawiera tabelę, w rozwiązaniu wyraźnie wskaż odczytanie danych z tabeli i zapisz pełne działanie prowadzące do wyniku.
 5. Sprawdź, czy dokładnie JEDNA opcja jest poprawna.
 
@@ -198,12 +195,11 @@ WAŻNE: To są zadania OTWARTE — uczeń NIE wybiera z listy opcji, lecz sam wp
 
 KONTEKST ZADANIA (GŁÓWNY CEL):
 Ścieżka: {chapter} > {topic} > {subtopic} > {group}
-Teoria bieżąca: {topic_theory}, {subtopic_theory}
 Inne (sąsiednie) grupy zadań w tym podtemacie: {sibling_task_groups}
 
 WIEDZA UPRZEDNIA UCZNIA (MOŻESZ Z NIEJ KORZYSTAĆ):
 Poprzednie tematy ucznia: {known_topics_names}
-Poprzednie podtematy z tego działu: {known_subtopics_theories}
+Poprzednie podtematy z tego działu: {known_subtopics_names}
 
 ZAKAZANY MATERIAŁ (ABSOLUTNY ZAKAZ UŻYWANIA):
 Nieznane tematy: {unknown_topics_names}
@@ -245,8 +241,7 @@ LISTA SZKICÓW ZADAŃ DO ZREALIZOWANIA (ZAPLANOWANE PRZEZ METODYKA W FORMACIE JS
 
 KONTEKST EDUKACYJNY (DO ZACHOWANIA ZGODNOŚCI):
 Ścieżka: {chapter} > {topic} > {subtopic} > {group}
-Teoria bieżąca: {topic_theory}, {subtopic_theory}
-Wiedza uprzednia ucznia: {known_topics_names} | {known_subtopics_theories}
+Wiedza uprzednia ucznia: {known_topics_names} | {known_subtopics_names}
 ZAKAZANY MATERIAŁ (Absolutny zakaz pojęć z tych działów): {unknown_topics_names}
 
 TWOJE WYTYCZNE DLA KAŻDEGO SZKICU:
@@ -259,7 +254,8 @@ TWOJE WYTYCZNE DLA KAŻDEGO SZKICU:
    - Wyrażenie: "2\\sqrt{{3}}"
 4. Ograniczenie wiedzy: BEZWZGLĘDNIE trzymaj się zasady, by nie używać pojęć nieznanych uczniowi.
 5. Formatowanie: Używaj czystego tekstu z prostym ujęciem LaTeX dla matematyki.
-6. Sens fizyczny wielkości policzalnych: Wszystkie rzeczy fizyczne i policzalne muszą być liczbami całkowitymi.
+6. Tabele: Strukturę tabeli w treści zadania ("question") stosuj TYLKO wtedy, gdy szkic lub grupa ("{group}") wyraźnie jej wymaga. W pozostałych przypadkach formułuj zadania standardowo, bez tabeli.
+7. Sens fizyczny wielkości policzalnych: Wszystkie rzeczy fizyczne i policzalne muszą być liczbami całkowitymi.
 
 Zwróć TYLKO czysty JSON jako LISTĘ obiektów:
 [
@@ -275,8 +271,7 @@ Jesteś rygorystycznym matematykiem i egzaminatorem. Otrzymujesz surową paczkę
 
 KONTEKST EDUKACYJNY UCZNIA:
 Ścieżka: {chapter} > {topic} > {subtopic} > {group}
-Teoria bieżąca: {topic_theory}, {subtopic_theory}
-Wiedza uprzednia ucznia (Z tego możesz korzystać): {known_topics_names} | {known_subtopics_theories}
+Wiedza uprzednia ucznia (Z tego możesz korzystać): {known_topics_names} | {known_subtopics_names}
 Nieznane tematy (ABSOLUTNY ZAKAZ UŻYWANIA): {unknown_topics_names}
 
 SUROWA PACZKA ZADAŃ (JSON):
@@ -284,10 +279,11 @@ SUROWA PACZKA ZADAŃ (JSON):
 
 ZADANIE DLA KAŻDEGO ELEMENTU Z PACZKI:
 1. Rozwiąż zadanie od zera krok po kroku, nie patrząc na "correct_answer" sugerowany przez AI.
-2. Pisz BARDZO PROSTYM i zrozumiałym językiem.
-3. OGRANICZENIA WIEDZY (KRYTYCZNE): Uczeń zna TYLKO zagadnienia z bieżącej teorii i wiedzy uprzedniej. Rozwiązanie musi być oparte na najprostszych, aktualnie dostępnych metodach.
-4. Sprawdź, czy podana odpowiedź jest poprawna i jednoznaczna.
-5. Jeśli odpowiedź jest wieloznaczna (np. równanie ma 2 rozwiązania), oznacz zadanie jako niepoprawne.
+2. Pisz BARDZO PROSTYM i zrozumiałym językiem. Tłumacz rozwiązanie tak, jakbyś mówił do ucznia szkoły średniej. Unikaj sztywnego, akademickiego żargonu.
+3. OGRANICZENIA WIEDZY (KRYTYCZNE): Uczeń zna TYLKO zagadnienia z bieżącego tematu i wiedzy uprzedniej. Absolutnie nie wolno Ci w rozwiązaniu używać pojęć, twierdzeń, ani notacji z tematów nieznanych. Rozwiązanie musi być oparte na najprostszych, aktualnie dostępnych dla ucznia metodach krok po kroku!
+4. Zadania z danymi w tabeli: Jeśli zadanie zawiera tabelę, w rozwiązaniu wyraźnie wskaż odczytanie danych z tabeli i zapisz pełne działanie prowadzące do wyniku.
+5. Sprawdź, czy podana odpowiedź jest poprawna i jednoznaczna.
+6. Jeśli odpowiedź jest wieloznaczna (np. równanie ma 2 rozwiązania), oznacz zadanie jako niepoprawne.
 
 Zwróć TYLKO czysty JSON jako listę wyników w tej samej kolejności:
 [
@@ -311,18 +307,36 @@ SUROWE DANE WEJŚCIOWE (ZADANIA + ROZWIĄZANIA):
 
 KRYTYCZNE ZASADY FORMATOWANIA (JSON I LATEX):
 1. ZNACZNIKI MATEMATYKI: Każda liczba, zmienna i wzór MUSZĄ być w LaTeX ($...$ w tekście, $$...$$ w nowej linii dla dużych równań). Dotyczy to treści i rozwiązań.
-2. JSON ESCAPING (BEZWZGLĘDNIE WAŻNE): Każda komenda LaTeX (ukośnik) musi zostać ucieczkowana dwukrotnie! Np. napisz "\\\\frac" zamiast \\frac.
+2. JSON ESCAPING (BEZWZGLĘDNIE WAŻNE): Zwracasz odpowiedź jako czysty tekst JSON. Każda komenda LaTeX (ukośnik) musi zostać ucieczkowana dwukrotnie! Np. napisz "\\\\frac" zamiast \\frac, "\\\\alpha" zamiast \\alpha, "\\\\in" zamiast \\in.
 3. Zadbaj o estetykę i poprawne łamanie linii (BARDZO WAŻNE):
-   - ABSOLUTNY ZAKAZ wprowadzania wielu definicji ciągiem w jednej linii tekstu.
+   - ABSOLUTNY ZAKAZ wprowadzania wielu definicji (np. dwóch równań lub zbiorów) ciągiem w jednej linii tekstu. Dłuższe wyrażenia pisane językiem matematyki bezwzględnie przenoś do nowej linii, aby uniknąć brzydkiego ucinania!
    - Wymień je pod sobą w JEDNYM wieloliniowym bloku matematycznym $$...$$.
-   - Wnętrze bloku matematycznego $$...$$ przełamuj podwójnym ukośnikiem LaTeX.
-   - Jeśli w bloku $$...$$ łamiesz linię z "wysokimi" strukturami (ułamki, granice, sumy), BEZWZGLĘDNIE dodaj odstęp pionowy: "\\\\\\\\[15pt]".
-   - W zwykłym tekście (poza $$) zabrania się używania "\\\\\\\\" do nowej linii - używaj "\\n".
-   - Pojedyncze liczby i wyrażenia będące CZĘŚCIĄ ZDANIA umieszczaj w $...$ (inline math).
-   - ABSOLUTNY ZAKAZ używania podwójnych dolarów $$...$$ wewnątrz zdań.
-4. CORRECT_ANSWER: Odpowiedź w polu "correct_answer" sformatuj jako czysty string LaTeX (np. "$17$", "$\\\\frac{{3}}{{4}}$").
-5. TABELE I STRUKTURY DANYCH: Stosuj tabelę WYŁĄCZNIE gdy treść zadania tego wymaga, używając środowiska \\\\begin{{array}} ... \\\\end{{array}}.
-6. KARYGODNY BŁĄD: Nigdy nie obejmuj całych zdań znacznikami matematycznymi!
+   - Wnętrze bloku matematycznego $$...$$ przełamuj podwójnym ukośnikiem LaTeX. Jeśli obok siebie masz "niskie" linijki (zwykłe zmienne, teksty), użyj zwykłego nowej linii, co w JSON zapisujesz jako CZTERY ukośniki: "\\\\\\\\".
+   - JEDNAKŻE, jeśli w bloku $$...$$ łamiesz linię, a w PIONIE występują "wysokie", piętrowe struktury (ułamki \\\\frac, granice \\\\lim, sumy \\\\sum, całki, macierze, czy potęgi piętrowe), BEZWZGLĘDNIE dodaj odstęp pionowy (np. 15pt). W JSON zapisz to DOKŁADNIE TAK: "\\\\\\\\[15pt]". 
+   - ABSOLUTNY ZAKAZ zapisu typu "\\\\\\\[15pt]" (trzy ukośniki widoczne po sparsowaniu to błąd syntaxu). Wymagane są dokładnie CZTERY ukośniki i od razu nawias kwadratowy: "\\\\\\\\[15pt]".
+   - W zwykłym tekście (poza $$) zabrania się używania "\\\\\\\\" do nowej linii - tam używaj standardowego "\\n".
+   - BARDZO WAŻNE: Pojedyncze liczby, pojedyncze ułamki i wyrażenia będące CZEŚCIĄ ZDANIA (wplecione w tekst) ZAWSZE umieszczaj w pojedynczych dolarach $...$ (inline math), np. "Liczba $x$ to $5$". 
+   - KARYGODNY BŁĄD (ABSOLUTNY ZAKAZ): Nigdy nie obejmuj całych zdań lub słów znacznikami matematycznymi (dolarami)! Zapis typu "$Liczba \\\\ z \\\\ jest \\\\ równa \\\\ 1.$" jest surowo zabroniony, ponieważ wymusza pochyły styl matematyczny na zwykłym tekście polskim. Zwykły tekst ma być CAŁKOWICIE POZA dolarami! Wzorowy zapis to: "Liczba $z$ jest równa $1$."
+   - ABSOLUTNY ZAKAZ używania podwójnych dolarów $$...$$ wewnątrz zdań. Podwójne dolary służą TYLKO i WYŁĄCZNIE do wydzielonych, wieloliniowych, wyśrodkowanych bloków równań pod tekstem.
+   - ZŁY ZAPIS (w zdaniu): "Wynik to $$ \\\\frac{{1}}{{2}} $$." (to rozbije zdanie na 3 linie!)
+   - WZORCOWY ZAPIS (w zdaniu): "Wynik to $ \\\\frac{{1}}{{2}} $."
+   - WZORCOWY ZAPIS (blokowy, z wysokimi równaniami): "Zatem wynik to:\n$$ \\\\frac{{1}}{{2}} \\\\\\\\[15pt] \\\\frac{{3}}{{4}} $$"
+4. CORRECT_ANSWER: Odpowiedź w polu "correct_answer" podaj jako czystą wartość matematyczną BEZ otaczających dolarów (np. "17", "3/4", "\\\\frac{{3}}{{4}}", "2\\\\sqrt{{3}}", "-0.5").
+5. TABELE I STRUKTURY DANYCH (STOSUJ WYŁĄCZNIE GDY W TREŚCI ZADANIA WYSTĘPUJE TABELA):
+   - Jeśli otrzymana treść zadania zawiera tabelę lub zestawienie danych tabelarycznych:
+     Sformatuj te dane jako estetyczną, wyśrodkowaną tabelę LaTeX w osobnym bloku $$...$$ przy użyciu środowiska \\\\begin{{array}} ... \\\\end{{array}}.
+   - W zadaniach, które NIE zawierają tabeli, absolutnie NIE twórz tabeli na siłę – pozostaw ich naturalną strukturę zwykłego tekstu i równań!
+   - Zadbaj o pełne obramowanie tabeli: podaj pionowe kreski między kolumnami (np. {{|c|c|c|c|}}) oraz linie poziome (\\\\hline) przed pierwszym wierszem, po każdym wierszu i na końcu tabeli.
+   - KRYTYCZNA ZASADA DLA WYRAZÓW W TABELI: Ponieważ środowisko array działa w trybie matematycznym, KAŻDY polski wyraz lub nagłówek (np. Wartość, Liczebność, Ocena, Liczba uczniów, Wynik, Liczba) MUSI być zapisany wewnątrz komendy \\\\text{{...}} (np. \\\\text{{Ocena}} lub \\\\text{{Liczba uczniów}}). Bez tego tekst zleje się w brzydkie pochyłe litery matematyczne!
+   - Nowy wiersz w tabeli LaTeX to symbol podwójnego ukośnika, co w formacie JSON wymaga zapisania CZTERECH ukośników: "\\\\\\\\".
+   - WAŻNE: Otwierające $$ i zamykające $$ umieszczaj w tej samej linijce co \\\\begin{{array}} i \\\\end{{array}} (np. "$$ \\\\begin{{array}}...\\\\end{{array}} $$"), bez pustych enterów zaraz po '$$' ani przed '$$'.
+   - WZORCOWY ZAPIS TABELI POZIOMEJ W TREŚCI ZADANIA (question):
+     "W tabeli przedstawiono wyniki sprawdzianu z matematyki w pewnej klasie:\n$$ \\\\begin{{array}}{{|c|c|c|c|c|}}\\\\hline \\\\text{{Ocena}} & 2 & 3 & 4 & 5 \\\\\\\\ \\\\hline \\\\text{{Liczba uczniów}} & 3 & 7 & 6 & 4 \\\\\\\\ \\\\hline \\\\end{{array}} $$\nOblicz średnią arytmetyczną ocen z tego sprawdzianu."
+   - WZORCOWY ZAPIS TABELI PIONOWEJ (gdy danych jest więcej):
+     "W tabeli przedstawiono zestawienie danych statystycznych:\n$$ \\\\begin{{array}}{{|c|c|}}\\\\hline \\\\text{{Wartość cechy}} & \\\\text{{Liczebność}} \\\\\\\\ \\\\hline 10 & 2 \\\\\\\\ \\\\hline 20 & 5 \\\\\\\\ \\\\hline 30 & 3 \\\\\\\\ \\\\hline \\\\end{{array}} $$\nOblicz średnią arytmetyczną podanych danych."
+   - UKŁADY RÓWNAŃ I FUNKCJE KLAMROWE: Gdy w zadaniu występuje układ równań lub funkcja klamrowa, również używaj czystego bloku $$...$$ ze środowiskiem \\\\begin{{cases}} ... \\\\end{{cases}}.
+   - ROZWIĄZANIE DLA ZADAŃ Z TABELI: W exemplary_solution elegancko rozpisuj obliczenia za pomocą ułamka blokowego, np.:
+     "Obliczamy średnią arytmetyczną z danych w tabeli:\n$$ \\\\bar{{x}} = \\\\frac{{2 \\\\cdot 3 + 3 \\\\cdot 7 + 4 \\\\cdot 6 + 5 \\\\cdot 4}}{{3 + 7 + 6 + 4}} = \\\\frac{{6 + 21 + 24 + 20}}{{20}} = \\\\frac{{71}}{{20}} = 3,55 $$"
 
 Zwróć TYLKO czystą listę JSON z przepisanymi zadaniami:
 [
@@ -347,8 +361,8 @@ ZADANIE DO OCENY:
 KRYTERIA:
 1. MATEMATYKA: Czy podany "correct_answer" jest poprawnym wynikiem zadania z "question"? Zrób rygorystyczny przegląd rachunków.
 2. JEDNOZNACZNOŚĆ: Czy zadanie ma DOKŁADNIE JEDNĄ poprawną odpowiedź? Jeśli możliwe jest wiele odpowiedzi, odrzuć (is_perfect: false).
-3. ROZWIĄZANIE: Czy zadanie posiada "exemplary_solution" i nie jest to wartość pusta?
-4. FORMAT: Czy WSZYSTKIE liczby i zmienne są w znacznikach $...$ lub $$...$$?
+3. ROZWIĄZANIE: Czy zadanie posiada "exemplary_solution" i nie jest to wartość pusta? (Brak rozwiązania oznacza natychmiastowy brak walidacji).
+4. FORMAT: Czy WSZYSTKIE liczby i zmienne są w znacznikach $...$ lub $$...$$? Czy bloki równań i układów są poprawne? Jeśli zadanie należy do grupy wprost wymagającej tabeli (np. tabela liczebności) lub zawiera tabelę, czy tabela w LaTeX jest poprawna składniowo (\\\\begin{{array}} z $$...$$) i posiada nagłówki w \\\\text{{...}}? (W pozostałych zadaniach obecność tabeli nie jest wymagana).
 5. SENS FIZYCZNY I POLICZALNOŚĆ (OBIEKTY DYSKRETNE VS WIELKOŚCI CIĄGŁE):
    a) Liczności obiektów dyskretnych/niepodzielnych oraz liczba powtórzeń (np. liczba osób, uczniów, zwierząt/stworzeń, rzutów kostką/monetą, kul, kart, losów, wierzchołków, sztuk towaru) BEZWZGLĘDNIE MUSZĄ być liczbami całkowitymi (nie może być 2,5 osoby ani 3,5 rzutu).
    b) Ciągłe wielkości fizyczne i pomiarowe (np. masa w kg/g, długość w m, czas, temperatura, kwoty pieniężne w zł, pole, objętość) JAK NAJBARDZIEJ MOGĄ być liczbami dziesiętnymi lub ułamkami (np. 10,25 kg, 12,5 kg, 2,5 m to w pełni poprawne dane). NIGDY nie odrzucaj zadania za ułamkowe masy, długości, czas czy ceny.
@@ -377,12 +391,11 @@ FORMAT ZADANIA: Uczeń otrzymuje kontekst (np. "Dana jest funkcja f(x) = ...") o
 
 KONTEKST ZADANIA (GŁÓWNY CEL):
 Ścieżka: {chapter} > {topic} > {subtopic} > {group}
-Teoria bieżąca: {topic_theory}, {subtopic_theory}
 Inne (sąsiednie) grupy zadań w tym podtemacie: {sibling_task_groups}
 
 WIEDZA UPRZEDNIA UCZNIA (MOŻESZ Z NIEJ KORZYSTAĆ):
 Poprzednie tematy ucznia: {known_topics_names}
-Poprzednie podtematy z tego działu: {known_subtopics_theories}
+Poprzednie podtematy z tego działu: {known_subtopics_names}
 
 ZAKAZANY MATERIAŁ (ABSOLUTNY ZAKAZ UŻYWANIA):
 Nieznane tematy: {unknown_topics_names}
@@ -425,8 +438,7 @@ LISTA SZKICÓW ZADAŃ DO ZREALIZOWANIA (ZAPLANOWANE PRZEZ METODYKA W FORMACIE JS
 
 KONTEKST EDUKACYJNY (DO ZACHOWANIA ZGODNOŚCI):
 Ścieżka: {chapter} > {topic} > {subtopic} > {group}
-Teoria bieżąca: {topic_theory}, {subtopic_theory}
-Wiedza uprzednia ucznia: {known_topics_names} | {known_subtopics_theories}
+Wiedza uprzednia ucznia: {known_topics_names} | {known_subtopics_names}
 ZAKAZANY MATERIAŁ (Absolutny zakaz pojęć z tych działów): {unknown_topics_names}
 
 TWOJE WYTYCZNE DLA KAŻDEGO SZKICU:
@@ -436,7 +448,8 @@ TWOJE WYTYCZNE DLA KAŻDEGO SZKICU:
 4. Wartości logiczne: Dopuszczalna jest dowolna kombinacja (np. wszystkie fałszywe, wszystkie prawdziwe lub mieszane) — decyduje wyłącznie rzetelna matematyka.
 5. Ograniczenie wiedzy: BEZWZGLĘDNIE trzymaj się zasady, by nie używać pojęć nieznanych uczniowi.
 6. Formatowanie: Używaj czystego tekstu z prostym ujęciem LaTeX.
-7. Sens fizyczny: Wielkości policzalne muszą być liczbami całkowitymi.
+7. Tabele: Strukturę tabeli w kontekście zadania ("question") stosuj TYLKO wtedy, gdy szkic lub grupa ("{group}") wyraźnie jej wymaga. W pozostałych przypadkach formułuj zadania standardowo, bez tabeli.
+8. Sens fizyczny: Wielkości policzalne muszą być liczbami całkowitymi.
 
 Zwróć TYLKO czysty JSON jako LISTĘ obiektów:
 [
@@ -456,8 +469,7 @@ Jesteś rygorystycznym matematykiem i egzaminatorem. Otrzymujesz surową paczkę
 
 KONTEKST EDUKACYJNY UCZNIA:
 Ścieżka: {chapter} > {topic} > {subtopic} > {group}
-Teoria bieżąca: {topic_theory}, {subtopic_theory}
-Wiedza uprzednia ucznia (Z tego możesz korzystać): {known_topics_names} | {known_subtopics_theories}
+Wiedza uprzednia ucznia (Z tego możesz korzystać): {known_topics_names} | {known_subtopics_names}
 Nieznane tematy (ABSOLUTNY ZAKAZ UŻYWANIA): {unknown_topics_names}
 
 SUROWA PACZKA ZADAŃ (JSON):
@@ -465,10 +477,15 @@ SUROWA PACZKA ZADAŃ (JSON):
 
 ZADANIE DLA KAŻDEGO ELEMENTU Z PACZKI:
 1. Dla KAŻDEGO stwierdzenia w zadaniu: rozwiąż/sprawdź od zera, nie patrząc na sugerowany "correct".
-2. Pisz BARDZO PROSTYM i zrozumiałym językiem.
-3. OGRANICZENIA WIEDZY (KRYTYCZNE): Rozwiązanie musi być oparte na najprostszych, aktualnie dostępnych metodach.
-4. Sprawdź, czy każde stwierdzenie jest JEDNOZNACZNIE prawdziwe lub fałszywe. Jeśli któreś jest niejednoznaczne, oznacz zadanie jako niepoprawne.
-5. Sprawdź, czy NIE wszystkie stwierdzenia mają tę samą wartość (nie wszystkie P lub nie wszystkie F).
+2. JĘZYK I FORMAT UZASADNIENIA (BARDZO WAŻNE): Pisz BARDZO PROSTYM i naturalnym językiem. Tłumacz rozwiązanie tak, jakbyś mówił do ucznia szkoły średniej. Unikaj sztywnego, akademickiego żargonu.
+   Dla każdego stwierdzenia zacznij w nowej linii od numeru, słowa "PRAWDA." lub "FAŁSZ.", a następnie podaj zwięzłe uzasadnienie matematyczne i obliczenia, np.:
+   1. PRAWDA. Ponieważ $f(2) = 2^2 - 4 = 0$, liczba $2$ jest miejscem zerowym funkcji.
+   2. FAŁSZ. Współrzędne wierzchołka paraboli to $(2, -1)$, a nie $(1, -2)$.
+   ABSOLUTNY ZAKAZ nienaturalnych i sztucznych zwrotów typu "Stwierdzenie jest PRAWDA", "Stwierdzenie jest FAŁSZ", "Stwierdzenie 1 to PRAWDA", "To zdanie jest fałsz".
+3. OGRANICZENIA WIEDZY (KRYTYCZNE): Uczeń zna TYLKO zagadnienia z bieżącego tematu i wiedzy uprzedniej. Absolutnie nie wolno Ci w rozwiązaniu używać pojęć, twierdzeń, ani notacji z tematów nieznanych. Rozwiązanie musi być oparte na najprostszych, aktualnie dostępnych metodach.
+4. Zadania z danymi w tabeli: Jeśli zadanie zawiera tabelę, w uzasadnieniu stwierdzeń wyraźnie wskaż odczytanie danych z tabeli i zapisz pełne działanie prowadzące do oceny prawdziwości.
+5. Sprawdź, czy każde stwierdzenie jest JEDNOZNACZNIE prawdziwe lub fałszywe. Jeśli któreś jest niejednoznaczne, oznacz zadanie jako niepoprawne.
+6. Sprawdź, czy NIE wszystkie stwierdzenia mają tę samą wartość (nie wszystkie P lub nie wszystkie F).
 
 Zwróć TYLKO czysty JSON jako listę wyników:
 [
@@ -492,17 +509,44 @@ SUROWE DANE WEJŚCIOWE (ZADANIA + ROZWIĄZANIA):
 
 KRYTYCZNE ZASADY FORMATOWANIA (JSON I LATEX):
 1. ZNACZNIKI MATEMATYKI: Każda liczba, zmienna i wzór MUSZĄ być w LaTeX ($...$ w tekście, $$...$$ w nowej linii dla dużych równań). Dotyczy to pytania wstępnego, stwierdzeń i rozwiązań.
-2. JSON ESCAPING (BEZWZGLĘDNIE WAŻNE): Każda komenda LaTeX musi zostać ucieczkowana dwukrotnie! Np. "\\\\frac" zamiast \\frac.
+2. JSON ESCAPING (BEZWZGLĘDNIE WAŻNE): Zwracasz odpowiedź jako czysty tekst JSON. Każda komenda LaTeX (ukośnik) musi zostać ucieczkowana dwukrotnie! Np. napisz "\\\\frac" zamiast \\frac, "\\\\alpha" zamiast \\alpha, "\\\\in" zamiast \\in.
 3. Zadbaj o estetykę i poprawne łamanie linii (BARDZO WAŻNE):
-   - ABSOLUTNY ZAKAZ wprowadzania wielu definicji ciągiem w jednej linii tekstu.
-   - Wnętrze bloku $$...$$ przełamuj podwójnym ukośnikiem LaTeX.
-   - Jeśli w bloku $$...$$ łamiesz linię z "wysokimi" strukturami, dodaj "\\\\\\\\[15pt]".
-   - W zwykłym tekście używaj "\\n".
-   - Pojedyncze liczby i wyrażenia będące CZĘŚCIĄ ZDANIA umieszczaj w $...$.
-   - ABSOLUTNY ZAKAZ używania podwójnych dolarów wewnątrz zdań.
+   - ABSOLUTNY ZAKAZ wprowadzania wielu definicji (np. dwóch równań lub zbiorów) ciągiem w jednej linii tekstu. Dłuższe wyrażenia pisane językiem matematyki bezwzględnie przenoś do nowej linii, aby uniknąć brzydkiego ucinania!
+   - Wymień je pod sobą w JEDNYM wieloliniowym bloku matematycznym $$...$$.
+   - Wnętrze bloku matematycznego $$...$$ przełamuj podwójnym ukośnikiem LaTeX. Jeśli obok siebie masz "niskie" linijki (zwykłe zmienne, teksty), użyj zwykłego nowej linii, co w JSON zapisujesz jako CZTERY ukośniki: "\\\\\\\\".
+   - JEDNAKŻE, jeśli w bloku $$...$$ łamiesz linię, a w PIONIE występują "wysokie", piętrowe struktury (ułamki \\\\frac, granice \\\\lim, sumy \\\\sum, całki, macierze, czy potęgi piętrowe), BEZWZGLĘDNIE dodaj odstęp pionowy (np. 15pt). W JSON zapisz to DOKŁADNIE TAK: "\\\\\\\\[15pt]". 
+   - ABSOLUTNY ZAKAZ zapisu typu "\\\\\\\[15pt]" (trzy ukośniki widoczne po sparsowaniu to błąd syntaxu). Wymagane są dokładnie CZTERY ukośniki i od razu nawias kwadratowy: "\\\\\\\\[15pt]".
+   - W zwykłym tekście (poza $$) zabrania się używania "\\\\\\\\" do nowej linii - tam używaj standardowego "\\n".
+   - BARDZO WAŻNE: Pojedyncze liczby, pojedyncze ułamki i wyrażenia będące CZEŚCIĄ ZDANIA (wplecione w tekst) ZAWSZE umieszczaj w pojedynczych dolarach $...$ (inline math), np. "Liczba $x$ to $5$". 
+   - KARYGODNY BŁĄD (ABSOLUTNY ZAKAZ): Nigdy nie obejmuj całych zdań lub słów znacznikami matematycznymi (dolarami)! Zapis typu "$Liczba \\\\ z \\\\ jest \\\\ równa \\\\ 1.$" jest surowo zabroniony, ponieważ wymusza pochyły styl matematyczny na zwykłym tekście polskim. Zwykły tekst ma być CAŁKOWICIE POZA dolarami! Wzorowy zapis to: "Liczba $z$ jest równa $1$."
+   - ABSOLUTNY ZAKAZ używania podwójnych dolarów $$...$$ wewnątrz zdań. Podwójne dolary służą TYLKO i WYŁĄCZNIE do wydzielonych, wieloliniowych, wyśrodkowanych bloków równań pod tekstem.
+   - ZŁY ZAPIS (w zdaniu): "Wynik to $$ \\\\frac{{1}}{{2}} $$." (to rozbije zdanie na 3 linie!)
+   - WZORCOWY ZAPIS (w zdaniu): "Wynik to $ \\\\frac{{1}}{{2}} $."
+   - WZORCOWY ZAPIS (blokowy, z wysokimi równaniami): "Zatem wynik to:\n$$ \\\\frac{{1}}{{2}} \\\\\\\\[15pt] \\\\frac{{3}}{{4}} $$"
 4. STWIERDZENIA: Każde stwierdzenie powinno być samodzielnym, czytelnym zdaniem z poprawnym formatowaniem LaTeX. Zachowaj id numeryczne (1, 2, 3, ...).
-5. TABELE: Stosuj WYŁĄCZNIE gdy treść tego wymaga.
+5. TABELE I STRUKTURY DANYCH (STOSUJ WYŁĄCZNIE GDY W TREŚCI ZADANIA WYSTĘPUJE TABELA):
+   - Jeśli otrzymana treść zadania zawiera tabelę lub zestawienie danych tabelarycznych:
+     Sformatuj te dane jako estetyczną, wyśrodkowaną tabelę LaTeX w osobnym bloku $$...$$ przy użyciu środowiska \\\\begin{{array}} ... \\\\end{{array}}.
+   - W zadaniach, które NIE zawierają tabeli, absolutnie NIE twórz tabeli na siłę – pozostaw ich naturalną strukturę zwykłego tekstu i równań!
+   - Zadbaj o pełne obramowanie tabeli: podaj pionowe kreski między kolumnami (np. {{|c|c|c|c|}}) oraz linie poziome (\\\\hline) przed pierwszym wierszem, po każdym wierszu i na końcu tabeli.
+   - KRYTYCZNA ZASADA DLA WYRAZÓW W TABELI: Ponieważ środowisko array działa w trybie matematycznym, KAŻDY polski wyraz lub nagłówek (np. Wartość, Liczebność, Ocena, Liczba uczniów, Wynik, Liczba) MUSI być zapisany wewnątrz komendy \\\\text{{...}} (np. \\\\text{{Ocena}} lub \\\\text{{Liczba uczniów}}). Bez tego tekst zleje się w brzydkie pochyłe litery matematyczne!
+   - Nowy wiersz w tabeli LaTeX to symbol podwójnego ukośnika, co w formacie JSON wymaga zapisania CZTERECH ukośników: "\\\\\\\\".
+   - WAŻNE: Otwierające $$ i zamykające $$ umieszczaj w tej samej linijce co \\\\begin{{array}} i \\\\end{{array}} (np. "$$ \\\\begin{{array}}...\\\\end{{array}} $$"), bez pustych enterów zaraz po '$$' ani przed '$$'.
+   - WZORCOWY ZAPIS TABELI POZIOMEJ W TREŚCI ZADANIA (question):
+     "W tabeli przedstawiono wyniki sprawdzianu z matematyki w pewnej klasie:\n$$ \\\\begin{{array}}{{|c|c|c|c|c|}}\\\\hline \\\\text{{Ocena}} & 2 & 3 & 4 & 5 \\\\\\\\ \\\\hline \\\\text{{Liczba uczniów}} & 3 & 7 & 6 & 4 \\\\\\\\ \\\\hline \\\\end{{array}} $$\nOceń prawdziwość poniższych stwierdzeń:"
+   - WZORCOWY ZAPIS TABELI PIONOWEJ (gdy danych jest więcej):
+     "W tabeli przedstawiono zestawienie danych statystycznych:\n$$ \\\\begin{{array}}{{|c|c|}}\\\\hline \\\\text{{Wartość cechy}} & \\\\text{{Liczebność}} \\\\\\\\ \\\\hline 10 & 2 \\\\\\\\ \\\\hline 20 & 5 \\\\\\\\ \\\\hline 30 & 3 \\\\\\\\ \\\\hline \\\\end{{array}} $$\nOceń prawdziwość poniższych stwierdzeń:"
+   - UKŁADY RÓWNAŃ I FUNKCJE KLAMROWE: Gdy w zadaniu występuje układ równań lub funkcja klamrowa, również używaj czystego bloku $$...$$ ze środowiskiem \\\\begin{{cases}} ... \\\\end{{cases}}.
 6. KARYGODNY BŁĄD: Nigdy nie obejmuj całych zdań znacznikami matematycznymi!
+7. FORMAT ROZWIĄZANIA W EXEMPLARY_SOLUTION (KRYTYCZNE):
+   W "exemplary_solution" uzasadnienie KAŻDEGO stwierdzenia musi być ponumerowane, oddzielone znakiem nowej linii ("\\n") i rozpoczynać się bezwzględnie od słowa PRAWDA lub FAŁSZ z kropką, a zaraz po nim następuje zwięzłe wyjaśnienie matematyczne i rachunki.
+   Wzorcowy format:
+   "1. PRAWDA. Wyjaśnienie i obliczenia dla stwierdzenia 1...\\n2. FAŁSZ. Wyjaśnienie i obliczenia dla stwierdzenia 2...\\n3. PRAWDA. Wyjaśnienie i obliczenia dla stwierdzenia 3..."
+   ABSOLUTNY ZAKAZ nienaturalnych konstrukcji językowych typu:
+   - "Stwierdzenie jest PRAWDA" / "Stwierdzenie jest FAŁSZ"
+   - "Stwierdzenie pierwsze to PRAWDA"
+   - "To zdanie jest FAŁSZ"
+   Zawsze pisz naturalnie po polsku: "1. PRAWDA. [uzasadnienie]", "2. FAŁSZ. [uzasadnienie]".
 
 Zwróć TYLKO czystą listę JSON z przepisanymi zadaniami:
 [
@@ -516,7 +560,7 @@ Zwróć TYLKO czystą listę JSON z przepisanymi zadaniami:
         {{"id": 3, "text": "Sformatowane stwierdzenie 3", "correct": true}}
       ]
     }},
-    "exemplary_solution": "Pięknie sformatowane w $LaTeX$ uzasadnienie każdego stwierdzenia krok po kroku..."
+    "exemplary_solution": "1. PRAWDA. Uzasadnienie i obliczenia w $LaTeX$ dla stwierdzenia 1...\\n2. FAŁSZ. Uzasadnienie i obliczenia w $LaTeX$ dla stwierdzenia 2..."
   }}
 ]
 """)
@@ -531,8 +575,8 @@ KRYTERIA:
 1. MATEMATYKA: Czy każde stwierdzenie z "statements" jest na pewno poprawnie oznaczone jako true/false? Sprawdź każde stwierdzenie od zera, przeprowadzając rachunki.
 2. JEDNOZNACZNOŚĆ: Czy KAŻDE stwierdzenie jest jednoznacznie prawdziwe ALBO fałszywe? Niejednoznaczne stwierdzenia dyskwalifikują zadanie.
 3. WARTOŚCI LOGICZNE: Dopuszczalna jest DOWOLNA kombinacja (np. wszystkie stwierdzenia mogą być fałszywe, wszystkie prawdziwe lub mieszane). NIGDY nie odrzucaj zadania z powodu braku balansu P/F.
-4. ROZWIĄZANIE: Czy "exemplary_solution" zawiera uzasadnienie KAŻDEGO stwierdzenia?
-5. FORMAT: Czy WSZYSTKIE liczby i zmienne są w znacznikach $...$ lub $$...$$?
+4. ROZWIĄZANIE: Czy "exemplary_solution" zawiera uzasadnienie KAŻDEGO stwierdzenia w formacie "1. PRAWDA. [uzasadnienie] \\n 2. FAŁSZ. [uzasadnienie]" bez nienaturalnych zwrotów typu "stwierdzenie jest PRAWDA/FAŁSZ"?
+5. FORMAT: Czy WSZYSTKIE liczby i zmienne są w znacznikach $...$ lub $$...$$? Czy bloki równań i układów są poprawne? Jeśli zadanie należy do grupy wprost wymagającej tabeli (np. tabela liczebności) lub zawiera tabelę, czy tabela w LaTeX jest poprawna składniowo (\\\\begin{{array}} z $$...$$) i posiada nagłówki w \\\\text{{...}}? (W pozostałych zadaniach obecność tabeli nie jest wymagana).
 6. SENS FIZYCZNY I POLICZALNOŚĆ (OBIEKTY DYSKRETNE VS WIELKOŚCI CIĄGŁE):
    a) Liczności obiektów dyskretnych/niepodzielnych oraz liczba powtórzeń (np. liczba osób, uczniów, zwierząt/stworzeń, rzutów kostką/monetą, kul, kart, losów, wierzchołków, sztuk towaru) BEZWZGLĘDNIE MUSZĄ być liczbami całkowitymi (nie może być 2,5 osoby ani 3,5 rzutu).
    b) Ciągłe wielkości fizyczne i pomiarowe (np. masa w kg/g, długość w m, czas, temperatura, kwoty pieniężne w zł, pole, objętość) JAK NAJBARDZIEJ MOGĄ być liczbami dziesiętnymi lub ułamkami (np. 10,25 kg, 2,5 m to w pełni poprawne dane). NIGDY nie odrzucaj zadania za ułamkowe masy, długości czy ceny.

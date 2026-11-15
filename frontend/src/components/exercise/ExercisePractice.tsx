@@ -1,6 +1,7 @@
 "use client";
 
 import MixedMathText from "@/components/MixedMathText";
+import MathInput from "@/components/MathInput";
 import { parseTaskContent, formatDifficulty } from "./types";
 
 interface ExercisePracticeProps {
@@ -233,14 +234,14 @@ export default function ExercisePractice({
               {isOpen && (
                 <div className="space-y-4">
                   <div className="flex flex-col sm:flex-row gap-3">
-                    <input
-                      type="text"
-                      placeholder="Wpisz odpowiedź..."
-                      value={practiceOpenAnswer}
-                      onChange={(e) => setPracticeOpenAnswer(e.target.value)}
-                      disabled={!!practiceOpenResult}
-                      className="flex-1 p-3.5 border-2 border-black rounded-xl bg-white font-bold text-sm shadow-[2px_2px_0px_0px_#000]"
-                    />
+                    <div className="flex-1">
+                      <MathInput
+                        value={practiceOpenAnswer}
+                        onChange={(latex) => setPracticeOpenAnswer(latex)}
+                        disabled={!!practiceOpenResult}
+                        placeholder="Wpisz odpowiedź..."
+                      />
+                    </div>
                     {!practiceOpenResult && (
                       <button
                         onClick={() => onCheckOpen(task.id)}

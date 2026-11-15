@@ -1,6 +1,7 @@
 "use client";
 
 import MixedMathText from "@/components/MixedMathText";
+import MathInput from "@/components/MathInput";
 import { parseTaskContent, formatDifficulty } from "./types";
 
 interface ExerciseExamProps {
@@ -152,12 +153,10 @@ export default function ExerciseExam({
             {/* OPEN in Exam */}
             {isOpen && (
               <div>
-                <input
-                  type="text"
-                  placeholder="Wpisz swoją odpowiedź..."
+                <MathInput
                   value={currentAnswer?.user_answer ?? ""}
-                  onChange={(e) => setExamAnswerForTask(task.id, { user_answer: e.target.value })}
-                  className="w-full p-3.5 border-2 border-black rounded-xl bg-white font-bold text-sm shadow-[2px_2px_0px_0px_#000]"
+                  onChange={(latex) => setExamAnswerForTask(task.id, { user_answer: latex })}
+                  placeholder="Wpisz swoją odpowiedź..."
                 />
               </div>
             )}
