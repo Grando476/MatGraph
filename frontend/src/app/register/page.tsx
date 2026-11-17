@@ -248,7 +248,7 @@ export default function RegisterPage() {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  <span>Rejestracja...</span>
+                  <span>Rejestracja</span>
                 </>
               ) : (
                 <span>Zarejestruj się &rarr;</span>
@@ -267,16 +267,14 @@ export default function RegisterPage() {
             href="/graph"
             className="w-full py-2.5 px-4 border-2.5 border-[var(--border-dark)] bg-white hover:bg-[var(--neo-yellow)] text-black font-black text-xs uppercase tracking-wider rounded-xl shadow-[4px_4px_0px_0px_#000] hover:shadow-[2px_2px_0px_0px_#000] hover:translate-x-[2px] hover:translate-y-[2px] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none transition-all flex items-center justify-center gap-2 group"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-black group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
-            </svg>
+
             <span>Przejdź do grafu bez rejestracji</span>
           </Link>
 
           <p className="mt-5 text-center text-xs font-semibold text-[var(--text-muted)]">
             Masz już konto?{" "}
             <Link href="/login" className="text-black font-black underline hover:text-[var(--neo-pink)] ml-1">
-              Zaloguj się &rarr;
+              Zaloguj się;
             </Link>
           </p>
         </div>

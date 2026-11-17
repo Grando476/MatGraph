@@ -72,11 +72,10 @@ export default function LoginPage() {
           </div>
 
           {message && (
-            <div className={`mb-6 p-4 rounded-xl text-xs font-bold border-2 border-[var(--border-dark)] shadow-[3px_3px_0px_0px_#000] ${
-              message.type === "success"
+            <div className={`mb-6 p-4 rounded-xl text-xs font-bold border-2 border-[var(--border-dark)] shadow-[3px_3px_0px_0px_#000] ${message.type === "success"
                 ? "bg-[var(--success-bg)] text-[var(--success-text)]"
                 : "bg-[var(--error-bg)] text-[var(--error-text)]"
-            }`}>
+              }`}>
               {message.text}
             </div>
           )}
@@ -126,10 +125,10 @@ export default function LoginPage() {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  <span>Logowanie...</span>
+                  <span>Logowanie</span>
                 </>
               ) : (
-                <span>Zaloguj się &rarr;</span>
+                <span>Zaloguj się </span>
               )}
             </button>
           </form>
@@ -145,9 +144,6 @@ export default function LoginPage() {
             href="/graph"
             className="w-full py-3 px-4 border-2.5 border-[var(--border-dark)] bg-white hover:bg-[var(--neo-green)] text-black font-black text-xs uppercase tracking-wider rounded-xl shadow-[4px_4px_0px_0px_#000] hover:shadow-[2px_2px_0px_0px_#000] hover:translate-x-[2px] hover:translate-y-[2px] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none transition-all flex items-center justify-center gap-2 group"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-black group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
-            </svg>
             <span>Przejdź do grafu jako Gość</span>
           </Link>
 
