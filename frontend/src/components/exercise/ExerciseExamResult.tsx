@@ -24,9 +24,8 @@ export default function ExerciseExamResult({
     <div className="space-y-6">
       {/* Hero Result Banner */}
       <div
-        className={`border-3 border-[var(--border-dark)] p-6 sm:p-8 rounded-2xl shadow-[8px_8px_0px_0px_#000] text-center ${
-          examResult.passed ? "bg-[var(--neo-green)] text-black" : "bg-[var(--neo-pink)] text-black"
-        }`}
+        className={`border-3 border-[var(--border-dark)] p-6 sm:p-8 rounded-2xl shadow-[8px_8px_0px_0px_#000] text-center ${examResult.passed ? "bg-[var(--neo-green)] text-black" : "bg-[var(--neo-pink)] text-black"
+          }`}
       >
         <h2 className="text-3xl font-black uppercase tracking-tight mb-2">
           {examResult.passed ? "Egzamin Zaliczony!" : "Egzamin Niezaliczony"}
@@ -52,7 +51,7 @@ export default function ExerciseExamResult({
           onClick={onRetryExam}
           className="px-6 py-3.5 bg-[var(--neo-yellow)] hover:bg-[#fde047] text-black font-black uppercase text-xs rounded-xl border-2.5 border-black shadow-[4px_4px_0px_0px_#000] hover:shadow-[2px_2px_0px_0px_#000] hover:translate-x-[2px] hover:translate-y-[2px]"
         >
-          Spróbuj ponownie (nowe pytania)
+          Spróbuj ponownie
         </button>
         <button
           onClick={() => onStartPractice("ALL")}
@@ -64,7 +63,7 @@ export default function ExerciseExamResult({
           onClick={onBack}
           className="px-6 py-3.5 bg-white hover:bg-gray-100 text-black font-black uppercase text-xs rounded-xl border-2.5 border-black shadow-[4px_4px_0px_0px_#000] hover:shadow-[2px_2px_0px_0px_#000] hover:translate-x-[2px] hover:translate-y-[2px]"
         >
-          Wróć do grupy zadań &rarr;
+          Wróć do grupy zadań
         </button>
       </div>
 
@@ -80,18 +79,16 @@ export default function ExerciseExamResult({
             return (
               <div
                 key={t.id || idx}
-                className={`p-5 rounded-xl border-2.5 border-black ${
-                  isCorrect ? "bg-green-50 border-green-600" : "bg-red-50 border-red-600"
-                }`}
+                className={`p-5 rounded-xl border-2.5 border-black ${isCorrect ? "bg-green-50 border-green-600" : "bg-red-50 border-red-600"
+                  }`}
               >
                 <div className="flex items-center justify-between mb-3">
                   <span className="font-black text-xs uppercase">
                     Zadanie {idx + 1} ({formatDifficulty(t.difficulty_level)})
                   </span>
                   <span
-                    className={`px-2.5 py-1 rounded text-xs font-black uppercase border border-black ${
-                      isCorrect ? "bg-[var(--neo-green)] text-black" : "bg-[var(--neo-pink)] text-black"
-                    }`}
+                    className={`px-2.5 py-1 rounded text-xs font-black uppercase border border-black ${isCorrect ? "bg-[var(--neo-green)] text-black" : "bg-[var(--neo-pink)] text-black"
+                      }`}
                   >
                     {isCorrect ? "✓ Poprawnie" : "✕ Błąd"}
                   </span>
