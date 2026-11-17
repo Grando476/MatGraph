@@ -258,25 +258,6 @@ export default function UserProfileDrawer({
                               {a.topic_name} {a.subtopic_name ? `- ${a.subtopic_name}` : ''}
                             </div>
                           </div>
-                          <div
-                            title={isDone ? "Zadanie zaliczone: zdano test (min. 80%)" : "Do zaliczenia: zdaj test (min. 80%)"}
-                            style={{
-                              padding: '2px 6px',
-                              borderRadius: '5px',
-                              border: '1.5px solid #000',
-                              background: isDone ? 'var(--neo-green)' : 'var(--neo-yellow)',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '3px',
-                              fontSize: '0.62rem',
-                              fontWeight: 900,
-                              flexShrink: 0,
-                              boxShadow: '1px 1px 0px #000',
-                              color: '#000',
-                            }}
-                          >
-                            {isDone ? '✓ Zaliczone' : '⏳ Do testu'}
-                          </div>
                         </div>
 
                         {a.note && (
