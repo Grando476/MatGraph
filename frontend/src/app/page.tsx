@@ -49,13 +49,13 @@ export default function HomePage() {
           {/* Feature Micro-Badges */}
           <div className="flex flex-wrap items-center justify-center gap-2.5 mb-10 text-xs font-bold">
             <span className="bg-[var(--bg-deep)] border-2 border-[var(--border-dark)] px-3 py-1 rounded-md shadow-[2px_2px_0px_0px_#000]">
-              ✓ Interaktywna mapa zagadnień
+              Interaktywna mapa zagadnień
             </span>
             <span className="bg-[var(--bg-deep)] border-2 border-[var(--border-dark)] px-3 py-1 rounded-md shadow-[2px_2px_0px_0px_#000]">
-              ✓ Formuły LaTeX & wideolekcje
+              Formuły LaTeX & wideolekcje
             </span>
             <span className="bg-[var(--bg-deep)] border-2 border-[var(--border-dark)] px-3 py-1 rounded-md shadow-[2px_2px_0px_0px_#000]">
-              ✓ Wbudowany kalkulator Desmos
+              Wbudowany kalkulator Desmos
             </span>
           </div>
 
@@ -68,7 +68,7 @@ export default function HomePage() {
                 className="w-full sm:w-1/2 py-3.5 px-5 rounded-xl bg-[var(--neo-yellow)] hover:bg-[#fde047] text-black font-extrabold text-xs uppercase tracking-wider border-2.5 border-[var(--border-dark)] shadow-[4px_4px_0px_0px_#000] hover:shadow-[2px_2px_0px_0px_#000] hover:translate-x-[2px] hover:translate-y-[2px] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none transition-all flex items-center justify-center gap-2"
               >
                 <span>Zaloguj się</span>
-                <span className="text-base">&rarr;</span>
+
               </Link>
 
               <Link
@@ -76,7 +76,7 @@ export default function HomePage() {
                 className="w-full sm:w-1/2 py-3.5 px-5 rounded-xl bg-[var(--neo-green)] hover:bg-[#86efac] text-black font-extrabold text-xs uppercase tracking-wider border-2.5 border-[var(--border-dark)] shadow-[4px_4px_0px_0px_#000] hover:shadow-[2px_2px_0px_0px_#000] hover:translate-x-[2px] hover:translate-y-[2px] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none transition-all flex items-center justify-center gap-2"
               >
                 <span>Zarejestruj się</span>
-                <span className="text-base">+</span>
+
               </Link>
             </div>
 
@@ -85,9 +85,6 @@ export default function HomePage() {
               href="/graph"
               className="w-full py-3.5 px-5 rounded-xl bg-white hover:bg-[var(--neo-blue)] text-black font-black text-xs uppercase tracking-wider border-2.5 border-[var(--border-dark)] shadow-[4px_4px_0px_0px_#000] hover:shadow-[2px_2px_0px_0px_#000] hover:translate-x-[2px] hover:translate-y-[2px] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none transition-all flex items-center justify-center gap-2 group"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-black group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
               <span>Przejdź do grafu jako Gość</span>
             </Link>
           </div>
